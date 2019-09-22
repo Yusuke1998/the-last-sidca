@@ -53,3 +53,9 @@ if (token) {
 //     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
 //     encrypted: true
 // });
+
+/* DISEÑOS */
+window.toastr = require('toastr');
+import Chart from 'chart.js';
+import VueChart from 'vue-chartjs';
+import swal from 'sweetalert';
