@@ -86,6 +86,3625 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/alertifyjs/build/alertify.js":
+/*!***************************************************!*\
+  !*** ./node_modules/alertifyjs/build/alertify.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
+ * alertifyjs 1.11.4 http://alertifyjs.com
+ * AlertifyJS is a javascript framework for developing pretty browser dialogs and notifications.
+ * Copyright 2019 Mohammad Younes <Mohammad@alertifyjs.com> (http://alertifyjs.com) 
+ * Licensed under GPL 3 <https://opensource.org/licenses/gpl-3.0>*/
+( function ( window ) {
+    'use strict';
+    
+    /**
+     * Keys enum
+     * @type {Object}
+     */
+    var keys = {
+        ENTER: 13,
+        ESC: 27,
+        F1: 112,
+        F12: 123,
+        LEFT: 37,
+        RIGHT: 39
+    };
+    /**
+     * Default options 
+     * @type {Object}
+     */
+    var defaults = {
+        autoReset:true,
+        basic:false,
+        closable:true,
+        closableByDimmer:true,
+        frameless:false,
+        maintainFocus:true, //global default not per instance, applies to all dialogs
+        maximizable:true,
+        modal:true,
+        movable:true,
+        moveBounded:false,
+        overflow:true,
+        padding: true,
+        pinnable:true,
+        pinned:true,
+        preventBodyShift:false, //global default not per instance, applies to all dialogs
+        resizable:true,
+        startMaximized:false,
+        transition:'pulse',
+        notifier:{
+            delay:5,
+            position:'bottom-right',
+            closeButton:false
+        },
+        glossary:{
+            title:'AlertifyJS',
+            ok: 'OK',
+            cancel: 'Cancel',
+            acccpt: 'Accept',
+            deny: 'Deny',
+            confirm: 'Confirm',
+            decline: 'Decline',
+            close: 'Close',
+            maximize: 'Maximize',
+            restore: 'Restore',
+        },
+        theme:{
+            input:'ajs-input',
+            ok:'ajs-ok',
+            cancel:'ajs-cancel',
+        }
+    };
+    
+    //holds open dialogs instances
+    var openDialogs = [];
+
+    /**
+     * [Helper]  Adds the specified class(es) to the element.
+     *
+     * @element {node}      The element
+     * @className {string}  One or more space-separated classes to be added to the class attribute of the element.
+     * 
+     * @return {undefined}
+     */
+    function addClass(element,classNames){
+        element.className += ' ' + classNames;
+    }
+    
+    /**
+     * [Helper]  Removes the specified class(es) from the element.
+     *
+     * @element {node}      The element
+     * @className {string}  One or more space-separated classes to be removed from the class attribute of the element.
+     * 
+     * @return {undefined}
+     */
+    function removeClass(element, classNames) {
+        var original = element.className.split(' ');
+        var toBeRemoved = classNames.split(' ');
+        for (var x = 0; x < toBeRemoved.length; x += 1) {
+            var index = original.indexOf(toBeRemoved[x]);
+            if (index > -1){
+                original.splice(index,1);
+            }
+        }
+        element.className = original.join(' ');
+    }
+
+    /**
+     * [Helper]  Checks if the document is RTL
+     *
+     * @return {Boolean} True if the document is RTL, false otherwise.
+     */
+    function isRightToLeft(){
+        return window.getComputedStyle(document.body).direction === 'rtl';
+    }
+    /**
+     * [Helper]  Get the document current scrollTop
+     *
+     * @return {Number} current document scrollTop value
+     */
+    function getScrollTop(){
+        return ((document.documentElement && document.documentElement.scrollTop) || document.body.scrollTop);
+    }
+
+    /**
+     * [Helper]  Get the document current scrollLeft
+     *
+     * @return {Number} current document scrollLeft value
+     */
+    function getScrollLeft(){
+        return ((document.documentElement && document.documentElement.scrollLeft) || document.body.scrollLeft);
+    }
+
+    /**
+    * Helper: clear contents
+    *
+    */
+    function clearContents(element){
+        while (element.lastChild) {
+            element.removeChild(element.lastChild);
+        }
+    }
+    /**
+     * Extends a given prototype by merging properties from base into sub.
+     *
+     * @sub {Object} sub The prototype being overwritten.
+     * @base {Object} base The prototype being written.
+     *
+     * @return {Object} The extended prototype.
+     */
+    function copy(src) {
+        if(null === src){
+            return src;
+        }
+        var cpy;
+        if(Array.isArray(src)){
+            cpy = [];
+            for(var x=0;x<src.length;x+=1){
+                cpy.push(copy(src[x]));
+            }
+            return cpy;
+        }
+      
+        if(src instanceof Date){
+            return new Date(src.getTime());
+        }
+      
+        if(src instanceof RegExp){
+            cpy = new RegExp(src.source);
+            cpy.global = src.global;
+            cpy.ignoreCase = src.ignoreCase;
+            cpy.multiline = src.multiline;
+            cpy.lastIndex = src.lastIndex;
+            return cpy;
+        }
+        
+        if(typeof src === 'object'){
+            cpy = {};
+            // copy dialog pototype over definition.
+            for (var prop in src) {
+                if (src.hasOwnProperty(prop)) {
+                    cpy[prop] = copy(src[prop]);
+                }
+            }
+            return cpy;
+        }
+        return src;
+    }
+    /**
+      * Helper: destruct the dialog
+      *
+      */
+    function destruct(instance, initialize){
+        if(instance.elements){
+            //delete the dom and it's references.
+            var root = instance.elements.root;
+            root.parentNode.removeChild(root);
+            delete instance.elements;
+            //copy back initial settings.
+            instance.settings = copy(instance.__settings);
+            //re-reference init function.
+            instance.__init = initialize;
+            //delete __internal variable to allow re-initialization.
+            delete instance.__internal;
+        }
+    }
+
+    /**
+     * Use a closure to return proper event listener method. Try to use
+     * `addEventListener` by default but fallback to `attachEvent` for
+     * unsupported browser. The closure simply ensures that the test doesn't
+     * happen every time the method is called.
+     *
+     * @param    {Node}     el    Node element
+     * @param    {String}   event Event type
+     * @param    {Function} fn    Callback of event
+     * @return   {Function}
+     */
+    var on = (function () {
+        if (document.addEventListener) {
+            return function (el, event, fn, useCapture) {
+                el.addEventListener(event, fn, useCapture === true);
+            };
+        } else if (document.attachEvent) {
+            return function (el, event, fn) {
+                el.attachEvent('on' + event, fn);
+            };
+        }
+    }());
+
+    /**
+     * Use a closure to return proper event listener method. Try to use
+     * `removeEventListener` by default but fallback to `detachEvent` for
+     * unsupported browser. The closure simply ensures that the test doesn't
+     * happen every time the method is called.
+     *
+     * @param    {Node}     el    Node element
+     * @param    {String}   event Event type
+     * @param    {Function} fn    Callback of event
+     * @return   {Function}
+     */
+    var off = (function () {
+        if (document.removeEventListener) {
+            return function (el, event, fn, useCapture) {
+                el.removeEventListener(event, fn, useCapture === true);
+            };
+        } else if (document.detachEvent) {
+            return function (el, event, fn) {
+                el.detachEvent('on' + event, fn);
+            };
+        }
+    }());
+
+    /**
+     * Prevent default event from firing
+     *
+     * @param  {Event} event Event object
+     * @return {undefined}
+
+    function prevent ( event ) {
+        if ( event ) {
+            if ( event.preventDefault ) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+        }
+    }
+    */
+    var transition = (function () {
+        var t, type;
+        var supported = false;
+        var transitions = {
+            'animation'        : 'animationend',
+            'OAnimation'       : 'oAnimationEnd oanimationend',
+            'msAnimation'      : 'MSAnimationEnd',
+            'MozAnimation'     : 'animationend',
+            'WebkitAnimation'  : 'webkitAnimationEnd'
+        };
+
+        for (t in transitions) {
+            if (document.documentElement.style[t] !== undefined) {
+                type = transitions[t];
+                supported = true;
+                break;
+            }
+        }
+
+        return {
+            type: type,
+            supported: supported
+        };
+    }());
+
+    /**
+    * Creates event handler delegate that sends the instance as last argument.
+    * 
+    * @return {Function}    a function wrapper which sends the instance as last argument.
+    */
+    function delegate(context, method) {
+        return function () {
+            if (arguments.length > 0) {
+                var args = [];
+                for (var x = 0; x < arguments.length; x += 1) {
+                    args.push(arguments[x]);
+                }
+                args.push(context);
+                return method.apply(context, args);
+            }
+            return method.apply(context, [null, context]);
+        };
+    }
+    /**
+    * Helper for creating a dialog close event.
+    * 
+    * @return {object}
+    */
+    function createCloseEvent(index, button) {
+        return {
+            index: index,
+            button: button,
+            cancel: false
+        };
+    }
+    /**
+    * Helper for dispatching events.
+    *
+    * @param  {string} evenType The type of the event to disptach.
+    * @param  {object} instance The dialog instance disptaching the event.
+    *
+    * @return   {any}   The result of the invoked function.
+    */
+    function dispatchEvent(eventType, instance) {
+        if ( typeof instance.get(eventType) === 'function' ) {
+            return instance.get(eventType).call(instance);
+        }
+    }
+
+
+    /**
+     * Super class for all dialogs
+     *
+     * @return {Object}		base dialog prototype
+     */
+    var dialog = (function () {
+        var //holds the list of used keys.
+            usedKeys = [],
+            //dummy variable, used to trigger dom reflow.
+            reflow = null,
+            //holds body tab index in case it has any.
+            tabindex = false,
+            //condition for detecting safari
+            isSafari = window.navigator.userAgent.indexOf('Safari') > -1 && window.navigator.userAgent.indexOf('Chrome') < 0,
+            //dialog building blocks
+            templates = {
+                dimmer:'<div class="ajs-dimmer"></div>',
+                /*tab index required to fire click event before body focus*/
+                modal: '<div class="ajs-modal" tabindex="0"></div>',
+                dialog: '<div class="ajs-dialog" tabindex="0"></div>',
+                reset: '<button class="ajs-reset"></button>',
+                commands: '<div class="ajs-commands"><button class="ajs-pin"></button><button class="ajs-maximize"></button><button class="ajs-close"></button></div>',
+                header: '<div class="ajs-header"></div>',
+                body: '<div class="ajs-body"></div>',
+                content: '<div class="ajs-content"></div>',
+                footer: '<div class="ajs-footer"></div>',
+                buttons: { primary: '<div class="ajs-primary ajs-buttons"></div>', auxiliary: '<div class="ajs-auxiliary ajs-buttons"></div>' },
+                button: '<button class="ajs-button"></button>',
+                resizeHandle: '<div class="ajs-handle"></div>',
+            },
+            //common class names
+            classes = {
+                animationIn: 'ajs-in',
+                animationOut: 'ajs-out',
+                base: 'alertify',
+                basic:'ajs-basic',
+                capture: 'ajs-capture',
+                closable:'ajs-closable',
+                fixed: 'ajs-fixed',
+                frameless:'ajs-frameless',
+                hidden: 'ajs-hidden',
+                maximize: 'ajs-maximize',
+                maximized: 'ajs-maximized',
+                maximizable:'ajs-maximizable',
+                modeless: 'ajs-modeless',
+                movable: 'ajs-movable',
+                noSelection: 'ajs-no-selection',
+                noOverflow: 'ajs-no-overflow',
+                noPadding:'ajs-no-padding',
+                pin:'ajs-pin',
+                pinnable:'ajs-pinnable',
+                prefix: 'ajs-',
+                resizable: 'ajs-resizable',
+                restore: 'ajs-restore',
+                shake:'ajs-shake',
+                unpinned:'ajs-unpinned',
+            };
+
+        /**
+         * Helper: initializes the dialog instance
+         * 
+         * @return	{Number}	The total count of currently open modals.
+         */
+        function initialize(instance){
+            
+            if(!instance.__internal){
+
+                //no need to expose init after this.
+                delete instance.__init;
+              
+                //keep a copy of initial dialog settings
+                if(!instance.__settings){
+                    instance.__settings = copy(instance.settings);
+                }
+                
+                //get dialog buttons/focus setup
+                var setup;
+                if(typeof instance.setup === 'function'){
+                    setup = instance.setup();
+                    setup.options = setup.options  || {};
+                    setup.focus = setup.focus  || {};
+                }else{
+                    setup = {
+                        buttons:[],
+                        focus:{
+                            element:null,
+                            select:false
+                        },
+                        options:{
+                        }
+                    };
+                }
+                
+                //initialize hooks object.
+                if(typeof instance.hooks !== 'object'){
+                    instance.hooks = {};
+                }
+
+                //copy buttons defintion
+                var buttonsDefinition = [];
+                if(Array.isArray(setup.buttons)){
+                    for(var b=0;b<setup.buttons.length;b+=1){
+                        var ref  = setup.buttons[b],
+                            cpy = {};
+                        for (var i in ref) {
+                            if (ref.hasOwnProperty(i)) {
+                                cpy[i] = ref[i];
+                            }
+                        }
+                        buttonsDefinition.push(cpy);
+                    }
+                }
+
+                var internal = instance.__internal = {
+                    /**
+                     * Flag holding the open state of the dialog
+                     * 
+                     * @type {Boolean}
+                     */
+                    isOpen:false,
+                    /**
+                     * Active element is the element that will receive focus after
+                     * closing the dialog. It defaults as the body tag, but gets updated
+                     * to the last focused element before the dialog was opened.
+                     *
+                     * @type {Node}
+                     */
+                    activeElement:document.body,
+                    timerIn:undefined,
+                    timerOut:undefined,
+                    buttons: buttonsDefinition,
+                    focus: setup.focus,
+                    options: {
+                        title: undefined,
+                        modal: undefined,
+                        basic:undefined,
+                        frameless:undefined,
+                        pinned: undefined,
+                        movable: undefined,
+                        moveBounded:undefined,
+                        resizable: undefined,
+                        autoReset: undefined,
+                        closable: undefined,
+                        closableByDimmer: undefined,
+                        maximizable: undefined,
+                        startMaximized: undefined,
+                        pinnable: undefined,
+                        transition: undefined,
+                        padding:undefined,
+                        overflow:undefined,
+                        onshow:undefined,
+                        onclosing:undefined,
+                        onclose:undefined,
+                        onfocus:undefined,
+                        onmove:undefined,
+                        onmoved:undefined,
+                        onresize:undefined,
+                        onresized:undefined,
+                        onmaximize:undefined,
+                        onmaximized:undefined,
+                        onrestore:undefined,
+                        onrestored:undefined
+                    },
+                    resetHandler:undefined,
+                    beginMoveHandler:undefined,
+                    beginResizeHandler:undefined,
+                    bringToFrontHandler:undefined,
+                    modalClickHandler:undefined,
+                    buttonsClickHandler:undefined,
+                    commandsClickHandler:undefined,
+                    transitionInHandler:undefined,
+                    transitionOutHandler:undefined,
+                    destroy:undefined
+                };
+
+                var elements = {};
+                //root node
+                elements.root = document.createElement('div');
+                //prevent FOUC in case of async styles loading.
+                elements.root.style.display = 'none';
+                elements.root.className = classes.base + ' ' + classes.hidden + ' ';
+
+                elements.root.innerHTML = templates.dimmer + templates.modal;
+                
+                //dimmer
+                elements.dimmer = elements.root.firstChild;
+
+                //dialog
+                elements.modal = elements.root.lastChild;
+                elements.modal.innerHTML = templates.dialog;
+                elements.dialog = elements.modal.firstChild;
+                elements.dialog.innerHTML = templates.reset + templates.commands + templates.header + templates.body + templates.footer + templates.resizeHandle + templates.reset;
+
+                //reset links
+                elements.reset = [];
+                elements.reset.push(elements.dialog.firstChild);
+                elements.reset.push(elements.dialog.lastChild);
+                
+                //commands
+                elements.commands = {};
+                elements.commands.container = elements.reset[0].nextSibling;
+                elements.commands.pin = elements.commands.container.firstChild;
+                elements.commands.maximize = elements.commands.pin.nextSibling;
+                elements.commands.close = elements.commands.maximize.nextSibling;
+                
+                //header
+                elements.header = elements.commands.container.nextSibling;
+
+                //body
+                elements.body = elements.header.nextSibling;
+                elements.body.innerHTML = templates.content;
+                elements.content = elements.body.firstChild;
+
+                //footer
+                elements.footer = elements.body.nextSibling;
+                elements.footer.innerHTML = templates.buttons.auxiliary + templates.buttons.primary;
+                
+                //resize handle
+                elements.resizeHandle = elements.footer.nextSibling;
+
+                //buttons
+                elements.buttons = {};
+                elements.buttons.auxiliary = elements.footer.firstChild;
+                elements.buttons.primary = elements.buttons.auxiliary.nextSibling;
+                elements.buttons.primary.innerHTML = templates.button;
+                elements.buttonTemplate = elements.buttons.primary.firstChild;
+                //remove button template
+                elements.buttons.primary.removeChild(elements.buttonTemplate);
+                               
+                for(var x=0; x < instance.__internal.buttons.length; x+=1) {
+                    var button = instance.__internal.buttons[x];
+                    
+                    // add to the list of used keys.
+                    if(usedKeys.indexOf(button.key) < 0){
+                        usedKeys.push(button.key);
+                    }
+
+                    button.element = elements.buttonTemplate.cloneNode();
+                    button.element.innerHTML = button.text;
+                    if(typeof button.className === 'string' &&  button.className !== ''){
+                        addClass(button.element, button.className);
+                    }
+                    for(var key in button.attrs){
+                        if(key !== 'className' && button.attrs.hasOwnProperty(key)){
+                            button.element.setAttribute(key, button.attrs[key]);
+                        }
+                    }
+                    if(button.scope === 'auxiliary'){
+                        elements.buttons.auxiliary.appendChild(button.element);
+                    }else{
+                        elements.buttons.primary.appendChild(button.element);
+                    }
+                }
+                //make elements pubic
+                instance.elements = elements;
+                
+                //save event handlers delegates
+                internal.resetHandler = delegate(instance, onReset);
+                internal.beginMoveHandler = delegate(instance, beginMove);
+                internal.beginResizeHandler = delegate(instance, beginResize);
+                internal.bringToFrontHandler = delegate(instance, bringToFront);
+                internal.modalClickHandler = delegate(instance, modalClickHandler);
+                internal.buttonsClickHandler = delegate(instance, buttonsClickHandler);
+                internal.commandsClickHandler = delegate(instance, commandsClickHandler);
+                internal.transitionInHandler = delegate(instance, handleTransitionInEvent);
+                internal.transitionOutHandler = delegate(instance, handleTransitionOutEvent);
+
+                //settings
+                for(var opKey in internal.options){
+                    if(setup.options[opKey] !== undefined){
+                        // if found in user options
+                        instance.set(opKey, setup.options[opKey]);
+                    }else if(alertify.defaults.hasOwnProperty(opKey)) {
+                        // else if found in defaults options
+                        instance.set(opKey, alertify.defaults[opKey]);
+                    }else if(opKey === 'title' ) {
+                        // else if title key, use alertify.defaults.glossary
+                        instance.set(opKey, alertify.defaults.glossary[opKey]);
+                    }
+                }
+
+                // allow dom customization
+                if(typeof instance.build === 'function'){
+                    instance.build();
+                }
+            }
+            
+            //add to the end of the DOM tree.
+            document.body.appendChild(instance.elements.root);
+        }
+
+        /**
+         * Helper: maintains scroll position
+         *
+         */
+        var scrollX, scrollY;
+        function saveScrollPosition(){
+            scrollX = getScrollLeft();
+            scrollY = getScrollTop();
+        }
+        function restoreScrollPosition(){
+            window.scrollTo(scrollX, scrollY);
+        }
+
+        /**
+         * Helper: adds/removes no-overflow class from body
+         *
+         */
+        function ensureNoOverflow(){
+            var requiresNoOverflow = 0;
+            for(var x=0;x<openDialogs.length;x+=1){
+                var instance = openDialogs[x];
+                if(instance.isModal() || instance.isMaximized()){
+                    requiresNoOverflow+=1;
+                }
+            }
+            if(requiresNoOverflow === 0 && document.body.className.indexOf(classes.noOverflow) >= 0){
+                //last open modal or last maximized one
+                removeClass(document.body, classes.noOverflow);
+                preventBodyShift(false);
+            }else if(requiresNoOverflow > 0 && document.body.className.indexOf(classes.noOverflow) < 0){
+                //first open modal or first maximized one
+                preventBodyShift(true);
+                addClass(document.body, classes.noOverflow);
+            }
+        }
+        var top = '', topScroll = 0;
+        /**
+         * Helper: prevents body shift.
+         *
+         */
+        function preventBodyShift(add){
+            if(alertify.defaults.preventBodyShift){
+                if(add && document.documentElement.scrollHeight > document.documentElement.clientHeight ){//&& openDialogs[openDialogs.length-1].elements.dialog.clientHeight <= document.documentElement.clientHeight){
+                    topScroll = scrollY;
+                    top = window.getComputedStyle(document.body).top;
+                    addClass(document.body, classes.fixed);
+                    document.body.style.top = -scrollY + 'px';
+                } else if(!add) {
+                    scrollY = topScroll;
+                    document.body.style.top = top;
+                    removeClass(document.body, classes.fixed);
+                    restoreScrollPosition();
+                }
+            }
+        }
+		
+        /**
+         * Sets the name of the transition used to show/hide the dialog
+         * 
+         * @param {Object} instance The dilog instance.
+         *
+         */
+        function updateTransition(instance, value, oldValue){
+            if(typeof oldValue === 'string'){
+                removeClass(instance.elements.root,classes.prefix +  oldValue);
+            }
+            addClass(instance.elements.root, classes.prefix + value);
+            reflow = instance.elements.root.offsetWidth;
+        }
+		
+        /**
+         * Toggles the dialog display mode
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function updateDisplayMode(instance){
+            if(instance.get('modal')){
+
+                //make modal
+                removeClass(instance.elements.root, classes.modeless);
+
+                //only if open
+                if(instance.isOpen()){
+                    unbindModelessEvents(instance);
+
+                    //in case a pinned modless dialog was made modal while open.
+                    updateAbsPositionFix(instance);
+
+                    ensureNoOverflow();
+                }
+            }else{
+                //make modelss
+                addClass(instance.elements.root, classes.modeless);
+
+                //only if open
+                if(instance.isOpen()){
+                    bindModelessEvents(instance);
+
+                    //in case pin/unpin was called while a modal is open
+                    updateAbsPositionFix(instance);
+
+                    ensureNoOverflow();
+                }
+            }
+        }
+
+        /**
+         * Toggles the dialog basic view mode 
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function updateBasicMode(instance){
+            if (instance.get('basic')) {
+                // add class
+                addClass(instance.elements.root, classes.basic);
+            } else {
+                // remove class
+                removeClass(instance.elements.root, classes.basic);
+            }
+        }
+
+        /**
+         * Toggles the dialog frameless view mode 
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function updateFramelessMode(instance){
+            if (instance.get('frameless')) {
+                // add class
+                addClass(instance.elements.root, classes.frameless);
+            } else {
+                // remove class
+                removeClass(instance.elements.root, classes.frameless);
+            }
+        }
+		
+        /**
+         * Helper: Brings the modeless dialog to front, attached to modeless dialogs.
+         *
+         * @param {Event} event Focus event
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function bringToFront(event, instance){
+            
+            // Do not bring to front if preceeded by an open modal
+            var index = openDialogs.indexOf(instance);
+            for(var x=index+1;x<openDialogs.length;x+=1){
+                if(openDialogs[x].isModal()){
+                    return;
+                }
+            }
+			
+            // Bring to front by making it the last child.
+            if(document.body.lastChild !== instance.elements.root){
+                document.body.appendChild(instance.elements.root);
+                //also make sure its at the end of the list
+                openDialogs.splice(openDialogs.indexOf(instance),1);
+                openDialogs.push(instance);
+                setFocus(instance);
+            }
+			
+            return false;
+        }
+		
+        /**
+         * Helper: reflects dialogs options updates
+         *
+         * @param {Object} instance The dilog instance.
+         * @param {String} option The updated option name.
+         *
+         * @return	{undefined}	
+         */
+        function optionUpdated(instance, option, oldValue, newValue){
+            switch(option){
+            case 'title':
+                instance.setHeader(newValue);
+                break;
+            case 'modal':
+                updateDisplayMode(instance);
+                break;
+            case 'basic':
+                updateBasicMode(instance);
+                break;
+            case 'frameless':
+                updateFramelessMode(instance);
+                break;
+            case 'pinned':
+                updatePinned(instance);
+                break;
+            case 'closable':
+                updateClosable(instance);
+                break;
+            case 'maximizable':
+                updateMaximizable(instance);
+                break;
+            case 'pinnable':
+                updatePinnable(instance);
+                break;
+            case 'movable':
+                updateMovable(instance);
+                break;
+            case 'resizable':
+                updateResizable(instance);
+                break;
+            case 'padding':
+                if(newValue){
+                    removeClass(instance.elements.root, classes.noPadding);
+                }else if(instance.elements.root.className.indexOf(classes.noPadding) < 0){
+                    addClass(instance.elements.root, classes.noPadding);
+                }
+                break;
+            case 'overflow':
+                if(newValue){
+                    removeClass(instance.elements.root, classes.noOverflow);
+                }else if(instance.elements.root.className.indexOf(classes.noOverflow) < 0){
+                    addClass(instance.elements.root, classes.noOverflow);
+                }
+                break;
+            case 'transition':
+                updateTransition(instance,newValue, oldValue);
+                break;
+            }
+
+            // internal on option updated event
+            if(typeof instance.hooks.onupdate === 'function'){
+                instance.hooks.onupdate.call(instance, option, oldValue, newValue);
+            }
+        }
+		
+        /**
+         * Helper: reflects dialogs options updates
+         *
+         * @param {Object} instance The dilog instance.
+         * @param {Object} obj The object to set/get a value on/from.
+         * @param {Function} callback The callback function to call if the key was found.
+         * @param {String|Object} key A string specifying a propery name or a collection of key value pairs.
+         * @param {Object} value Optional, the value associated with the key (in case it was a string).
+         * @param {String} option The updated option name.
+         *
+         * @return	{Object} result object 
+         *	The result objects has an 'op' property, indicating of this is a SET or GET operation.
+         *		GET: 
+         *		- found: a flag indicating if the key was found or not.
+         *		- value: the property value.
+         *		SET:
+         *		- items: a list of key value pairs of the properties being set.
+         *				each contains:
+         *					- found: a flag indicating if the key was found or not.
+         *					- key: the property key.
+         *					- value: the property value.
+         */
+        function update(instance, obj, callback, key, value){
+            var result = {op:undefined, items: [] };
+            if(typeof value === 'undefined' && typeof key === 'string') {
+                //get
+                result.op = 'get';
+                if(obj.hasOwnProperty(key)){
+                    result.found = true;
+                    result.value = obj[key];
+                }else{
+                    result.found = false;
+                    result.value = undefined;
+                }
+            }
+            else
+            {
+                var old;
+                //set
+                result.op = 'set';
+                if(typeof key === 'object'){
+                    //set multiple
+                    var args = key;
+                    for (var prop in args) {
+                        if (obj.hasOwnProperty(prop)) {
+                            if(obj[prop] !== args[prop]){
+                                old = obj[prop];
+                                obj[prop] = args[prop];
+                                callback.call(instance,prop, old, args[prop]);
+                            }
+                            result.items.push({ 'key': prop, 'value': args[prop], 'found':true});
+                        }else{
+                            result.items.push({ 'key': prop, 'value': args[prop], 'found':false});
+                        }
+                    }
+                } else if (typeof key === 'string'){
+                    //set single
+                    if (obj.hasOwnProperty(key)) {
+                        if(obj[key] !== value){
+                            old  = obj[key];
+                            obj[key] = value;
+                            callback.call(instance,key, old, value);
+                        }
+                        result.items.push({'key': key, 'value': value , 'found':true});
+
+                    }else{
+                        result.items.push({'key': key, 'value': value , 'found':false});
+                    }
+                } else {
+                    //invalid params
+                    throw new Error('args must be a string or object');
+                }
+            }
+            return result;
+        }
+
+
+        /**
+         * Triggers a close event.
+         *
+         * @param {Object} instance	The dilog instance.
+         * 
+         * @return {undefined}
+         */
+        function triggerClose(instance) {
+            var found;
+            triggerCallback(instance, function (button) {
+                return found = (button.invokeOnClose === true);
+            });
+            //none of the buttons registered as onclose callback
+            //close the dialog
+            if (!found && instance.isOpen()) {
+                instance.close();
+            }
+        }
+
+        /**
+         * Dialogs commands event handler, attached to the dialog commands element.
+         *
+         * @param {Event} event	DOM event object.
+         * @param {Object} instance	The dilog instance.
+         * 
+         * @return {undefined}
+         */
+        function commandsClickHandler(event, instance) {
+            var target = event.srcElement || event.target;
+            switch (target) {
+            case instance.elements.commands.pin:
+                if (!instance.isPinned()) {
+                    pin(instance);
+                } else {
+                    unpin(instance);
+                }
+                break;
+            case instance.elements.commands.maximize:
+                if (!instance.isMaximized()) {
+                    maximize(instance);
+                } else {
+                    restore(instance);
+                }
+                break;
+            case instance.elements.commands.close:
+                triggerClose(instance);
+                break;
+            }
+            return false;
+        }
+
+        /**
+         * Helper: pins the modeless dialog.
+         *
+         * @param {Object} instance	The dialog instance.
+         * 
+         * @return {undefined}
+         */
+        function pin(instance) {
+            //pin the dialog
+            instance.set('pinned', true);
+        }
+
+        /**
+         * Helper: unpins the modeless dialog.
+         *
+         * @param {Object} instance	The dilog instance.
+         * 
+         * @return {undefined}
+         */
+        function unpin(instance) {
+            //unpin the dialog 
+            instance.set('pinned', false);
+        }
+
+
+        /**
+         * Helper: enlarges the dialog to fill the entire screen.
+         *
+         * @param {Object} instance	The dilog instance.
+         * 
+         * @return {undefined}
+         */
+        function maximize(instance) {
+            // allow custom `onmaximize` method
+            dispatchEvent('onmaximize', instance);
+            //maximize the dialog 
+            addClass(instance.elements.root, classes.maximized);
+            if (instance.isOpen()) {
+                ensureNoOverflow();
+            }
+            // allow custom `onmaximized` method
+            dispatchEvent('onmaximized', instance);
+        }
+
+        /**
+         * Helper: returns the dialog to its former size.
+         *
+         * @param {Object} instance	The dilog instance.
+         * 
+         * @return {undefined}
+         */
+        function restore(instance) {
+            // allow custom `onrestore` method
+            dispatchEvent('onrestore', instance);
+            //maximize the dialog 
+            removeClass(instance.elements.root, classes.maximized);
+            if (instance.isOpen()) {
+                ensureNoOverflow();
+            }
+            // allow custom `onrestored` method
+            dispatchEvent('onrestored', instance);
+        }
+
+        /**
+         * Show or hide the maximize box.
+         *
+         * @param {Object} instance The dilog instance.
+         * @param {Boolean} on True to add the behavior, removes it otherwise.
+         *
+         * @return {undefined}
+         */
+        function updatePinnable(instance) {
+            if (instance.get('pinnable')) {
+                // add class
+                addClass(instance.elements.root, classes.pinnable);
+            } else {
+                // remove class
+                removeClass(instance.elements.root, classes.pinnable);
+            }
+        }
+
+        /**
+         * Helper: Fixes the absolutly positioned modal div position.
+         *
+         * @param {Object} instance The dialog instance.
+         *
+         * @return {undefined}
+         */
+        function addAbsPositionFix(instance) {
+            var scrollLeft = getScrollLeft();
+            instance.elements.modal.style.marginTop = getScrollTop() + 'px';
+            instance.elements.modal.style.marginLeft = scrollLeft + 'px';
+            instance.elements.modal.style.marginRight = (-scrollLeft) + 'px';
+        }
+
+        /**
+         * Helper: Removes the absolutly positioned modal div position fix.
+         *
+         * @param {Object} instance The dialog instance.
+         *
+         * @return {undefined}
+         */
+        function removeAbsPositionFix(instance) {
+            var marginTop = parseInt(instance.elements.modal.style.marginTop, 10);
+            var marginLeft = parseInt(instance.elements.modal.style.marginLeft, 10);
+            instance.elements.modal.style.marginTop = '';
+            instance.elements.modal.style.marginLeft = '';
+            instance.elements.modal.style.marginRight = '';
+
+            if (instance.isOpen()) {
+                var top = 0,
+                    left = 0
+                ;
+                if (instance.elements.dialog.style.top !== '') {
+                    top = parseInt(instance.elements.dialog.style.top, 10);
+                }
+                instance.elements.dialog.style.top = (top + (marginTop - getScrollTop())) + 'px';
+
+                if (instance.elements.dialog.style.left !== '') {
+                    left = parseInt(instance.elements.dialog.style.left, 10);
+                }
+                instance.elements.dialog.style.left = (left + (marginLeft - getScrollLeft())) + 'px';
+            }
+        }
+        /**
+         * Helper: Adds/Removes the absolutly positioned modal div position fix based on its pinned setting.
+         *
+         * @param {Object} instance The dialog instance.
+         *
+         * @return {undefined}
+         */
+        function updateAbsPositionFix(instance) {
+            // if modeless and unpinned add fix
+            if (!instance.get('modal') && !instance.get('pinned')) {
+                addAbsPositionFix(instance);
+            } else {
+                removeAbsPositionFix(instance);
+            }
+        }
+        /**
+         * Toggles the dialog position lock | modeless only.
+         *
+         * @param {Object} instance The dilog instance.
+         * @param {Boolean} on True to make it modal, false otherwise.
+         *
+         * @return {undefined}
+         */
+        function updatePinned(instance) {
+            if (instance.get('pinned')) {
+                removeClass(instance.elements.root, classes.unpinned);
+                if (instance.isOpen()) {
+                    removeAbsPositionFix(instance);
+                }
+            } else {
+                addClass(instance.elements.root, classes.unpinned);
+                if (instance.isOpen() && !instance.isModal()) {
+                    addAbsPositionFix(instance);
+                }
+            }
+        }
+
+        /**
+         * Show or hide the maximize box.
+         *
+         * @param {Object} instance The dilog instance.
+         * @param {Boolean} on True to add the behavior, removes it otherwise.
+         *
+         * @return {undefined}
+         */
+        function updateMaximizable(instance) {
+            if (instance.get('maximizable')) {
+                // add class
+                addClass(instance.elements.root, classes.maximizable);
+            } else {
+                // remove class
+                removeClass(instance.elements.root, classes.maximizable);
+            }
+        }
+
+        /**
+         * Show or hide the close box.
+         *
+         * @param {Object} instance The dilog instance.
+         * @param {Boolean} on True to add the behavior, removes it otherwise.
+         *
+         * @return {undefined}
+         */
+        function updateClosable(instance) {
+            if (instance.get('closable')) {
+                // add class
+                addClass(instance.elements.root, classes.closable);
+                bindClosableEvents(instance);
+            } else {
+                // remove class
+                removeClass(instance.elements.root, classes.closable);
+                unbindClosableEvents(instance);
+            }
+        }
+
+        
+        var cancelClick = false,// flag to cancel click event if already handled by end resize event (the mousedown, mousemove, mouseup sequence fires a click event.).
+            modalClickHandlerTS=0 // stores last click timestamp to prevent executing the handler twice on double click.
+            ;
+
+        /**
+         * Helper: closes the modal dialog when clicking the modal
+         *
+         * @param {Event} event	DOM event object.
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function modalClickHandler(event, instance) {
+            if(event.timeStamp - modalClickHandlerTS > 200 && (modalClickHandlerTS = event.timeStamp) && !cancelClick){
+                var target = event.srcElement || event.target;
+                if (instance.get('closableByDimmer') === true && target === instance.elements.modal) {
+                    triggerClose(instance);
+                }
+                cancelClick = false;
+                return false;
+            }
+        }
+
+        // stores last call timestamp to prevent triggering the callback twice.
+        var callbackTS = 0;
+        // flag to cancel keyup event if already handled by click event (pressing Enter on a focusted button).
+        var cancelKeyup = false;
+        /** 
+         * Helper: triggers a button callback
+         *
+         * @param {Object}		The dilog instance.
+         * @param {Function}	Callback to check which button triggered the event.
+         *
+         * @return {undefined}
+         */
+        function triggerCallback(instance, check) {
+            if(Date.now() - callbackTS > 200 && (callbackTS = Date.now())){
+                for (var idx = 0; idx < instance.__internal.buttons.length; idx += 1) {
+                    var button = instance.__internal.buttons[idx];
+                    if (!button.element.disabled && check(button)) {
+                        var closeEvent = createCloseEvent(idx, button);
+                        if (typeof instance.callback === 'function') {
+                            instance.callback.apply(instance, [closeEvent]);
+                        }
+                        //close the dialog only if not canceled.
+                        if (closeEvent.cancel === false) {
+                            instance.close();
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        /**
+         * Clicks event handler, attached to the dialog footer.
+         *
+         * @param {Event}		DOM event object.
+         * @param {Object}		The dilog instance.
+         * 
+         * @return {undefined}
+         */
+        function buttonsClickHandler(event, instance) {
+            var target = event.srcElement || event.target;
+            triggerCallback(instance, function (button) {
+                // if this button caused the click, cancel keyup event
+                return button.element === target && (cancelKeyup = true);
+            });
+        }
+
+        /**
+         * Keyup event handler, attached to the document.body
+         *
+         * @param {Event}		DOM event object.
+         * @param {Object}		The dilog instance.
+         * 
+         * @return {undefined}
+         */
+        function keyupHandler(event) {
+            //hitting enter while button has focus will trigger keyup too.
+            //ignore if handled by clickHandler
+            if (cancelKeyup) {
+                cancelKeyup = false;
+                return;
+            }
+            var instance = openDialogs[openDialogs.length - 1];
+            var keyCode = event.keyCode;
+            if (instance.__internal.buttons.length === 0 && keyCode === keys.ESC && instance.get('closable') === true) {
+                triggerClose(instance);
+                return false;
+            }else if (usedKeys.indexOf(keyCode) > -1) {
+                triggerCallback(instance, function (button) {
+                    return button.key === keyCode;
+                });
+                return false;
+            }
+        }
+        /**
+        * Keydown event handler, attached to the document.body
+        *
+        * @param {Event}		DOM event object.
+        * @param {Object}		The dilog instance.
+        * 
+        * @return {undefined}
+        */
+        function keydownHandler(event) {
+            var instance = openDialogs[openDialogs.length - 1];
+            var keyCode = event.keyCode;
+            if (keyCode === keys.LEFT || keyCode === keys.RIGHT) {
+                var buttons = instance.__internal.buttons;
+                for (var x = 0; x < buttons.length; x += 1) {
+                    if (document.activeElement === buttons[x].element) {
+                        switch (keyCode) {
+                        case keys.LEFT:
+                            buttons[(x || buttons.length) - 1].element.focus();
+                            return;
+                        case keys.RIGHT:
+                            buttons[(x + 1) % buttons.length].element.focus();
+                            return;
+                        }
+                    }
+                }
+            }else if (keyCode < keys.F12 + 1 && keyCode > keys.F1 - 1 && usedKeys.indexOf(keyCode) > -1) {
+                event.preventDefault();
+                event.stopPropagation();
+                triggerCallback(instance, function (button) {
+                    return button.key === keyCode;
+                });
+                return false;
+            }
+        }
+
+
+        /**
+         * Sets focus to proper dialog element
+         *
+         * @param {Object} instance The dilog instance.
+         * @param {Node} [resetTarget=undefined] DOM element to reset focus to.
+         *
+         * @return {undefined}
+         */
+        function setFocus(instance, resetTarget) {
+            // reset target has already been determined.
+            if (resetTarget) {
+                resetTarget.focus();
+            } else {
+                // current instance focus settings
+                var focus = instance.__internal.focus;
+                // the focus element.
+                var element = focus.element;
+
+                switch (typeof focus.element) {
+                // a number means a button index
+                case 'number':
+                    if (instance.__internal.buttons.length > focus.element) {
+                        //in basic view, skip focusing the buttons.
+                        if (instance.get('basic') === true) {
+                            element = instance.elements.reset[0];
+                        } else {
+                            element = instance.__internal.buttons[focus.element].element;
+                        }
+                    }
+                    break;
+                // a string means querySelector to select from dialog body contents.
+                case 'string':
+                    element = instance.elements.body.querySelector(focus.element);
+                    break;
+                // a function should return the focus element.
+                case 'function':
+                    element = focus.element.call(instance);
+                    break;
+                }
+                
+                // if no focus element, default to first reset element.
+                if ((typeof element === 'undefined' || element === null) && instance.__internal.buttons.length === 0) {
+                    element = instance.elements.reset[0];
+                }
+                // focus
+                if (element && element.focus) {
+                    element.focus();
+                    // if selectable
+                    if (focus.select && element.select) {
+                        element.select();
+                    }
+                }
+            }
+        }
+
+        /**
+         * Focus event handler, attached to document.body and dialogs own reset links.
+         * handles the focus for modal dialogs only.
+         *
+         * @param {Event} event DOM focus event object.
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function onReset(event, instance) {
+
+            // should work on last modal if triggered from document.body 
+            if (!instance) {
+                for (var x = openDialogs.length - 1; x > -1; x -= 1) {
+                    if (openDialogs[x].isModal()) {
+                        instance = openDialogs[x];
+                        break;
+                    }
+                }
+            }
+            // if modal
+            if (instance && instance.isModal()) {
+                // determine reset target to enable forward/backward tab cycle.
+                var resetTarget, target = event.srcElement || event.target;
+                var lastResetElement = target === instance.elements.reset[1] || (instance.__internal.buttons.length === 0 && target === document.body);
+
+                // if last reset link, then go to maximize or close
+                if (lastResetElement) {
+                    if (instance.get('maximizable')) {
+                        resetTarget = instance.elements.commands.maximize;
+                    } else if (instance.get('closable')) {
+                        resetTarget = instance.elements.commands.close;
+                    }
+                }
+                // if no reset target found, try finding the best button
+                if (resetTarget === undefined) {
+                    if (typeof instance.__internal.focus.element === 'number') {
+                        // button focus element, go to first available button
+                        if (target === instance.elements.reset[0]) {
+                            resetTarget = instance.elements.buttons.auxiliary.firstChild || instance.elements.buttons.primary.firstChild;
+                        } else if (lastResetElement) {
+                            //restart the cycle by going to first reset link
+                            resetTarget = instance.elements.reset[0];
+                        }
+                    } else {
+                        // will reach here when tapping backwards, so go to last child
+                        // The focus element SHOULD NOT be a button (logically!).
+                        if (target === instance.elements.reset[0]) {
+                            resetTarget = instance.elements.buttons.primary.lastChild || instance.elements.buttons.auxiliary.lastChild;
+                        }
+                    }
+                }
+                // focus
+                setFocus(instance, resetTarget);
+            }
+        }
+        /**
+         * Transition in transitionend event handler. 
+         *
+         * @param {Event}		TransitionEnd event object.
+         * @param {Object}		The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function handleTransitionInEvent(event, instance) {
+            // clear the timer
+            clearTimeout(instance.__internal.timerIn);
+
+            // once transition is complete, set focus
+            setFocus(instance);
+
+            //restore scroll to prevent document jump
+            restoreScrollPosition();
+
+            // allow handling key up after transition ended.
+            cancelKeyup = false;
+
+            // allow custom `onfocus` method
+            dispatchEvent('onfocus', instance);
+
+            // unbind the event
+            off(instance.elements.dialog, transition.type, instance.__internal.transitionInHandler);
+
+            removeClass(instance.elements.root, classes.animationIn);
+        }
+
+        /**
+         * Transition out transitionend event handler. 
+         *
+         * @param {Event}		TransitionEnd event object.
+         * @param {Object}		The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function handleTransitionOutEvent(event, instance) {
+            // clear the timer
+            clearTimeout(instance.__internal.timerOut);
+            // unbind the event
+            off(instance.elements.dialog, transition.type, instance.__internal.transitionOutHandler);
+
+            // reset move updates
+            resetMove(instance);
+            // reset resize updates
+            resetResize(instance);
+
+            // restore if maximized
+            if (instance.isMaximized() && !instance.get('startMaximized')) {
+                restore(instance);
+            }
+
+            // return focus to the last active element
+            if (alertify.defaults.maintainFocus && instance.__internal.activeElement) {
+                instance.__internal.activeElement.focus();
+                instance.__internal.activeElement = null;
+            }
+            
+            //destory the instance
+            if (typeof instance.__internal.destroy === 'function') {
+                instance.__internal.destroy.apply(instance);
+            }
+        }
+        /* Controls moving a dialog around */
+        //holde the current moving instance
+        var movable = null,
+            //holds the current X offset when move starts
+            offsetX = 0,
+            //holds the current Y offset when move starts
+            offsetY = 0,
+            xProp = 'pageX',
+            yProp = 'pageY',
+            bounds = null,
+            refreshTop = false,
+            moveDelegate = null
+        ;
+
+        /**
+         * Helper: sets the element top/left coordinates
+         *
+         * @param {Event} event	DOM event object.
+         * @param {Node} element The element being moved.
+         * 
+         * @return {undefined}
+         */
+        function moveElement(event, element) {
+            var left = (event[xProp] - offsetX),
+                top  = (event[yProp] - offsetY);
+
+            if(refreshTop){
+                top -= document.body.scrollTop;
+            }
+           
+            element.style.left = left + 'px';
+            element.style.top = top + 'px';
+           
+        }
+        /**
+         * Helper: sets the element top/left coordinates within screen bounds
+         *
+         * @param {Event} event	DOM event object.
+         * @param {Node} element The element being moved.
+         * 
+         * @return {undefined}
+         */
+        function moveElementBounded(event, element) {
+            var left = (event[xProp] - offsetX),
+                top  = (event[yProp] - offsetY);
+
+            if(refreshTop){
+                top -= document.body.scrollTop;
+            }
+            
+            element.style.left = Math.min(bounds.maxLeft, Math.max(bounds.minLeft, left)) + 'px';
+            if(refreshTop){
+                element.style.top = Math.min(bounds.maxTop, Math.max(bounds.minTop, top)) + 'px';
+            }else{
+                element.style.top = Math.max(bounds.minTop, top) + 'px';
+            }
+        }
+            
+
+        /**
+         * Triggers the start of a move event, attached to the header element mouse down event.
+         * Adds no-selection class to the body, disabling selection while moving.
+         *
+         * @param {Event} event	DOM event object.
+         * @param {Object} instance The dilog instance.
+         * 
+         * @return {Boolean} false
+         */
+        function beginMove(event, instance) {
+            if (resizable === null && !instance.isMaximized() && instance.get('movable')) {
+                var eventSrc, left=0, top=0;
+                if (event.type === 'touchstart') {
+                    event.preventDefault();
+                    eventSrc = event.targetTouches[0];
+                    xProp = 'clientX';
+                    yProp = 'clientY';
+                } else if (event.button === 0) {
+                    eventSrc = event;
+                }
+
+                if (eventSrc) {
+
+                    var element = instance.elements.dialog;
+                    addClass(element, classes.capture);
+
+                    if (element.style.left) {
+                        left = parseInt(element.style.left, 10);
+                    }
+
+                    if (element.style.top) {
+                        top = parseInt(element.style.top, 10);
+                    }
+                    
+                    offsetX = eventSrc[xProp] - left;
+                    offsetY = eventSrc[yProp] - top;
+
+                    if(instance.isModal()){
+                        offsetY += instance.elements.modal.scrollTop;
+                    }else if(instance.isPinned()){
+                        offsetY -= document.body.scrollTop;
+                    }
+                    
+                    if(instance.get('moveBounded')){
+                        var current = element,
+                            offsetLeft = -left,
+                            offsetTop = -top;
+                        
+                        //calc offset
+                        do {
+                            offsetLeft += current.offsetLeft;
+                            offsetTop += current.offsetTop;
+                        } while (current = current.offsetParent);
+                        
+                        bounds = {
+                            maxLeft : offsetLeft,
+                            minLeft : -offsetLeft,
+                            maxTop  : document.documentElement.clientHeight - element.clientHeight - offsetTop,
+                            minTop  : -offsetTop
+                        };
+                        moveDelegate = moveElementBounded;
+                    }else{
+                        bounds = null;
+                        moveDelegate = moveElement;
+                    }
+                    
+                    // allow custom `onmove` method
+                    dispatchEvent('onmove', instance);
+
+                    refreshTop = !instance.isModal() && instance.isPinned();
+                    movable = instance;
+                    moveDelegate(eventSrc, element);
+                    addClass(document.body, classes.noSelection);
+                    return false;
+                }
+            }
+        }
+
+        /**
+         * The actual move handler,  attached to document.body mousemove event.
+         *
+         * @param {Event} event	DOM event object.
+         * 
+         * @return {undefined}
+         */
+        function move(event) {
+            if (movable) {
+                var eventSrc;
+                if (event.type === 'touchmove') {
+                    event.preventDefault();
+                    eventSrc = event.targetTouches[0];
+                } else if (event.button === 0) {
+                    eventSrc = event;
+                }
+                if (eventSrc) {
+                    moveDelegate(eventSrc, movable.elements.dialog);
+                }
+            }
+        }
+
+        /**
+         * Triggers the end of a move event,  attached to document.body mouseup event.
+         * Removes no-selection class from document.body, allowing selection.
+         *
+         * @return {undefined}
+         */
+        function endMove() {
+            if (movable) {
+                var instance = movable;
+                movable = bounds = null;
+                removeClass(document.body, classes.noSelection);
+                removeClass(instance.elements.dialog, classes.capture);
+                // allow custom `onmoved` method
+                dispatchEvent('onmoved', instance);
+            }
+        }
+
+        /**
+         * Resets any changes made by moving the element to its original state,
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function resetMove(instance) {
+            movable = null;
+            var element = instance.elements.dialog;
+            element.style.left = element.style.top = '';
+        }
+
+        /**
+         * Updates the dialog move behavior.
+         *
+         * @param {Object} instance The dilog instance.
+         * @param {Boolean} on True to add the behavior, removes it otherwise.
+         *
+         * @return {undefined}
+         */
+        function updateMovable(instance) {
+            if (instance.get('movable')) {
+                // add class
+                addClass(instance.elements.root, classes.movable);
+                if (instance.isOpen()) {
+                    bindMovableEvents(instance);
+                }
+            } else {
+
+                //reset
+                resetMove(instance);
+                // remove class
+                removeClass(instance.elements.root, classes.movable);
+                if (instance.isOpen()) {
+                    unbindMovableEvents(instance);
+                }
+            }
+        }
+
+        /* Controls moving a dialog around */
+        //holde the current instance being resized		
+        var resizable = null,
+            //holds the staring left offset when resize starts.
+            startingLeft = Number.Nan,
+            //holds the staring width when resize starts.
+            startingWidth = 0,
+            //holds the initial width when resized for the first time.
+            minWidth = 0,
+            //holds the offset of the resize handle.
+            handleOffset = 0
+        ;
+
+        /**
+         * Helper: sets the element width/height and updates left coordinate if neccessary.
+         *
+         * @param {Event} event	DOM mousemove event object.
+         * @param {Node} element The element being moved.
+         * @param {Boolean} pinned A flag indicating if the element being resized is pinned to the screen.
+         * 
+         * @return {undefined}
+         */
+        function resizeElement(event, element, pageRelative) {
+
+            //calculate offsets from 0,0
+            var current = element;
+            var offsetLeft = 0;
+            var offsetTop = 0;
+            do {
+                offsetLeft += current.offsetLeft;
+                offsetTop += current.offsetTop;
+            } while (current = current.offsetParent);
+
+            // determine X,Y coordinates.
+            var X, Y;
+            if (pageRelative === true) {
+                X = event.pageX;
+                Y = event.pageY;
+            } else {
+                X = event.clientX;
+                Y = event.clientY;
+            }
+            // rtl handling
+            var isRTL = isRightToLeft();
+            if (isRTL) {
+                // reverse X 
+                X = document.body.offsetWidth - X;
+                // if has a starting left, calculate offsetRight
+                if (!isNaN(startingLeft)) {
+                    offsetLeft = document.body.offsetWidth - offsetLeft - element.offsetWidth;
+                }
+            }
+
+            // set width/height
+            element.style.height = (Y - offsetTop + handleOffset) + 'px';
+            element.style.width = (X - offsetLeft + handleOffset) + 'px';
+
+            // if the element being resized has a starting left, maintain it.
+            // the dialog is centered, divide by half the offset to maintain the margins.
+            if (!isNaN(startingLeft)) {
+                var diff = Math.abs(element.offsetWidth - startingWidth) * 0.5;
+                if (isRTL) {
+                    //negate the diff, why?
+                    //when growing it should decrease left
+                    //when shrinking it should increase left
+                    diff *= -1;
+                }
+                if (element.offsetWidth > startingWidth) {
+                    //growing
+                    element.style.left = (startingLeft + diff) + 'px';
+                } else if (element.offsetWidth >= minWidth) {
+                    //shrinking
+                    element.style.left = (startingLeft - diff) + 'px';
+                }
+            }
+        }
+
+        /**
+         * Triggers the start of a resize event, attached to the resize handle element mouse down event.
+         * Adds no-selection class to the body, disabling selection while moving.
+         *
+         * @param {Event} event	DOM event object.
+         * @param {Object} instance The dilog instance.
+         * 
+         * @return {Boolean} false
+         */
+        function beginResize(event, instance) {
+            if (!instance.isMaximized()) {
+                var eventSrc;
+                if (event.type === 'touchstart') {
+                    event.preventDefault();
+                    eventSrc = event.targetTouches[0];
+                } else if (event.button === 0) {
+                    eventSrc = event;
+                }
+                if (eventSrc) {
+                    // allow custom `onresize` method
+                    dispatchEvent('onresize', instance);
+                    
+                    resizable = instance;
+                    handleOffset = instance.elements.resizeHandle.offsetHeight / 2;
+                    var element = instance.elements.dialog;
+                    addClass(element, classes.capture);
+                    startingLeft = parseInt(element.style.left, 10);
+                    element.style.height = element.offsetHeight + 'px';
+                    element.style.minHeight = instance.elements.header.offsetHeight + instance.elements.footer.offsetHeight + 'px';
+                    element.style.width = (startingWidth = element.offsetWidth) + 'px';
+
+                    if (element.style.maxWidth !== 'none') {
+                        element.style.minWidth = (minWidth = element.offsetWidth) + 'px';
+                    }
+                    element.style.maxWidth = 'none';
+                    addClass(document.body, classes.noSelection);
+                    return false;
+                }
+            }
+        }
+
+        /**
+         * The actual resize handler,  attached to document.body mousemove event.
+         *
+         * @param {Event} event	DOM event object.
+         * 
+         * @return {undefined}
+         */
+        function resize(event) {
+            if (resizable) {
+                var eventSrc;
+                if (event.type === 'touchmove') {
+                    event.preventDefault();
+                    eventSrc = event.targetTouches[0];
+                } else if (event.button === 0) {
+                    eventSrc = event;
+                }
+                if (eventSrc) {
+                    resizeElement(eventSrc, resizable.elements.dialog, !resizable.get('modal') && !resizable.get('pinned'));
+                }
+            }
+        }
+
+        /**
+         * Triggers the end of a resize event,  attached to document.body mouseup event.
+         * Removes no-selection class from document.body, allowing selection.
+         *
+         * @return {undefined}
+         */
+        function endResize() {
+            if (resizable) {
+                var instance = resizable;
+                resizable = null;
+                removeClass(document.body, classes.noSelection);
+                removeClass(instance.elements.dialog, classes.capture);
+                cancelClick = true;
+                // allow custom `onresized` method
+                dispatchEvent('onresized', instance);
+            }
+        }
+
+        /**
+         * Resets any changes made by resizing the element to its original state.
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function resetResize(instance) {
+            resizable = null;
+            var element = instance.elements.dialog;
+            if (element.style.maxWidth === 'none') {
+                //clear inline styles.
+                element.style.maxWidth = element.style.minWidth = element.style.width = element.style.height = element.style.minHeight = element.style.left = '';
+                //reset variables.
+                startingLeft = Number.Nan;
+                startingWidth = minWidth = handleOffset = 0;
+            }
+        }
+
+
+        /**
+         * Updates the dialog move behavior.
+         *
+         * @param {Object} instance The dilog instance.
+         * @param {Boolean} on True to add the behavior, removes it otherwise.
+         *
+         * @return {undefined}
+         */
+        function updateResizable(instance) {
+            if (instance.get('resizable')) {
+                // add class
+                addClass(instance.elements.root, classes.resizable);
+                if (instance.isOpen()) {
+                    bindResizableEvents(instance);
+                }
+            } else {
+                //reset
+                resetResize(instance);
+                // remove class
+                removeClass(instance.elements.root, classes.resizable);
+                if (instance.isOpen()) {
+                    unbindResizableEvents(instance);
+                }
+            }
+        }
+
+        /**
+         * Reset move/resize on window resize.
+         *
+         * @param {Event} event	window resize event object.
+         *
+         * @return {undefined}
+         */
+        function windowResize(/*event*/) {
+            for (var x = 0; x < openDialogs.length; x += 1) {
+                var instance = openDialogs[x];
+                if (instance.get('autoReset')) {
+                    resetMove(instance);
+                    resetResize(instance);
+                }
+            }
+        }
+        /**
+         * Bind dialogs events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function bindEvents(instance) {
+            // if first dialog, hook global handlers
+            if (openDialogs.length === 1) {
+                //global
+                on(window, 'resize', windowResize);
+                on(document.body, 'keyup', keyupHandler);
+                on(document.body, 'keydown', keydownHandler);
+                on(document.body, 'focus', onReset);
+
+                //move
+                on(document.documentElement, 'mousemove', move);
+                on(document.documentElement, 'touchmove', move);
+                on(document.documentElement, 'mouseup', endMove);
+                on(document.documentElement, 'touchend', endMove);
+                //resize
+                on(document.documentElement, 'mousemove', resize);
+                on(document.documentElement, 'touchmove', resize);
+                on(document.documentElement, 'mouseup', endResize);
+                on(document.documentElement, 'touchend', endResize);
+            }
+
+            // common events
+            on(instance.elements.commands.container, 'click', instance.__internal.commandsClickHandler);
+            on(instance.elements.footer, 'click', instance.__internal.buttonsClickHandler);
+            on(instance.elements.reset[0], 'focus', instance.__internal.resetHandler);
+            on(instance.elements.reset[1], 'focus', instance.__internal.resetHandler);
+
+            //prevent handling key up when dialog is being opened by a key stroke.
+            cancelKeyup = true;
+            // hook in transition handler
+            on(instance.elements.dialog, transition.type, instance.__internal.transitionInHandler);
+
+            // modelss only events
+            if (!instance.get('modal')) {
+                bindModelessEvents(instance);
+            }
+
+            // resizable
+            if (instance.get('resizable')) {
+                bindResizableEvents(instance);
+            }
+
+            // movable
+            if (instance.get('movable')) {
+                bindMovableEvents(instance);
+            }
+        }
+
+        /**
+         * Unbind dialogs events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function unbindEvents(instance) {
+            // if last dialog, remove global handlers
+            if (openDialogs.length === 1) {
+                //global
+                off(window, 'resize', windowResize);
+                off(document.body, 'keyup', keyupHandler);
+                off(document.body, 'keydown', keydownHandler);
+                off(document.body, 'focus', onReset);
+                //move
+                off(document.documentElement, 'mousemove', move);
+                off(document.documentElement, 'mouseup', endMove);
+                //resize
+                off(document.documentElement, 'mousemove', resize);
+                off(document.documentElement, 'mouseup', endResize);
+            }
+
+            // common events
+            off(instance.elements.commands.container, 'click', instance.__internal.commandsClickHandler);
+            off(instance.elements.footer, 'click', instance.__internal.buttonsClickHandler);
+            off(instance.elements.reset[0], 'focus', instance.__internal.resetHandler);
+            off(instance.elements.reset[1], 'focus', instance.__internal.resetHandler);
+
+            // hook out transition handler
+            on(instance.elements.dialog, transition.type, instance.__internal.transitionOutHandler);
+
+            // modelss only events
+            if (!instance.get('modal')) {
+                unbindModelessEvents(instance);
+            }
+
+            // movable
+            if (instance.get('movable')) {
+                unbindMovableEvents(instance);
+            }
+
+            // resizable
+            if (instance.get('resizable')) {
+                unbindResizableEvents(instance);
+            }
+
+        }
+
+        /**
+         * Bind modeless specific events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function bindModelessEvents(instance) {
+            on(instance.elements.dialog, 'focus', instance.__internal.bringToFrontHandler, true);
+        }
+
+        /**
+         * Unbind modeless specific events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function unbindModelessEvents(instance) {
+            off(instance.elements.dialog, 'focus', instance.__internal.bringToFrontHandler, true);
+        }
+
+
+
+        /**
+         * Bind movable specific events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function bindMovableEvents(instance) {
+            on(instance.elements.header, 'mousedown', instance.__internal.beginMoveHandler);
+            on(instance.elements.header, 'touchstart', instance.__internal.beginMoveHandler);
+        }
+
+        /**
+         * Unbind movable specific events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function unbindMovableEvents(instance) {
+            off(instance.elements.header, 'mousedown', instance.__internal.beginMoveHandler);
+            off(instance.elements.header, 'touchstart', instance.__internal.beginMoveHandler);
+        }
+
+
+
+        /**
+         * Bind resizable specific events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function bindResizableEvents(instance) {
+            on(instance.elements.resizeHandle, 'mousedown', instance.__internal.beginResizeHandler);
+            on(instance.elements.resizeHandle, 'touchstart', instance.__internal.beginResizeHandler);
+        }
+
+        /**
+         * Unbind resizable specific events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function unbindResizableEvents(instance) {
+            off(instance.elements.resizeHandle, 'mousedown', instance.__internal.beginResizeHandler);
+            off(instance.elements.resizeHandle, 'touchstart', instance.__internal.beginResizeHandler);
+        }
+
+        /**
+         * Bind closable events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function bindClosableEvents(instance) {
+            on(instance.elements.modal, 'click', instance.__internal.modalClickHandler);
+        }
+
+        /**
+         * Unbind closable specific events
+         *
+         * @param {Object} instance The dilog instance.
+         *
+         * @return {undefined}
+         */
+        function unbindClosableEvents(instance) {
+            off(instance.elements.modal, 'click', instance.__internal.modalClickHandler);
+        }
+        // dialog API
+        return {
+            __init:initialize,
+            /**
+             * Check if dialog is currently open
+             *
+             * @return {Boolean}
+             */
+            isOpen: function () {
+                return this.__internal.isOpen;
+            },
+            isModal: function (){
+                return this.elements.root.className.indexOf(classes.modeless) < 0;
+            },
+            isMaximized:function(){
+                return this.elements.root.className.indexOf(classes.maximized) > -1;
+            },
+            isPinned:function(){
+                return this.elements.root.className.indexOf(classes.unpinned) < 0;
+            },
+            maximize:function(){
+                if(!this.isMaximized()){
+                    maximize(this);
+                }
+                return this;
+            },
+            restore:function(){
+                if(this.isMaximized()){
+                    restore(this);
+                }
+                return this;
+            },
+            pin:function(){
+                if(!this.isPinned()){
+                    pin(this);
+                }
+                return this;
+            },
+            unpin:function(){
+                if(this.isPinned()){
+                    unpin(this);
+                }
+                return this;
+            },
+            bringToFront:function(){
+                bringToFront(null, this);
+                return this;
+            },
+            /**
+             * Move the dialog to a specific x/y coordinates
+             *
+             * @param {Number} x    The new dialog x coordinate in pixels.
+             * @param {Number} y    The new dialog y coordinate in pixels.
+             *
+             * @return {Object} The dialog instance.
+             */
+            moveTo:function(x,y){
+                if(!isNaN(x) && !isNaN(y)){
+                    // allow custom `onmove` method
+                    dispatchEvent('onmove', this);
+                    
+                    var element = this.elements.dialog,
+                        current = element,
+                        offsetLeft = 0,
+                        offsetTop = 0;
+                    
+                    //subtract existing left,top
+                    if (element.style.left) {
+                        offsetLeft -= parseInt(element.style.left, 10);
+                    }
+                    if (element.style.top) {
+                        offsetTop -= parseInt(element.style.top, 10);
+                    }
+                    //calc offset
+                    do {
+                        offsetLeft += current.offsetLeft;
+                        offsetTop += current.offsetTop;
+                    } while (current = current.offsetParent);
+
+                    //calc left, top
+                    var left = (x - offsetLeft);
+                    var top  = (y - offsetTop);
+
+                    //// rtl handling
+                    if (isRightToLeft()) {
+                        left *= -1;
+                    }
+
+                    element.style.left = left + 'px';
+                    element.style.top = top + 'px';
+                    
+                    // allow custom `onmoved` method
+                    dispatchEvent('onmoved', this);
+                }
+                return this;
+            },
+            /**
+             * Resize the dialog to a specific width/height (the dialog must be 'resizable').
+             * The dialog can be resized to:
+             *  A minimum width equal to the initial display width
+             *  A minimum height equal to the sum of header/footer heights.
+             *
+             *
+             * @param {Number or String} width    The new dialog width in pixels or in percent.
+             * @param {Number or String} height   The new dialog height in pixels or in percent.
+             *
+             * @return {Object} The dialog instance.
+             */
+            resizeTo:function(width,height){
+                var w = parseFloat(width),
+                    h = parseFloat(height),
+                    regex = /(\d*\.\d+|\d+)%/
+                ;
+
+                if(!isNaN(w) && !isNaN(h) && this.get('resizable') === true){
+                    
+                    // allow custom `onresize` method
+                    dispatchEvent('onresize', this);
+                    
+                    if(('' + width).match(regex)){
+                        w = w / 100 * document.documentElement.clientWidth ;
+                    }
+
+                    if(('' + height).match(regex)){
+                        h = h / 100 * document.documentElement.clientHeight;
+                    }
+
+                    var element = this.elements.dialog;
+                    if (element.style.maxWidth !== 'none') {
+                        element.style.minWidth = (minWidth = element.offsetWidth) + 'px';
+                    }
+                    element.style.maxWidth = 'none';
+                    element.style.minHeight = this.elements.header.offsetHeight + this.elements.footer.offsetHeight + 'px';
+                    element.style.width = w + 'px';
+                    element.style.height = h + 'px';
+                    
+                    // allow custom `onresized` method
+                    dispatchEvent('onresized', this);
+                }
+                return this;
+            },
+            /**
+             * Gets or Sets dialog settings/options 
+             *
+             * @param {String|Object} key A string specifying a propery name or a collection of key/value pairs.
+             * @param {Object} value Optional, the value associated with the key (in case it was a string).
+             *
+             * @return {undefined}
+             */
+            setting : function (key, value) {
+                var self = this;
+                var result = update(this, this.__internal.options, function(k,o,n){ optionUpdated(self,k,o,n); }, key, value);
+                if(result.op === 'get'){
+                    if(result.found){
+                        return result.value;
+                    }else if(typeof this.settings !== 'undefined'){
+                        return update(this, this.settings, this.settingUpdated || function(){}, key, value).value;
+                    }else{
+                        return undefined;
+                    }
+                }else if(result.op === 'set'){
+                    if(result.items.length > 0){
+                        var callback = this.settingUpdated || function(){};
+                        for(var x=0;x<result.items.length;x+=1){
+                            var item = result.items[x];
+                            if(!item.found && typeof this.settings !== 'undefined'){
+                                update(this, this.settings, callback, item.key, item.value);
+                            }
+                        }
+                    }
+                    return this;
+                }
+            },
+            /**
+             * [Alias] Sets dialog settings/options 
+             */
+            set:function(key, value){
+                this.setting(key,value);
+                return this;
+            },
+            /**
+             * [Alias] Gets dialog settings/options 
+             */
+            get:function(key){
+                return this.setting(key);
+            },
+            /**
+            * Sets dialog header
+            * @content {string or element}
+            *
+            * @return {undefined}
+            */
+            setHeader:function(content){
+                if(typeof content === 'string'){
+                    clearContents(this.elements.header);
+                    this.elements.header.innerHTML = content;
+                }else if (content instanceof window.HTMLElement && this.elements.header.firstChild !== content){
+                    clearContents(this.elements.header);
+                    this.elements.header.appendChild(content);
+                }
+                return this;
+            },
+            /**
+            * Sets dialog contents
+            * @content {string or element}
+            *
+            * @return {undefined}
+            */
+            setContent:function(content){
+                if(typeof content === 'string'){
+                    clearContents(this.elements.content);
+                    this.elements.content.innerHTML = content;
+                }else if (content instanceof window.HTMLElement && this.elements.content.firstChild !== content){
+                    clearContents(this.elements.content);
+                    this.elements.content.appendChild(content);
+                }
+                return this;
+            },
+            /**
+             * Show the dialog as modal
+             *
+             * @return {Object} the dialog instance.
+             */
+            showModal: function(className){
+                return this.show(true, className);
+            },
+            /**
+             * Show the dialog
+             *
+             * @return {Object} the dialog instance.
+             */
+            show: function (modal, className) {
+                
+                // ensure initialization
+                initialize(this);
+
+                if ( !this.__internal.isOpen ) {
+
+                    // add to open dialogs
+                    this.__internal.isOpen = true;
+                    openDialogs.push(this);
+
+                    // save last focused element
+                    if(alertify.defaults.maintainFocus){
+                        this.__internal.activeElement = document.activeElement;
+                    }
+
+                    // set tabindex attribute on body element this allows script to give it focusable
+                    if(!document.body.hasAttribute('tabindex')) {
+                        document.body.setAttribute( 'tabindex', tabindex = '0');
+                    }
+
+                    //allow custom dom manipulation updates before showing the dialog.
+                    if(typeof this.prepare === 'function'){
+                        this.prepare();
+                    }
+
+                    bindEvents(this);
+
+                    if(modal !== undefined){
+                        this.set('modal', modal);
+                    }
+
+                    //save scroll to prevent document jump
+                    saveScrollPosition();
+
+                    ensureNoOverflow();
+
+                    // allow custom dialog class on show
+                    if(typeof className === 'string' && className !== ''){
+                        this.__internal.className = className;
+                        addClass(this.elements.root, className);
+                    }
+
+                    // maximize if start maximized
+                    if ( this.get('startMaximized')) {
+                        this.maximize();
+                    }else if(this.isMaximized()){
+                        restore(this);
+                    }
+
+                    updateAbsPositionFix(this);
+                    this.elements.root.removeAttribute('style');
+                    removeClass(this.elements.root, classes.animationOut);
+                    addClass(this.elements.root, classes.animationIn);
+
+                    // set 1s fallback in case transition event doesn't fire
+                    clearTimeout( this.__internal.timerIn);
+                    this.__internal.timerIn = setTimeout( this.__internal.transitionInHandler, transition.supported ? 1000 : 100 );
+
+                    if(isSafari){
+                        // force desktop safari reflow
+                        var root = this.elements.root;
+                        root.style.display  = 'none';
+                        setTimeout(function(){root.style.display  = 'block';}, 0);
+                    }
+
+                    //reflow
+                    reflow = this.elements.root.offsetWidth;
+                  
+                    // show dialog
+                    removeClass(this.elements.root, classes.hidden);
+
+                    // internal on show event
+                    if(typeof this.hooks.onshow === 'function'){
+                        this.hooks.onshow.call(this);
+                    }
+
+                    // allow custom `onshow` method
+                    dispatchEvent('onshow', this);
+
+                }else{
+                    // reset move updates
+                    resetMove(this);
+                    // reset resize updates
+                    resetResize(this);
+                    // shake the dialog to indicate its already open
+                    addClass(this.elements.dialog, classes.shake);
+                    var self = this;
+                    setTimeout(function(){
+                        removeClass(self.elements.dialog, classes.shake);
+                    },200);
+                }
+                return this;
+            },
+            /**
+             * Close the dialog
+             *
+             * @return {Object} The dialog instance
+             */
+            close: function () {
+                if (this.__internal.isOpen ) {
+                    // custom `onclosing` event
+                    if(dispatchEvent('onclosing', this) !== false){
+
+                        unbindEvents(this);
+
+                        removeClass(this.elements.root, classes.animationIn);
+                        addClass(this.elements.root, classes.animationOut);
+
+                        // set 1s fallback in case transition event doesn't fire
+                        clearTimeout( this.__internal.timerOut );
+                        this.__internal.timerOut = setTimeout( this.__internal.transitionOutHandler, transition.supported ? 1000 : 100 );
+                        // hide dialog
+                        addClass(this.elements.root, classes.hidden);
+                        //reflow
+                        reflow = this.elements.modal.offsetWidth;
+
+                        // remove custom dialog class on hide
+                        if (typeof this.__internal.className !== 'undefined' && this.__internal.className !== '') {
+                            removeClass(this.elements.root, this.__internal.className);
+                        }
+
+                        // internal on close event
+                        if(typeof this.hooks.onclose === 'function'){
+                            this.hooks.onclose.call(this);
+                        }
+
+                        // allow custom `onclose` method
+                        dispatchEvent('onclose', this);
+
+                        //remove from open dialogs
+                        openDialogs.splice(openDialogs.indexOf(this),1);
+                        this.__internal.isOpen = false;
+
+                        ensureNoOverflow();
+                    }
+
+                }
+                // last dialog and tab index was set by us, remove it.
+                if(!openDialogs.length && tabindex === '0'){
+                    document.body.removeAttribute('tabindex');
+                }
+                return this;
+            },
+            /**
+             * Close all open dialogs except this.
+             *
+             * @return {undefined}
+             */
+            closeOthers:function(){
+                alertify.closeAll(this);
+                return this;
+            },
+            /**
+             * Destroys this dialog instance
+             *
+             * @return {undefined}
+             */
+            destroy:function(){
+                if(this.__internal) {
+                    if (this.__internal.isOpen ) {
+                        //mark dialog for destruction, this will be called on tranistionOut event.
+                        this.__internal.destroy = function(){
+                            destruct(this, initialize);
+                        };
+                        //close the dialog to unbind all events.
+                        this.close();
+                    }else if(!this.__internal.destroy){
+                        destruct(this, initialize);
+                    }
+                }
+                return this;
+            },
+        };
+	} () );
+    var notifier = (function () {
+        var reflow,
+            element,
+            openInstances = [],
+            classes = {
+                base: 'alertify-notifier',
+                message: 'ajs-message',
+                top: 'ajs-top',
+                right: 'ajs-right',
+                bottom: 'ajs-bottom',
+                left: 'ajs-left',
+                center: 'ajs-center',
+                visible: 'ajs-visible',
+                hidden: 'ajs-hidden',
+                close: 'ajs-close'
+            };
+        /**
+         * Helper: initializes the notifier instance
+         *
+         */
+        function initialize(instance) {
+
+            if (!instance.__internal) {
+                instance.__internal = {
+                    position: alertify.defaults.notifier.position,
+                    delay: alertify.defaults.notifier.delay,
+                };
+
+                element = document.createElement('DIV');
+
+                updatePosition(instance);
+            }
+
+            //add to DOM tree.
+            if (element.parentNode !== document.body) {
+                document.body.appendChild(element);
+            }
+        }
+
+        function pushInstance(instance) {
+            instance.__internal.pushed = true;
+            openInstances.push(instance);
+        }
+        function popInstance(instance) {
+            openInstances.splice(openInstances.indexOf(instance), 1);
+            instance.__internal.pushed = false;
+        }
+        /**
+         * Helper: update the notifier instance position
+         *
+         */
+        function updatePosition(instance) {
+            element.className = classes.base;
+            switch (instance.__internal.position) {
+            case 'top-right':
+                addClass(element, classes.top + ' ' + classes.right);
+                break;
+            case 'top-left':
+                addClass(element, classes.top + ' ' + classes.left);
+                break;
+            case 'top-center':
+                addClass(element, classes.top + ' ' + classes.center);
+                break;
+            case 'bottom-left':
+                addClass(element, classes.bottom + ' ' + classes.left);
+                break;
+            case 'bottom-center':
+                addClass(element, classes.bottom + ' ' + classes.center);
+                break;
+
+            default:
+            case 'bottom-right':
+                addClass(element, classes.bottom + ' ' + classes.right);
+                break;
+            }
+        }
+
+        /**
+        * creates a new notification message
+        *
+        * @param  {DOMElement} message	The notifier message element
+        * @param  {Number} wait   Time (in ms) to wait before the message is dismissed, a value of 0 means keep open till clicked.
+        * @param  {Function} callback A callback function to be invoked when the message is dismissed.
+        *
+        * @return {undefined}
+        */
+        function create(div, callback) {
+
+            function clickDelegate(event, instance) {
+                if(!instance.__internal.closeButton || event.target.getAttribute('data-close') === 'true'){
+                    instance.dismiss(true);
+                }
+            }
+
+            function transitionDone(event, instance) {
+                // unbind event
+                off(instance.element, transition.type, transitionDone);
+                // remove the message
+                element.removeChild(instance.element);
+            }
+
+            function initialize(instance) {
+                if (!instance.__internal) {
+                    instance.__internal = {
+                        pushed: false,
+                        delay : undefined,
+                        timer: undefined,
+                        clickHandler: undefined,
+                        transitionEndHandler: undefined,
+                        transitionTimeout: undefined
+                    };
+                    instance.__internal.clickHandler = delegate(instance, clickDelegate);
+                    instance.__internal.transitionEndHandler = delegate(instance, transitionDone);
+                }
+                return instance;
+            }
+            function clearTimers(instance) {
+                clearTimeout(instance.__internal.timer);
+                clearTimeout(instance.__internal.transitionTimeout);
+            }
+            return initialize({
+                /* notification DOM element*/
+                element: div,
+                /*
+                 * Pushes a notification message
+                 * @param {string or DOMElement} content The notification message content
+                 * @param {Number} wait The time (in seconds) to wait before the message is dismissed, a value of 0 means keep open till clicked.
+                 *
+                 */
+                push: function (_content, _wait) {
+                    if (!this.__internal.pushed) {
+
+                        pushInstance(this);
+                        clearTimers(this);
+
+                        var content, wait;
+                        switch (arguments.length) {
+                        case 0:
+                            wait = this.__internal.delay;
+                            break;
+                        case 1:
+                            if (typeof (_content) === 'number') {
+                                wait = _content;
+                            } else {
+                                content = _content;
+                                wait = this.__internal.delay;
+                            }
+                            break;
+                        case 2:
+                            content = _content;
+                            wait = _wait;
+                            break;
+                        }
+                        this.__internal.closeButton = alertify.defaults.notifier.closeButton;
+                        // set contents
+                        if (typeof content !== 'undefined') {
+                            this.setContent(content);
+                        }
+                        // append or insert
+                        if (notifier.__internal.position.indexOf('top') < 0) {
+                            element.appendChild(this.element);
+                        } else {
+                            element.insertBefore(this.element, element.firstChild);
+                        }
+                        reflow = this.element.offsetWidth;
+                        addClass(this.element, classes.visible);
+                        // attach click event
+                        on(this.element, 'click', this.__internal.clickHandler);
+                        return this.delay(wait);
+                    }
+                    return this;
+                },
+                /*
+                 * {Function} callback function to be invoked before dismissing the notification message.
+                 * Remarks: A return value === 'false' will cancel the dismissal
+                 *
+                 */
+                ondismiss: function () { },
+                /*
+                 * {Function} callback function to be invoked when the message is dismissed.
+                 *
+                 */
+                callback: callback,
+                /*
+                 * Dismisses the notification message
+                 * @param {Boolean} clicked A flag indicating if the dismissal was caused by a click.
+                 *
+                 */
+                dismiss: function (clicked) {
+                    if (this.__internal.pushed) {
+                        clearTimers(this);
+                        if (!(typeof this.ondismiss === 'function' && this.ondismiss.call(this) === false)) {
+                            //detach click event
+                            off(this.element, 'click', this.__internal.clickHandler);
+                            // ensure element exists
+                            if (typeof this.element !== 'undefined' && this.element.parentNode === element) {
+                                //transition end or fallback
+                                this.__internal.transitionTimeout = setTimeout(this.__internal.transitionEndHandler, transition.supported ? 1000 : 100);
+                                removeClass(this.element, classes.visible);
+
+                                // custom callback on dismiss
+                                if (typeof this.callback === 'function') {
+                                    this.callback.call(this, clicked);
+                                }
+                            }
+                            popInstance(this);
+                        }
+                    }
+                    return this;
+                },
+                /*
+                 * Delays the notification message dismissal
+                 * @param {Number} wait The time (in seconds) to wait before the message is dismissed, a value of 0 means keep open till clicked.
+                 *
+                 */
+                delay: function (wait) {
+                    clearTimers(this);
+                    this.__internal.delay = typeof wait !== 'undefined' && !isNaN(+wait) ? +wait : notifier.__internal.delay;
+                    if (this.__internal.delay > 0) {
+                        var  self = this;
+                        this.__internal.timer = setTimeout(function () { self.dismiss(); }, this.__internal.delay * 1000);
+                    }
+                    return this;
+                },
+                /*
+                 * Sets the notification message contents
+                 * @param {string or DOMElement} content The notification message content
+                 *
+                 */
+                setContent: function (content) {
+                    if (typeof content === 'string') {
+                        clearContents(this.element);
+                        this.element.innerHTML = content;
+                    } else if (content instanceof window.HTMLElement && this.element.firstChild !== content) {
+                        clearContents(this.element);
+                        this.element.appendChild(content);
+                    }
+                    if(this.__internal.closeButton){
+                        var close = document.createElement('span');
+                        addClass(close, classes.close);
+                        close.setAttribute('data-close', true);
+                        this.element.appendChild(close);
+                    }
+                    return this;
+                },
+                /*
+                 * Dismisses all open notifications except this.
+                 *
+                 */
+                dismissOthers: function () {
+                    notifier.dismissAll(this);
+                    return this;
+                }
+            });
+        }
+
+        //notifier api
+        return {
+            /**
+             * Gets or Sets notifier settings.
+             *
+             * @param {string} key The setting name
+             * @param {Variant} value The setting value.
+             *
+             * @return {Object}	if the called as a setter, return the notifier instance.
+             */
+            setting: function (key, value) {
+                //ensure init
+                initialize(this);
+
+                if (typeof value === 'undefined') {
+                    //get
+                    return this.__internal[key];
+                } else {
+                    //set
+                    switch (key) {
+                    case 'position':
+                        this.__internal.position = value;
+                        updatePosition(this);
+                        break;
+                    case 'delay':
+                        this.__internal.delay = value;
+                        break;
+                    }
+                }
+                return this;
+            },
+            /**
+             * [Alias] Sets dialog settings/options
+             */
+            set:function(key,value){
+                this.setting(key,value);
+                return this;
+            },
+            /**
+             * [Alias] Gets dialog settings/options
+             */
+            get:function(key){
+                return this.setting(key);
+            },
+            /**
+             * Creates a new notification message
+             *
+             * @param {string} type The type of notification message (simply a CSS class name 'ajs-{type}' to be added).
+             * @param {Function} callback  A callback function to be invoked when the message is dismissed.
+             *
+             * @return {undefined}
+             */
+            create: function (type, callback) {
+                //ensure notifier init
+                initialize(this);
+                //create new notification message
+                var div = document.createElement('div');
+                div.className = classes.message + ((typeof type === 'string' && type !== '') ? ' ajs-' + type : '');
+                return create(div, callback);
+            },
+            /**
+             * Dismisses all open notifications.
+             *
+             * @param {Object} excpet [optional] The notification object to exclude from dismissal.
+             *
+             */
+            dismissAll: function (except) {
+                var clone = openInstances.slice(0);
+                for (var x = 0; x < clone.length; x += 1) {
+                    var  instance = clone[x];
+                    if (except === undefined || except !== instance) {
+                        instance.dismiss();
+                    }
+                }
+            }
+        };
+    })();
+
+    /**
+     * Alertify public API
+     * This contains everything that is exposed through the alertify object.
+     *
+     * @return {Object}
+     */
+    function Alertify() {
+
+        // holds a references of created dialogs
+        var dialogs = {};
+
+        /**
+         * Extends a given prototype by merging properties from base into sub.
+         *
+         * @sub {Object} sub The prototype being overwritten.
+         * @base {Object} base The prototype being written.
+         *
+         * @return {Object} The extended prototype.
+         */
+        function extend(sub, base) {
+            // copy dialog pototype over definition.
+            for (var prop in base) {
+                if (base.hasOwnProperty(prop)) {
+                    sub[prop] = base[prop];
+                }
+            }
+            return sub;
+        }
+
+
+        /**
+        * Helper: returns a dialog instance from saved dialogs.
+        * and initializes the dialog if its not already initialized.
+        *
+        * @name {String} name The dialog name.
+        *
+        * @return {Object} The dialog instance.
+        */
+        function get_dialog(name) {
+            var dialog = dialogs[name].dialog;
+            //initialize the dialog if its not already initialized.
+            if (dialog && typeof dialog.__init === 'function') {
+                dialog.__init(dialog);
+            }
+            return dialog;
+        }
+
+        /**
+         * Helper:  registers a new dialog definition.
+         *
+         * @name {String} name The dialog name.
+         * @Factory {Function} Factory a function resposible for creating dialog prototype.
+         * @transient {Boolean} transient True to create a new dialog instance each time the dialog is invoked, false otherwise.
+         * @base {String} base the name of another dialog to inherit from.
+         *
+         * @return {Object} The dialog definition.
+         */
+        function register(name, Factory, transient, base) {
+            var definition = {
+                dialog: null,
+                factory: Factory
+            };
+
+            //if this is based on an existing dialog, create a new definition
+            //by applying the new protoype over the existing one.
+            if (base !== undefined) {
+                definition.factory = function () {
+                    return extend(new dialogs[base].factory(), new Factory());
+                };
+            }
+
+            if (!transient) {
+                //create a new definition based on dialog
+                definition.dialog = extend(new definition.factory(), dialog);
+            }
+            return dialogs[name] = definition;
+        }
+
+        return {
+            /**
+             * Alertify defaults
+             * 
+             * @type {Object}
+             */
+            defaults: defaults,
+            /**
+             * Dialogs factory 
+             *
+             * @param {string}      Dialog name.
+             * @param {Function}    A Dialog factory function.
+             * @param {Boolean}     Indicates whether to create a singleton or transient dialog.
+             * @param {String}      The name of the base type to inherit from.
+             */
+            dialog: function (name, Factory, transient, base) {
+
+                // get request, create a new instance and return it.
+                if (typeof Factory !== 'function') {
+                    return get_dialog(name);
+                }
+
+                if (this.hasOwnProperty(name)) {
+                    throw new Error('alertify.dialog: name already exists');
+                }
+
+                // register the dialog
+                var definition = register(name, Factory, transient, base);
+
+                if (transient) {
+
+                    // make it public
+                    this[name] = function () {
+                        //if passed with no params, consider it a get request
+                        if (arguments.length === 0) {
+                            return definition.dialog;
+                        } else {
+                            var instance = extend(new definition.factory(), dialog);
+                            //ensure init
+                            if (instance && typeof instance.__init === 'function') {
+                                instance.__init(instance);
+                            }
+                            instance['main'].apply(instance, arguments);
+                            return instance['show'].apply(instance);
+                        }
+                    };
+                } else {
+                    // make it public
+                    this[name] = function () {
+                        //ensure init
+                        if (definition.dialog && typeof definition.dialog.__init === 'function') {
+                            definition.dialog.__init(definition.dialog);
+                        }
+                        //if passed with no params, consider it a get request
+                        if (arguments.length === 0) {
+                            return definition.dialog;
+                        } else {
+                            var dialog = definition.dialog;
+                            dialog['main'].apply(definition.dialog, arguments);
+                            return dialog['show'].apply(definition.dialog);
+                        }
+                    };
+                }
+            },
+            /**
+             * Close all open dialogs.
+             *
+             * @param {Object} excpet [optional] The dialog object to exclude from closing.
+             *
+             * @return {undefined}
+             */
+            closeAll: function (except) {
+                var clone = openDialogs.slice(0);
+                for (var x = 0; x < clone.length; x += 1) {
+                    var instance = clone[x];
+                    if (except === undefined || except !== instance) {
+                        instance.close();
+                    }
+                }
+            },
+            /**
+             * Gets or Sets dialog settings/options. if the dialog is transient, this call does nothing.
+             *
+             * @param {string} name The dialog name.
+             * @param {String|Object} key A string specifying a propery name or a collection of key/value pairs.
+             * @param {Variant} value Optional, the value associated with the key (in case it was a string).
+             *
+             * @return {undefined}
+             */
+            setting: function (name, key, value) {
+
+                if (name === 'notifier') {
+                    return notifier.setting(key, value);
+                }
+
+                var dialog = get_dialog(name);
+                if (dialog) {
+                    return dialog.setting(key, value);
+                }
+            },
+            /**
+             * [Alias] Sets dialog settings/options 
+             */
+            set: function(name,key,value){
+                return this.setting(name, key,value);
+            },
+            /**
+             * [Alias] Gets dialog settings/options 
+             */
+            get: function(name, key){
+                return this.setting(name, key);
+            },
+            /**
+             * Creates a new notification message.
+             * If a type is passed, a class name "ajs-{type}" will be added.
+             * This allows for custom look and feel for various types of notifications.
+             *
+             * @param  {String | DOMElement}    [message=undefined]		Message text
+             * @param  {String}                 [type='']				Type of log message
+             * @param  {String}                 [wait='']				Time (in seconds) to wait before auto-close
+             * @param  {Function}               [callback=undefined]	A callback function to be invoked when the log is closed.
+             *
+             * @return {Object} Notification object.
+             */
+            notify: function (message, type, wait, callback) {
+                return notifier.create(type, callback).push(message, wait);
+            },
+            /**
+             * Creates a new notification message.
+             *
+             * @param  {String}		[message=undefined]		Message text
+             * @param  {String}     [wait='']				Time (in seconds) to wait before auto-close
+             * @param  {Function}	[callback=undefined]	A callback function to be invoked when the log is closed.
+             *
+             * @return {Object} Notification object.
+             */
+            message: function (message, wait, callback) {
+                return notifier.create(null, callback).push(message, wait);
+            },
+            /**
+             * Creates a new notification message of type 'success'.
+             *
+             * @param  {String}		[message=undefined]		Message text
+             * @param  {String}     [wait='']				Time (in seconds) to wait before auto-close
+             * @param  {Function}	[callback=undefined]	A callback function to be invoked when the log is closed.
+             *
+             * @return {Object} Notification object.
+             */
+            success: function (message, wait, callback) {
+                return notifier.create('success', callback).push(message, wait);
+            },
+            /**
+             * Creates a new notification message of type 'error'.
+             *
+             * @param  {String}		[message=undefined]		Message text
+             * @param  {String}     [wait='']				Time (in seconds) to wait before auto-close
+             * @param  {Function}	[callback=undefined]	A callback function to be invoked when the log is closed.
+             *
+             * @return {Object} Notification object.
+             */
+            error: function (message, wait, callback) {
+                return notifier.create('error', callback).push(message, wait);
+            },
+            /**
+             * Creates a new notification message of type 'warning'.
+             *
+             * @param  {String}		[message=undefined]		Message text
+             * @param  {String}     [wait='']				Time (in seconds) to wait before auto-close
+             * @param  {Function}	[callback=undefined]	A callback function to be invoked when the log is closed.
+             *
+             * @return {Object} Notification object.
+             */
+            warning: function (message, wait, callback) {
+                return notifier.create('warning', callback).push(message, wait);
+            },
+            /**
+             * Dismisses all open notifications
+             *
+             * @return {undefined}
+             */
+            dismissAll: function () {
+                notifier.dismissAll();
+            }
+        };
+    }
+    var alertify = new Alertify();
+
+    /**
+    * Alert dialog definition
+    *
+    * invoked by:
+    *	alertify.alert(message);
+    *	alertify.alert(title, message);
+    *	alertify.alert(message, onok);
+    *	alertify.alert(title, message, onok);
+     */
+    alertify.dialog('alert', function () {
+        return {
+            main: function (_title, _message, _onok) {
+                var title, message, onok;
+                switch (arguments.length) {
+                case 1:
+                    message = _title;
+                    break;
+                case 2:
+                    if (typeof _message === 'function') {
+                        message = _title;
+                        onok = _message;
+                    } else {
+                        title = _title;
+                        message = _message;
+                    }
+                    break;
+                case 3:
+                    title = _title;
+                    message = _message;
+                    onok = _onok;
+                    break;
+                }
+                this.set('title', title);
+                this.set('message', message);
+                this.set('onok', onok);
+                return this;
+            },
+            setup: function () {
+                return {
+                    buttons: [
+                        {
+                            text: alertify.defaults.glossary.ok,
+                            key: keys.ESC,
+                            invokeOnClose: true,
+                            className: alertify.defaults.theme.ok,
+                        }
+                    ],
+                    focus: {
+                        element: 0,
+                        select: false
+                    },
+                    options: {
+                        maximizable: false,
+                        resizable: false
+                    }
+                };
+            },
+            build: function () {
+                // nothing
+            },
+            prepare: function () {
+                //nothing
+            },
+            setMessage: function (message) {
+                this.setContent(message);
+            },
+            settings: {
+                message: undefined,
+                onok: undefined,
+                label: undefined,
+            },
+            settingUpdated: function (key, oldValue, newValue) {
+                switch (key) {
+                case 'message':
+                    this.setMessage(newValue);
+                    break;
+                case 'label':
+                    if (this.__internal.buttons[0].element) {
+                        this.__internal.buttons[0].element.innerHTML = newValue;
+                    }
+                    break;
+                }
+            },
+            callback: function (closeEvent) {
+                if (typeof this.get('onok') === 'function') {
+                    var returnValue = this.get('onok').call(this, closeEvent);
+                    if (typeof returnValue !== 'undefined') {
+                        closeEvent.cancel = !returnValue;
+                    }
+                }
+            }
+        };
+    });
+    /**
+     * Confirm dialog object
+     *
+     *	alertify.confirm(message);
+     *	alertify.confirm(message, onok);
+     *	alertify.confirm(message, onok, oncancel);
+     *	alertify.confirm(title, message, onok, oncancel);
+     */
+    alertify.dialog('confirm', function () {
+
+        var autoConfirm = {
+            timer: null,
+            index: null,
+            text: null,
+            duration: null,
+            task: function (event, self) {
+                if (self.isOpen()) {
+                    self.__internal.buttons[autoConfirm.index].element.innerHTML = autoConfirm.text + ' (&#8207;' + autoConfirm.duration + '&#8207;) ';
+                    autoConfirm.duration -= 1;
+                    if (autoConfirm.duration === -1) {
+                        clearAutoConfirm(self);
+                        var button = self.__internal.buttons[autoConfirm.index];
+                        var closeEvent = createCloseEvent(autoConfirm.index, button);
+
+                        if (typeof self.callback === 'function') {
+                            self.callback.apply(self, [closeEvent]);
+                        }
+                        //close the dialog.
+                        if (closeEvent.close !== false) {
+                            self.close();
+                        }
+                    }
+                } else {
+                    clearAutoConfirm(self);
+                }
+            }
+        };
+
+        function clearAutoConfirm(self) {
+            if (autoConfirm.timer !== null) {
+                clearInterval(autoConfirm.timer);
+                autoConfirm.timer = null;
+                self.__internal.buttons[autoConfirm.index].element.innerHTML = autoConfirm.text;
+            }
+        }
+
+        function startAutoConfirm(self, index, duration) {
+            clearAutoConfirm(self);
+            autoConfirm.duration = duration;
+            autoConfirm.index = index;
+            autoConfirm.text = self.__internal.buttons[index].element.innerHTML;
+            autoConfirm.timer = setInterval(delegate(self, autoConfirm.task), 1000);
+            autoConfirm.task(null, self);
+        }
+
+
+        return {
+            main: function (_title, _message, _onok, _oncancel) {
+                var title, message, onok, oncancel;
+                switch (arguments.length) {
+                case 1:
+                    message = _title;
+                    break;
+                case 2:
+                    message = _title;
+                    onok = _message;
+                    break;
+                case 3:
+                    message = _title;
+                    onok = _message;
+                    oncancel = _onok;
+                    break;
+                case 4:
+                    title = _title;
+                    message = _message;
+                    onok = _onok;
+                    oncancel = _oncancel;
+                    break;
+                }
+                this.set('title', title);
+                this.set('message', message);
+                this.set('onok', onok);
+                this.set('oncancel', oncancel);
+                return this;
+            },
+            setup: function () {
+                return {
+                    buttons: [
+                        {
+                            text: alertify.defaults.glossary.ok,
+                            key: keys.ENTER,
+                            className: alertify.defaults.theme.ok,
+                        },
+                        {
+                            text: alertify.defaults.glossary.cancel,
+                            key: keys.ESC,
+                            invokeOnClose: true,
+                            className: alertify.defaults.theme.cancel,
+                        }
+                    ],
+                    focus: {
+                        element: 0,
+                        select: false
+                    },
+                    options: {
+                        maximizable: false,
+                        resizable: false
+                    }
+                };
+            },
+            build: function () {
+                //nothing
+            },
+            prepare: function () {
+                //nothing
+            },
+            setMessage: function (message) {
+                this.setContent(message);
+            },
+            settings: {
+                message: null,
+                labels: null,
+                onok: null,
+                oncancel: null,
+                defaultFocus: null,
+                reverseButtons: null,
+            },
+            settingUpdated: function (key, oldValue, newValue) {
+                switch (key) {
+                case 'message':
+                    this.setMessage(newValue);
+                    break;
+                case 'labels':
+                    if ('ok' in newValue && this.__internal.buttons[0].element) {
+                        this.__internal.buttons[0].text = newValue.ok;
+                        this.__internal.buttons[0].element.innerHTML = newValue.ok;
+                    }
+                    if ('cancel' in newValue && this.__internal.buttons[1].element) {
+                        this.__internal.buttons[1].text = newValue.cancel;
+                        this.__internal.buttons[1].element.innerHTML = newValue.cancel;
+                    }
+                    break;
+                case 'reverseButtons':
+                    if (newValue === true) {
+                        this.elements.buttons.primary.appendChild(this.__internal.buttons[0].element);
+                    } else {
+                        this.elements.buttons.primary.appendChild(this.__internal.buttons[1].element);
+                    }
+                    break;
+                case 'defaultFocus':
+                    this.__internal.focus.element = newValue === 'ok' ? 0 : 1;
+                    break;
+                }
+            },
+            callback: function (closeEvent) {
+                clearAutoConfirm(this);
+                var returnValue;
+                switch (closeEvent.index) {
+                case 0:
+                    if (typeof this.get('onok') === 'function') {
+                        returnValue = this.get('onok').call(this, closeEvent);
+                        if (typeof returnValue !== 'undefined') {
+                            closeEvent.cancel = !returnValue;
+                        }
+                    }
+                    break;
+                case 1:
+                    if (typeof this.get('oncancel') === 'function') {
+                        returnValue = this.get('oncancel').call(this, closeEvent);
+                        if (typeof returnValue !== 'undefined') {
+                            closeEvent.cancel = !returnValue;
+                        }
+                    }
+                    break;
+                }
+            },
+            autoOk: function (duration) {
+                startAutoConfirm(this, 0, duration);
+                return this;
+            },
+            autoCancel: function (duration) {
+                startAutoConfirm(this, 1, duration);
+                return this;
+            }
+        };
+    });
+    /**
+     * Prompt dialog object
+     *
+     * invoked by:
+     *	alertify.prompt(message);
+     *	alertify.prompt(message, value);
+     *	alertify.prompt(message, value, onok);
+     *	alertify.prompt(message, value, onok, oncancel);
+     *	alertify.prompt(title, message, value, onok, oncancel);
+     */
+    alertify.dialog('prompt', function () {
+        var input = document.createElement('INPUT');
+        var p = document.createElement('P');
+        return {
+            main: function (_title, _message, _value, _onok, _oncancel) {
+                var title, message, value, onok, oncancel;
+                switch (arguments.length) {
+                case 1:
+                    message = _title;
+                    break;
+                case 2:
+                    message = _title;
+                    value = _message;
+                    break;
+                case 3:
+                    message = _title;
+                    value = _message;
+                    onok = _value;
+                    break;
+                case 4:
+                    message = _title;
+                    value = _message;
+                    onok = _value;
+                    oncancel = _onok;
+                    break;
+                case 5:
+                    title = _title;
+                    message = _message;
+                    value = _value;
+                    onok = _onok;
+                    oncancel = _oncancel;
+                    break;
+                }
+                this.set('title', title);
+                this.set('message', message);
+                this.set('value', value);
+                this.set('onok', onok);
+                this.set('oncancel', oncancel);
+                return this;
+            },
+            setup: function () {
+                return {
+                    buttons: [
+                        {
+                            text: alertify.defaults.glossary.ok,
+                            key: keys.ENTER,
+                            className: alertify.defaults.theme.ok,
+                        },
+                        {
+                            text: alertify.defaults.glossary.cancel,
+                            key: keys.ESC,
+                            invokeOnClose: true,
+                            className: alertify.defaults.theme.cancel,
+                        }
+                    ],
+                    focus: {
+                        element: input,
+                        select: true
+                    },
+                    options: {
+                        maximizable: false,
+                        resizable: false
+                    }
+                };
+            },
+            build: function () {
+                input.className = alertify.defaults.theme.input;
+                input.setAttribute('type', 'text');
+                input.value = this.get('value');
+                this.elements.content.appendChild(p);
+                this.elements.content.appendChild(input);
+            },
+            prepare: function () {
+                //nothing
+            },
+            setMessage: function (message) {
+                if (typeof message === 'string') {
+                    clearContents(p);
+                    p.innerHTML = message;
+                } else if (message instanceof window.HTMLElement && p.firstChild !== message) {
+                    clearContents(p);
+                    p.appendChild(message);
+                }
+            },
+            settings: {
+                message: undefined,
+                labels: undefined,
+                onok: undefined,
+                oncancel: undefined,
+                value: '',
+                type:'text',
+                reverseButtons: undefined,
+            },
+            settingUpdated: function (key, oldValue, newValue) {
+                switch (key) {
+                case 'message':
+                    this.setMessage(newValue);
+                    break;
+                case 'value':
+                    input.value = newValue;
+                    break;
+                case 'type':
+                    switch (newValue) {
+                    case 'text':
+                    case 'color':
+                    case 'date':
+                    case 'datetime-local':
+                    case 'email':
+                    case 'month':
+                    case 'number':
+                    case 'password':
+                    case 'search':
+                    case 'tel':
+                    case 'time':
+                    case 'week':
+                        input.type = newValue;
+                        break;
+                    default:
+                        input.type = 'text';
+                        break;
+                    }
+                    break;
+                case 'labels':
+                    if (newValue.ok && this.__internal.buttons[0].element) {
+                        this.__internal.buttons[0].element.innerHTML = newValue.ok;
+                    }
+                    if (newValue.cancel && this.__internal.buttons[1].element) {
+                        this.__internal.buttons[1].element.innerHTML = newValue.cancel;
+                    }
+                    break;
+                case 'reverseButtons':
+                    if (newValue === true) {
+                        this.elements.buttons.primary.appendChild(this.__internal.buttons[0].element);
+                    } else {
+                        this.elements.buttons.primary.appendChild(this.__internal.buttons[1].element);
+                    }
+                    break;
+                }
+            },
+            callback: function (closeEvent) {
+                var returnValue;
+                switch (closeEvent.index) {
+                case 0:
+                    this.settings.value = input.value;
+                    if (typeof this.get('onok') === 'function') {
+                        returnValue = this.get('onok').call(this, closeEvent, this.settings.value);
+                        if (typeof returnValue !== 'undefined') {
+                            closeEvent.cancel = !returnValue;
+                        }
+                    }
+                    break;
+                case 1:
+                    if (typeof this.get('oncancel') === 'function') {
+                        returnValue = this.get('oncancel').call(this, closeEvent);
+                        if (typeof returnValue !== 'undefined') {
+                            closeEvent.cancel = !returnValue;
+                        }
+                    }
+                    if(!closeEvent.cancel){
+                        input.value = this.settings.value;
+                    }
+                    break;
+                }
+            }
+        };
+    });
+
+    // CommonJS
+    if (  true && typeof module.exports === 'object' ) {
+        module.exports = alertify;
+    // AMD
+    } else if ( true) {
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function () {
+            return alertify;
+        }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+    // window
+    } else {}
+
+} ( typeof window !== 'undefined' ? window : this ) );
+
+
+/***/ }),
+
 /***/ "./node_modules/axios/index.js":
 /*!*************************************!*\
   !*** ./node_modules/axios/index.js ***!
@@ -1829,10 +5448,86 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&":
-/*!***************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js& ***!
-  \***************************************************************************************************************************************************************************/
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Charts/ChartComponent.vue?vue&type=script&lang=js&":
+/*!********************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Charts/ChartComponent.vue?vue&type=script&lang=js& ***!
+  \********************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var chart_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! chart.js */ "./node_modules/chart.js/dist/Chart.js");
+/* harmony import */ var chart_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(chart_js__WEBPACK_IMPORTED_MODULE_0__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  mounted: function mounted() {
+    this.line();
+    this.bar();
+    this.barHorizontal();
+  },
+  methods: {
+    line: function line() {
+      new chart_js__WEBPACK_IMPORTED_MODULE_0___default.a(document.getElementById('my-chart-line'), {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+          datasets: [{
+            label: '2019 Nominas',
+            data: [300, 700, 450, 750, 450]
+          }]
+        }
+      });
+    },
+    bar: function bar() {
+      new chart_js__WEBPACK_IMPORTED_MODULE_0___default.a(document.getElementById('my-chart-bar'), {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+          datasets: [{
+            label: '2019 Nominas',
+            data: [300, 700, 450, 750, 450]
+          }]
+        }
+      });
+    },
+    barHorizontal: function barHorizontal() {
+      new chart_js__WEBPACK_IMPORTED_MODULE_0___default.a(document.getElementById('my-chart-barHorizontal'), {
+        type: 'horizontalBar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+          datasets: [{
+            label: '2019 Nominas',
+            data: [300, 700, 450, 750, 450]
+          }]
+        }
+      });
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Users/UserComponent.vue?vue&type=script&lang=js&":
+/*!******************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Users/UserComponent.vue?vue&type=script&lang=js& ***!
+  \******************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1842,9 +5537,370 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
-    console.log('Component mounted.');
+    this.getData();
+  },
+  data: function data() {
+    return {
+      // DATOS BASICOS
+      userData: {
+        id: 0,
+        username: null,
+        email: null,
+        password: null
+      },
+      // DATOS DEL DATATABLE 
+      table_data: [],
+      sort_table: ['10', '25', '50', '100', '250', '500'],
+      sort_selected: 10,
+      search_table: '',
+      table_pagination: {
+        'total': 0,
+        'current_page': 0,
+        'per_page': 0,
+        'last_page': 0,
+        'from': 0,
+        'to': 0
+      },
+      // DATOS MODAL
+      modal_option: '',
+      modal_type: ''
+    };
+  },
+  methods: {
+    userDataBlank: function userDataBlank() {
+      this.userData = {
+        id: 0,
+        username: null,
+        email: null,
+        password: null
+      };
+    },
+    getData: function getData(page) {
+      var _this = this;
+
+      this.$alertify.success('Usuarios Cargados');
+      var url = "/get-users";
+      axios.post(url, {
+        page: page,
+        sort: this.sort_selected,
+        search: this.search_table
+      }).then(function (response) {
+        _this.table_pagination = response.data.pagination;
+        _this.table_data = response.data.table.data;
+        _this.search_table = '';
+      })["catch"](function (errors) {
+        console.log(errors);
+      });
+    },
+    storeData: function storeData() {
+      var _this2 = this;
+
+      this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar el nuevo Usuario');
+      var url = '/store-user';
+      axios.post(url, {
+        userData: this.userData
+      }).then(function (response) {
+        $("#UserModal").modal('hide');
+        swal.close();
+
+        _this2.getData();
+
+        _this2.$alertify.success('El usuario se registro con exito');
+      })["catch"](function (errors) {
+        swal.close();
+
+        if (status = 204) {
+          Object.values(errors.response.data.errors).forEach(function (element, indx) {
+            _this2.$alertify.error(element.toString());
+          });
+        }
+      });
+    },
+    updateData: function updateData() {
+      var _this3 = this;
+
+      this.$root.loading('Verificando y actualizando', 'Espere mientras se verifican los datos para actualizar Usuario');
+      var url = '/update-user';
+      axios.post(url, {
+        userData: this.userData
+      }).then(function (response) {
+        $("#UserModal").modal('hide');
+        swal.close();
+
+        _this3.getData();
+
+        _this3.$alertify.success('El usuario fue actualizado con exito');
+      })["catch"](function (errors) {
+        swal.close();
+
+        if (status = 204) {
+          Object.values(errors.response.data.errors).forEach(function (element) {
+            _this3.$alertify.error(element.toString());
+          });
+        }
+      });
+    },
+    deleteData: function deleteData(idUser) {
+      var _this4 = this;
+
+      swal({
+        text: "Esta seguro que quiere eliminar este usuario?",
+        icon: "warning",
+        buttons: ['Cancelar', 'Eliminar'],
+        dangerMode: true
+      }).then(function (willDelete) {
+        if (willDelete) {
+          _this4.$root.loading('Evaluando', 'Espere mientras se verifican los datos para eliminar Usuario');
+
+          var url = '/delete-user';
+          axios.post(url, {
+            id: idUser
+          }).then(function (response) {
+            swal.close();
+
+            _this4.getData();
+
+            _this4.$alertify.success('El usuario fue eliminado con exito');
+          })["catch"](function (errors) {
+            swal.close();
+          });
+        }
+      });
+    },
+    changePage: function changePage(page) {
+      this.table_pagination.current_page = page;
+      this.getData(page);
+    },
+    showModal: function showModal(modal_id, model, option, type) {
+      this.userDataBlank();
+      this.modal_option = option;
+      this.modal_type = type;
+
+      if (type == 'edit' && model !== null) {
+        this.userData = {
+          id: model.id,
+          username: model.username,
+          email: model.email
+        };
+      }
+
+      $("#" + modal_id).modal('show');
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=script&lang=js&":
+/*!****************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=script&lang=js& ***!
+  \****************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  props: ['table_pagination'],
+  data: function data() {
+    return {
+      offset: 1
+    };
+  },
+  computed: {
+    isActived: function isActived() {
+      return this.table_pagination.current_page;
+    },
+    pagesNumber: function pagesNumber() {
+      if (!this.table_pagination.to) {
+        return [];
+      }
+
+      var from = this.table_pagination.current_page - this.offset;
+
+      if (from < 1) {
+        from = 1;
+      }
+
+      var to = from + this.offset * 2;
+
+      if (to >= this.table_pagination.last_page) {
+        to = this.table_pagination.last_page;
+      }
+
+      var pagesArray = [];
+
+      while (from <= to) {
+        pagesArray.push(from);
+        from++;
+      }
+
+      return pagesArray;
+    }
   }
 });
 
@@ -20981,6 +25037,112 @@ core_controller.helpers.each(
 return src;
 
 })));
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=style&index=0&lang=css&":
+/*!***********************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=style&index=0&lang=css& ***!
+  \***********************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-loader/lib/css-base.js */ "./node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.actived {\n    background: pink !important;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/lib/css-base.js":
+/*!*************************************************!*\
+  !*** ./node_modules/css-loader/lib/css-base.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+	return '/*# ' + data + ' */';
+}
 
 
 /***/ }),
@@ -69349,6 +73511,545 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
+/***/ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=style&index=0&lang=css&":
+/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader!./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=style&index=0&lang=css& ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader??ref--6-1!../../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../../node_modules/postcss-loader/src??ref--6-2!../../../../node_modules/vue-loader/lib??vue-loader-options!./PaginationComponent.vue?vue&type=style&index=0&lang=css& */ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=style&index=0&lang=css&");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/lib/addStyles.js":
+/*!****************************************************!*\
+  !*** ./node_modules/style-loader/lib/addStyles.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+
+var stylesInDom = {};
+
+var	memoize = function (fn) {
+	var memo;
+
+	return function () {
+		if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+		return memo;
+	};
+};
+
+var isOldIE = memoize(function () {
+	// Test for IE <= 9 as proposed by Browserhacks
+	// @see http://browserhacks.com/#hack-e71d8692f65334173fee715c222cb805
+	// Tests for existence of standard globals is to allow style-loader
+	// to operate correctly into non-standard environments
+	// @see https://github.com/webpack-contrib/style-loader/issues/177
+	return window && document && document.all && !window.atob;
+});
+
+var getTarget = function (target, parent) {
+  if (parent){
+    return parent.querySelector(target);
+  }
+  return document.querySelector(target);
+};
+
+var getElement = (function (fn) {
+	var memo = {};
+
+	return function(target, parent) {
+                // If passing function in options, then use it for resolve "head" element.
+                // Useful for Shadow Root style i.e
+                // {
+                //   insertInto: function () { return document.querySelector("#foo").shadowRoot }
+                // }
+                if (typeof target === 'function') {
+                        return target();
+                }
+                if (typeof memo[target] === "undefined") {
+			var styleTarget = getTarget.call(this, target, parent);
+			// Special case to return head of iframe instead of iframe itself
+			if (window.HTMLIFrameElement && styleTarget instanceof window.HTMLIFrameElement) {
+				try {
+					// This will throw an exception if access to iframe is blocked
+					// due to cross-origin restrictions
+					styleTarget = styleTarget.contentDocument.head;
+				} catch(e) {
+					styleTarget = null;
+				}
+			}
+			memo[target] = styleTarget;
+		}
+		return memo[target]
+	};
+})();
+
+var singleton = null;
+var	singletonCounter = 0;
+var	stylesInsertedAtTop = [];
+
+var	fixUrls = __webpack_require__(/*! ./urls */ "./node_modules/style-loader/lib/urls.js");
+
+module.exports = function(list, options) {
+	if (typeof DEBUG !== "undefined" && DEBUG) {
+		if (typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+	}
+
+	options = options || {};
+
+	options.attrs = typeof options.attrs === "object" ? options.attrs : {};
+
+	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+	// tags it will allow on a page
+	if (!options.singleton && typeof options.singleton !== "boolean") options.singleton = isOldIE();
+
+	// By default, add <style> tags to the <head> element
+        if (!options.insertInto) options.insertInto = "head";
+
+	// By default, add <style> tags to the bottom of the target
+	if (!options.insertAt) options.insertAt = "bottom";
+
+	var styles = listToStyles(list, options);
+
+	addStylesToDom(styles, options);
+
+	return function update (newList) {
+		var mayRemove = [];
+
+		for (var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+
+			domStyle.refs--;
+			mayRemove.push(domStyle);
+		}
+
+		if(newList) {
+			var newStyles = listToStyles(newList, options);
+			addStylesToDom(newStyles, options);
+		}
+
+		for (var i = 0; i < mayRemove.length; i++) {
+			var domStyle = mayRemove[i];
+
+			if(domStyle.refs === 0) {
+				for (var j = 0; j < domStyle.parts.length; j++) domStyle.parts[j]();
+
+				delete stylesInDom[domStyle.id];
+			}
+		}
+	};
+};
+
+function addStylesToDom (styles, options) {
+	for (var i = 0; i < styles.length; i++) {
+		var item = styles[i];
+		var domStyle = stylesInDom[item.id];
+
+		if(domStyle) {
+			domStyle.refs++;
+
+			for(var j = 0; j < domStyle.parts.length; j++) {
+				domStyle.parts[j](item.parts[j]);
+			}
+
+			for(; j < item.parts.length; j++) {
+				domStyle.parts.push(addStyle(item.parts[j], options));
+			}
+		} else {
+			var parts = [];
+
+			for(var j = 0; j < item.parts.length; j++) {
+				parts.push(addStyle(item.parts[j], options));
+			}
+
+			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+		}
+	}
+}
+
+function listToStyles (list, options) {
+	var styles = [];
+	var newStyles = {};
+
+	for (var i = 0; i < list.length; i++) {
+		var item = list[i];
+		var id = options.base ? item[0] + options.base : item[0];
+		var css = item[1];
+		var media = item[2];
+		var sourceMap = item[3];
+		var part = {css: css, media: media, sourceMap: sourceMap};
+
+		if(!newStyles[id]) styles.push(newStyles[id] = {id: id, parts: [part]});
+		else newStyles[id].parts.push(part);
+	}
+
+	return styles;
+}
+
+function insertStyleElement (options, style) {
+	var target = getElement(options.insertInto)
+
+	if (!target) {
+		throw new Error("Couldn't find a style target. This probably means that the value for the 'insertInto' parameter is invalid.");
+	}
+
+	var lastStyleElementInsertedAtTop = stylesInsertedAtTop[stylesInsertedAtTop.length - 1];
+
+	if (options.insertAt === "top") {
+		if (!lastStyleElementInsertedAtTop) {
+			target.insertBefore(style, target.firstChild);
+		} else if (lastStyleElementInsertedAtTop.nextSibling) {
+			target.insertBefore(style, lastStyleElementInsertedAtTop.nextSibling);
+		} else {
+			target.appendChild(style);
+		}
+		stylesInsertedAtTop.push(style);
+	} else if (options.insertAt === "bottom") {
+		target.appendChild(style);
+	} else if (typeof options.insertAt === "object" && options.insertAt.before) {
+		var nextSibling = getElement(options.insertAt.before, target);
+		target.insertBefore(style, nextSibling);
+	} else {
+		throw new Error("[Style Loader]\n\n Invalid value for parameter 'insertAt' ('options.insertAt') found.\n Must be 'top', 'bottom', or Object.\n (https://github.com/webpack-contrib/style-loader#insertat)\n");
+	}
+}
+
+function removeStyleElement (style) {
+	if (style.parentNode === null) return false;
+	style.parentNode.removeChild(style);
+
+	var idx = stylesInsertedAtTop.indexOf(style);
+	if(idx >= 0) {
+		stylesInsertedAtTop.splice(idx, 1);
+	}
+}
+
+function createStyleElement (options) {
+	var style = document.createElement("style");
+
+	if(options.attrs.type === undefined) {
+		options.attrs.type = "text/css";
+	}
+
+	if(options.attrs.nonce === undefined) {
+		var nonce = getNonce();
+		if (nonce) {
+			options.attrs.nonce = nonce;
+		}
+	}
+
+	addAttrs(style, options.attrs);
+	insertStyleElement(options, style);
+
+	return style;
+}
+
+function createLinkElement (options) {
+	var link = document.createElement("link");
+
+	if(options.attrs.type === undefined) {
+		options.attrs.type = "text/css";
+	}
+	options.attrs.rel = "stylesheet";
+
+	addAttrs(link, options.attrs);
+	insertStyleElement(options, link);
+
+	return link;
+}
+
+function addAttrs (el, attrs) {
+	Object.keys(attrs).forEach(function (key) {
+		el.setAttribute(key, attrs[key]);
+	});
+}
+
+function getNonce() {
+	if (false) {}
+
+	return __webpack_require__.nc;
+}
+
+function addStyle (obj, options) {
+	var style, update, remove, result;
+
+	// If a transform function was defined, run it on the css
+	if (options.transform && obj.css) {
+	    result = typeof options.transform === 'function'
+		 ? options.transform(obj.css) 
+		 : options.transform.default(obj.css);
+
+	    if (result) {
+	    	// If transform returns a value, use that instead of the original css.
+	    	// This allows running runtime transformations on the css.
+	    	obj.css = result;
+	    } else {
+	    	// If the transform function returns a falsy value, don't add this css.
+	    	// This allows conditional loading of css
+	    	return function() {
+	    		// noop
+	    	};
+	    }
+	}
+
+	if (options.singleton) {
+		var styleIndex = singletonCounter++;
+
+		style = singleton || (singleton = createStyleElement(options));
+
+		update = applyToSingletonTag.bind(null, style, styleIndex, false);
+		remove = applyToSingletonTag.bind(null, style, styleIndex, true);
+
+	} else if (
+		obj.sourceMap &&
+		typeof URL === "function" &&
+		typeof URL.createObjectURL === "function" &&
+		typeof URL.revokeObjectURL === "function" &&
+		typeof Blob === "function" &&
+		typeof btoa === "function"
+	) {
+		style = createLinkElement(options);
+		update = updateLink.bind(null, style, options);
+		remove = function () {
+			removeStyleElement(style);
+
+			if(style.href) URL.revokeObjectURL(style.href);
+		};
+	} else {
+		style = createStyleElement(options);
+		update = applyToTag.bind(null, style);
+		remove = function () {
+			removeStyleElement(style);
+		};
+	}
+
+	update(obj);
+
+	return function updateStyle (newObj) {
+		if (newObj) {
+			if (
+				newObj.css === obj.css &&
+				newObj.media === obj.media &&
+				newObj.sourceMap === obj.sourceMap
+			) {
+				return;
+			}
+
+			update(obj = newObj);
+		} else {
+			remove();
+		}
+	};
+}
+
+var replaceText = (function () {
+	var textStore = [];
+
+	return function (index, replacement) {
+		textStore[index] = replacement;
+
+		return textStore.filter(Boolean).join('\n');
+	};
+})();
+
+function applyToSingletonTag (style, index, remove, obj) {
+	var css = remove ? "" : obj.css;
+
+	if (style.styleSheet) {
+		style.styleSheet.cssText = replaceText(index, css);
+	} else {
+		var cssNode = document.createTextNode(css);
+		var childNodes = style.childNodes;
+
+		if (childNodes[index]) style.removeChild(childNodes[index]);
+
+		if (childNodes.length) {
+			style.insertBefore(cssNode, childNodes[index]);
+		} else {
+			style.appendChild(cssNode);
+		}
+	}
+}
+
+function applyToTag (style, obj) {
+	var css = obj.css;
+	var media = obj.media;
+
+	if(media) {
+		style.setAttribute("media", media)
+	}
+
+	if(style.styleSheet) {
+		style.styleSheet.cssText = css;
+	} else {
+		while(style.firstChild) {
+			style.removeChild(style.firstChild);
+		}
+
+		style.appendChild(document.createTextNode(css));
+	}
+}
+
+function updateLink (link, options, obj) {
+	var css = obj.css;
+	var sourceMap = obj.sourceMap;
+
+	/*
+		If convertToAbsoluteUrls isn't defined, but sourcemaps are enabled
+		and there is no publicPath defined then lets turn convertToAbsoluteUrls
+		on by default.  Otherwise default to the convertToAbsoluteUrls option
+		directly
+	*/
+	var autoFixUrls = options.convertToAbsoluteUrls === undefined && sourceMap;
+
+	if (options.convertToAbsoluteUrls || autoFixUrls) {
+		css = fixUrls(css);
+	}
+
+	if (sourceMap) {
+		// http://stackoverflow.com/a/26603875
+		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+	}
+
+	var blob = new Blob([css], { type: "text/css" });
+
+	var oldSrc = link.href;
+
+	link.href = URL.createObjectURL(blob);
+
+	if(oldSrc) URL.revokeObjectURL(oldSrc);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/lib/urls.js":
+/*!***********************************************!*\
+  !*** ./node_modules/style-loader/lib/urls.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+
+/**
+ * When source maps are enabled, `style-loader` uses a link element with a data-uri to
+ * embed the css on the page. This breaks all relative urls because now they are relative to a
+ * bundle instead of the current page.
+ *
+ * One solution is to only use full urls, but that may be impossible.
+ *
+ * Instead, this function "fixes" the relative urls to be absolute according to the current page location.
+ *
+ * A rudimentary test suite is located at `test/fixUrls.js` and can be run via the `npm test` command.
+ *
+ */
+
+module.exports = function (css) {
+  // get current location
+  var location = typeof window !== "undefined" && window.location;
+
+  if (!location) {
+    throw new Error("fixUrls requires window.location");
+  }
+
+	// blank or null?
+	if (!css || typeof css !== "string") {
+	  return css;
+  }
+
+  var baseUrl = location.protocol + "//" + location.host;
+  var currentDir = baseUrl + location.pathname.replace(/\/[^\/]*$/, "/");
+
+	// convert each url(...)
+	/*
+	This regular expression is just a way to recursively match brackets within
+	a string.
+
+	 /url\s*\(  = Match on the word "url" with any whitespace after it and then a parens
+	   (  = Start a capturing group
+	     (?:  = Start a non-capturing group
+	         [^)(]  = Match anything that isn't a parentheses
+	         |  = OR
+	         \(  = Match a start parentheses
+	             (?:  = Start another non-capturing groups
+	                 [^)(]+  = Match anything that isn't a parentheses
+	                 |  = OR
+	                 \(  = Match a start parentheses
+	                     [^)(]*  = Match anything that isn't a parentheses
+	                 \)  = Match a end parentheses
+	             )  = End Group
+              *\) = Match anything and then a close parens
+          )  = Close non-capturing group
+          *  = Match anything
+       )  = Close capturing group
+	 \)  = Match a close parens
+
+	 /gi  = Get all matches, not the first.  Be case insensitive.
+	 */
+	var fixedCss = css.replace(/url\s*\(((?:[^)(]|\((?:[^)(]+|\([^)(]*\))*\))*)\)/gi, function(fullMatch, origUrl) {
+		// strip quotes (if they exist)
+		var unquotedOrigUrl = origUrl
+			.trim()
+			.replace(/^"(.*)"$/, function(o, $1){ return $1; })
+			.replace(/^'(.*)'$/, function(o, $1){ return $1; });
+
+		// already a full url? no change
+		if (/^(#|data:|http:\/\/|https:\/\/|file:\/\/\/|\s*$)/i.test(unquotedOrigUrl)) {
+		  return fullMatch;
+		}
+
+		// convert the url to a full url
+		var newUrl;
+
+		if (unquotedOrigUrl.indexOf("//") === 0) {
+		  	//TODO: should we add protocol?
+			newUrl = unquotedOrigUrl;
+		} else if (unquotedOrigUrl.indexOf("/") === 0) {
+			// path should be relative to the base url
+			newUrl = baseUrl + unquotedOrigUrl; // already starts with '/'
+		} else {
+			// path should be relative to current directory
+			newUrl = currentDir + unquotedOrigUrl.replace(/^\.\//, ""); // Strip leading './'
+		}
+
+		// send back the fixed url(...)
+		return "url(" + JSON.stringify(newUrl) + ")";
+	});
+
+	// send back the fixed css
+	return fixedCss;
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/sweetalert/dist/sweetalert.min.js":
 /*!********************************************************!*\
   !*** ./node_modules/sweetalert/dist/sweetalert.min.js ***!
@@ -69918,294 +74619,94 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 
 /***/ }),
 
-/***/ "./node_modules/vue-chartjs/es/BaseCharts.js":
-/*!***************************************************!*\
-  !*** ./node_modules/vue-chartjs/es/BaseCharts.js ***!
-  \***************************************************/
-/*! exports provided: generateChart, Bar, HorizontalBar, Doughnut, Line, Pie, PolarArea, Radar, Bubble, Scatter, default */
+/***/ "./node_modules/vue-alertify/es/index.js":
+/*!***********************************************!*\
+  !*** ./node_modules/vue-alertify/es/index.js ***!
+  \***********************************************/
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "generateChart", function() { return generateChart; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Bar", function() { return Bar; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HorizontalBar", function() { return HorizontalBar; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Doughnut", function() { return Doughnut; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return Line; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Pie", function() { return Pie; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PolarArea", function() { return PolarArea; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Radar", function() { return Radar; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Bubble", function() { return Bubble; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Scatter", function() { return Scatter; });
-/* harmony import */ var chart_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! chart.js */ "./node_modules/chart.js/dist/Chart.js");
-/* harmony import */ var chart_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(chart_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var alertifyjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! alertifyjs */ "./node_modules/alertifyjs/build/alertify.js");
+/* harmony import */ var alertifyjs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(alertifyjs__WEBPACK_IMPORTED_MODULE_0__);
 
-function generateChart(chartId, chartType) {
-  return {
-    render: function render(createElement) {
-      return createElement('div', {
-        style: this.styles,
-        class: this.cssClasses
-      }, [createElement('canvas', {
-        attrs: {
-          id: this.chartId,
-          width: this.width,
-          height: this.height
-        },
-        ref: 'canvas'
-      })]);
-    },
-    props: {
-      chartId: {
-        default: chartId,
-        type: String
-      },
-      width: {
-        default: 400,
-        type: Number
-      },
-      height: {
-        default: 400,
-        type: Number
-      },
-      cssClasses: {
-        type: String,
-        default: ''
-      },
-      styles: {
-        type: Object
-      },
-      plugins: {
-        type: Array,
-        default: function _default() {
-          return [];
+
+var VueAlertify = {};
+
+VueAlertify.install = function (Vue, options) {
+    Object.assign(alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.defaults, options);
+
+    Object.defineProperty(Vue.prototype, '$alertify', {
+        get: function get() {
+            return {
+                success: function success(text) {
+                    "use strict";
+
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.success(text);
+                },
+                error: function error(text) {
+                    "use strict";
+
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.error(text);
+                },
+                warning: function warning(text) {
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.warning(text);
+                },
+                message: function message(text) {
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.message(text);
+                },
+                alert: function alert(text, cb) {
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.alert(text, cb);
+                },
+                alertWithTitle: function alertWithTitle(title, text, cb) {
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.alert(title, text, cb);
+                },
+                confirm: function confirm(text, ok, cancel) {
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.confirm(text, ok, cancel);
+                },
+                confirmWithTitle: function confirmWithTitle(title, text, ok, cancel) {
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.confirm(title, text, ok, cancel);
+                },
+                prompt: function prompt(text, defaultValue, ok, cancel) {
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.prompt(text, defaultValue, ok, cancel);
+                },
+                promptWithTitle: function promptWithTitle(title, text, defaultValue, ok, cancel) {
+                    return alertifyjs__WEBPACK_IMPORTED_MODULE_0___default.a.prompt(title, text, defaultValue, ok, cancel);
+                }
+            };
         }
-      }
-    },
-    data: function data() {
-      return {
-        _chart: null,
-        _plugins: this.plugins
-      };
-    },
-    methods: {
-      addPlugin: function addPlugin(plugin) {
-        this.$data._plugins.push(plugin);
-      },
-      generateLegend: function generateLegend() {
-        if (this.$data._chart) {
-          return this.$data._chart.generateLegend();
-        }
-      },
-      renderChart: function renderChart(data, options) {
-        if (this.$data._chart) this.$data._chart.destroy();
-        this.$data._chart = new chart_js__WEBPACK_IMPORTED_MODULE_0___default.a(this.$refs.canvas.getContext('2d'), {
-          type: chartType,
-          data: data,
-          options: options,
-          plugins: this.$data._plugins
-        });
-      }
-    },
-    beforeDestroy: function beforeDestroy() {
-      if (this.$data._chart) {
-        this.$data._chart.destroy();
-      }
-    }
-  };
-}
-var Bar = generateChart('bar-chart', 'bar');
-var HorizontalBar = generateChart('horizontalbar-chart', 'horizontalBar');
-var Doughnut = generateChart('doughnut-chart', 'doughnut');
-var Line = generateChart('line-chart', 'line');
-var Pie = generateChart('pie-chart', 'pie');
-var PolarArea = generateChart('polar-chart', 'polarArea');
-var Radar = generateChart('radar-chart', 'radar');
-var Bubble = generateChart('bubble-chart', 'bubble');
-var Scatter = generateChart('scatter-chart', 'scatter');
-/* harmony default export */ __webpack_exports__["default"] = ({
-  Bar: Bar,
-  HorizontalBar: HorizontalBar,
-  Doughnut: Doughnut,
-  Line: Line,
-  Pie: Pie,
-  PolarArea: PolarArea,
-  Radar: Radar,
-  Bubble: Bubble,
-  Scatter: Scatter
-});
-
-/***/ }),
-
-/***/ "./node_modules/vue-chartjs/es/index.js":
-/*!**********************************************!*\
-  !*** ./node_modules/vue-chartjs/es/index.js ***!
-  \**********************************************/
-/*! exports provided: default, VueCharts, Bar, HorizontalBar, Doughnut, Line, Pie, PolarArea, Radar, Bubble, Scatter, mixins, generateChart */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VueCharts", function() { return VueCharts; });
-/* harmony import */ var _mixins_index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mixins/index.js */ "./node_modules/vue-chartjs/es/mixins/index.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "mixins", function() { return _mixins_index_js__WEBPACK_IMPORTED_MODULE_0__["default"]; });
-
-/* harmony import */ var _BaseCharts__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./BaseCharts */ "./node_modules/vue-chartjs/es/BaseCharts.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Bar", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Bar"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HorizontalBar", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["HorizontalBar"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Doughnut", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Doughnut"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Line"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Pie", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Pie"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PolarArea", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["PolarArea"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Radar", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Radar"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Bubble", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Bubble"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Scatter", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Scatter"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "generateChart", function() { return _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["generateChart"]; });
-
-
-
-var VueCharts = {
-  Bar: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Bar"],
-  HorizontalBar: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["HorizontalBar"],
-  Doughnut: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Doughnut"],
-  Line: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Line"],
-  Pie: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Pie"],
-  PolarArea: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["PolarArea"],
-  Radar: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Radar"],
-  Bubble: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Bubble"],
-  Scatter: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["Scatter"],
-  mixins: _mixins_index_js__WEBPACK_IMPORTED_MODULE_0__["default"],
-  generateChart: _BaseCharts__WEBPACK_IMPORTED_MODULE_1__["generateChart"],
-  render: function render() {
-    return console.error('[vue-chartjs]: This is not a vue component. It is the whole object containing all vue components. Please import the named export or access the components over the dot notation. For more info visit https://vue-chartjs.org/#/home?id=quick-start');
-  }
+    });
 };
-/* harmony default export */ __webpack_exports__["default"] = (VueCharts);
 
+// if in browser , bind VueAlertify to window and load Alertify.css
+if (window && document) {
+    window.VueAlertify = VueAlertify;
 
-/***/ }),
-
-/***/ "./node_modules/vue-chartjs/es/mixins/index.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/vue-chartjs/es/mixins/index.js ***!
-  \*****************************************************/
-/*! exports provided: reactiveData, reactiveProp, default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "reactiveData", function() { return reactiveData; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "reactiveProp", function() { return reactiveProp; });
-function dataHandler(newData, oldData) {
-  if (oldData) {
-    var chart = this.$data._chart;
-    var newDatasetLabels = newData.datasets.map(function (dataset) {
-      return dataset.label;
-    });
-    var oldDatasetLabels = oldData.datasets.map(function (dataset) {
-      return dataset.label;
-    });
-    var oldLabels = JSON.stringify(oldDatasetLabels);
-    var newLabels = JSON.stringify(newDatasetLabels);
-
-    if (newLabels === oldLabels && oldData.datasets.length === newData.datasets.length) {
-      newData.datasets.forEach(function (dataset, i) {
-        var oldDatasetKeys = Object.keys(oldData.datasets[i]);
-        var newDatasetKeys = Object.keys(dataset);
-        var deletionKeys = oldDatasetKeys.filter(function (key) {
-          return key !== '_meta' && newDatasetKeys.indexOf(key) === -1;
-        });
-        deletionKeys.forEach(function (deletionKey) {
-          delete chart.data.datasets[i][deletionKey];
-        });
-
-        for (var attribute in dataset) {
-          if (dataset.hasOwnProperty(attribute)) {
-            chart.data.datasets[i][attribute] = dataset[attribute];
-          }
-        }
-      });
-
-      if (newData.hasOwnProperty('labels')) {
-        chart.data.labels = newData.labels;
-        this.$emit('labels:update');
-      }
-
-      if (newData.hasOwnProperty('xLabels')) {
-        chart.data.xLabels = newData.xLabels;
-        this.$emit('xlabels:update');
-      }
-
-      if (newData.hasOwnProperty('yLabels')) {
-        chart.data.yLabels = newData.yLabels;
-        this.$emit('ylabels:update');
-      }
-
-      chart.update();
-      this.$emit('chart:update');
-    } else {
-      if (chart) {
-        chart.destroy();
-        this.$emit('chart:destroy');
-      }
-
-      this.renderChart(this.chartData, this.options);
-      this.$emit('chart:render');
-    }
-  } else {
-    if (this.$data._chart) {
-      this.$data._chart.destroy();
-
-      this.$emit('chart:destroy');
-    }
-
-    this.renderChart(this.chartData, this.options);
-    this.$emit('chart:render');
-  }
+    loadCSSIfNotAlreadyLoaded(document, "//cdn.jsdelivr.net/npm/alertifyjs@1.11.0/build/css/alertify.min.css");
+    loadCSSIfNotAlreadyLoaded(document, "//cdn.jsdelivr.net/npm/alertifyjs@1.11.0/build/css/themes/default.min.css");
 }
 
-var reactiveData = {
-  data: function data() {
-    return {
-      chartData: null
-    };
-  },
-  watch: {
-    'chartData': dataHandler
-  }
-};
-var reactiveProp = {
-  props: {
-    chartData: {
-      type: Object,
-      required: true,
-      default: function _default() {}
+function loadCSSIfNotAlreadyLoaded(document, href) {
+    var ss = document.styleSheets;
+    for (var i = 0, max = ss.length; i < max; i++) {
+        if (ss[i].href == href) return;
     }
-  },
-  watch: {
-    'chartData': dataHandler
-  }
-};
-/* harmony default export */ __webpack_exports__["default"] = ({
-  reactiveData: reactiveData,
-  reactiveProp: reactiveProp
-});
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+
+    document.getElementsByTagName("head")[0].appendChild(link);
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (VueAlertify);
 
 /***/ }),
 
-/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&":
-/*!*******************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e& ***!
-  \*******************************************************************************************************************************************************************************************************************/
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Charts/ChartComponent.vue?vue&type=template&id=489cddfe&":
+/*!************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Charts/ChartComponent.vue?vue&type=template&id=489cddfe& ***!
+  \************************************************************************************************************************************************************************************************************************/
 /*! exports provided: render, staticRenderFns */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -70217,7 +74718,693 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("p", { staticClass: "h1" }, [_vm._v("Here! :v Example Component")])
+  return _vm._m(0)
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "container" }, [
+      _c("div", { staticClass: "row" }, [
+        _c("div", { staticClass: "col-12" }, [
+          _c("canvas", { attrs: { id: "my-chart-line" } })
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "col-6" }, [
+          _c("canvas", { attrs: { id: "my-chart-bar" } })
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "col-6" }, [
+          _c("canvas", { attrs: { id: "my-chart-barHorizontal" } })
+        ])
+      ])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Users/UserComponent.vue?vue&type=template&id=007a99f0&":
+/*!**********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Users/UserComponent.vue?vue&type=template&id=007a99f0& ***!
+  \**********************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "container" }, [
+    _c("div", { staticClass: "block" }, [
+      _c("div", { staticClass: "block-header bg-primary-dark" }, [
+        _c("h3", { staticClass: "block-title text-white text-center" }, [
+          _vm._v("USUARIOS")
+        ]),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-success",
+            attrs: { type: "button" },
+            on: {
+              click: function($event) {
+                return _vm.showModal(
+                  "UserModal",
+                  null,
+                  "Nuevo Usuario",
+                  "store"
+                )
+              }
+            }
+          },
+          [_c("i", { staticClass: "fa fa-plus" })]
+        )
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "block-content" },
+        [
+          _c("div", { staticClass: "row mb-4" }, [
+            _c("div", { staticClass: "col-2" }, [
+              _c("div", { staticClass: "input-group input-group-primary" }, [
+                _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.sort_selected,
+                        expression: "sort_selected"
+                      }
+                    ],
+                    staticClass: "form-control",
+                    on: {
+                      change: [
+                        function($event) {
+                          var $$selectedVal = Array.prototype.filter
+                            .call($event.target.options, function(o) {
+                              return o.selected
+                            })
+                            .map(function(o) {
+                              var val = "_value" in o ? o._value : o.value
+                              return val
+                            })
+                          _vm.sort_selected = $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        },
+                        function($event) {
+                          return _vm.getData()
+                        }
+                      ]
+                    }
+                  },
+                  _vm._l(_vm.sort_table, function(option) {
+                    return _c("option", {
+                      domProps: { textContent: _vm._s(option) }
+                    })
+                  }),
+                  0
+                )
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-4 offset-6" }, [
+              _c("div", { staticClass: "input-group input-group-primary" }, [
+                _c("div", { staticClass: "input-group-prepend" }, [
+                  _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-primary",
+                      attrs: { type: "button" },
+                      on: {
+                        click: function($event) {
+                          return _vm.getData()
+                        }
+                      }
+                    },
+                    [_c("i", { staticClass: "fa fa-search" })]
+                  )
+                ]),
+                _vm._v(" "),
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.search_table,
+                      expression: "search_table"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: { type: "text", placeholder: "Buscar" },
+                  domProps: { value: _vm.search_table },
+                  on: {
+                    keyup: function($event) {
+                      if (
+                        !$event.type.indexOf("key") &&
+                        _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+                      ) {
+                        return null
+                      }
+                      return _vm.getData()
+                    },
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.search_table = $event.target.value
+                    }
+                  }
+                })
+              ])
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "table-responsive" }, [
+            _c("table", { staticClass: "table table-hover table-vcenter" }, [
+              _vm._m(0),
+              _vm._v(" "),
+              _c(
+                "tbody",
+                [
+                  _vm.table_data.length == 0
+                    ? _c("tr", [
+                        _c(
+                          "td",
+                          {
+                            staticClass: "bg-secondary text-center text-light",
+                            attrs: { colspan: "5" }
+                          },
+                          [_vm._v("No se encontraron datos.")]
+                        )
+                      ])
+                    : _vm._l(_vm.table_data, function(
+                        item_table,
+                        index_for_table
+                      ) {
+                        return _c("tr", { key: index_for_table }, [
+                          _c("td", {
+                            domProps: {
+                              textContent: _vm._s(index_for_table + 1)
+                            }
+                          }),
+                          _vm._v(" "),
+                          _c("td", { staticClass: "font-w600 font-size-sm" }, [
+                            _c("a", {
+                              attrs: { href: "#" },
+                              domProps: {
+                                textContent: _vm._s(item_table.username)
+                              }
+                            })
+                          ]),
+                          _vm._v(" "),
+                          _c("td", {
+                            staticClass: "font-w600 font-size-sm",
+                            domProps: { textContent: _vm._s(item_table.email) }
+                          }),
+                          _vm._v(" "),
+                          _vm._m(1, true),
+                          _vm._v(" "),
+                          _c("td", { staticClass: "text-center" }, [
+                            _c("div", { staticClass: "btn-group" }, [
+                              _c(
+                                "button",
+                                {
+                                  staticClass: "btn btn-sm btn-light",
+                                  attrs: {
+                                    type: "button",
+                                    "data-toggle": "tooltip",
+                                    title: "Edit Client"
+                                  },
+                                  on: {
+                                    click: function($event) {
+                                      return _vm.showModal(
+                                        "UserModal",
+                                        item_table,
+                                        "Editar Usuario",
+                                        "edit"
+                                      )
+                                    }
+                                  }
+                                },
+                                [
+                                  _c("i", {
+                                    staticClass: "fa fa-fw fa-pencil-alt"
+                                  })
+                                ]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "button",
+                                {
+                                  staticClass: "btn btn-sm btn-light",
+                                  attrs: {
+                                    type: "button",
+                                    "data-toggle": "tooltip",
+                                    title: "Remove Client"
+                                  },
+                                  on: {
+                                    click: function($event) {
+                                      return _vm.deleteData(item_table.id)
+                                    }
+                                  }
+                                },
+                                [_c("i", { staticClass: "fa fa-fw fa-times" })]
+                              )
+                            ])
+                          ])
+                        ])
+                      })
+                ],
+                2
+              )
+            ])
+          ]),
+          _vm._v(" "),
+          _vm.table_data.length > 0
+            ? _c("pagination", {
+                attrs: { table_pagination: _vm.table_pagination },
+                on: { changePage: _vm.changePage }
+              })
+            : _vm._e()
+        ],
+        1
+      )
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        attrs: {
+          id: "UserModal",
+          tabindex: "-1",
+          role: "dialog",
+          "aria-labelledby": "UserModal",
+          "aria-hidden": "true"
+        }
+      },
+      [
+        _c(
+          "div",
+          {
+            staticClass: "modal-dialog modal-dialog-popout",
+            attrs: { role: "document" }
+          },
+          [
+            _c("div", { staticClass: "modal-content" }, [
+              _c(
+                "div",
+                { staticClass: "block block-themed block-transparent mb-0" },
+                [
+                  _c("div", { staticClass: "block-header bg-primary-dark" }, [
+                    _c("h3", {
+                      staticClass: "block-title",
+                      domProps: { textContent: _vm._s(_vm.modal_option) }
+                    }),
+                    _vm._v(" "),
+                    _vm._m(2)
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "block-content font-size-sm" }, [
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", { attrs: { for: "example-text-input" } }, [
+                        _vm._v("Nombre de Usuario")
+                      ]),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.userData.username,
+                            expression: "userData.username"
+                          }
+                        ],
+                        staticClass: "form-control",
+                        attrs: { type: "text" },
+                        domProps: { value: _vm.userData.username },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(
+                              _vm.userData,
+                              "username",
+                              $event.target.value
+                            )
+                          }
+                        }
+                      })
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", { attrs: { for: "example-email-input" } }, [
+                        _vm._v("Correo Electronico")
+                      ]),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.userData.email,
+                            expression: "userData.email"
+                          }
+                        ],
+                        staticClass: "form-control",
+                        attrs: { type: "email" },
+                        domProps: { value: _vm.userData.email },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(_vm.userData, "email", $event.target.value)
+                          }
+                        }
+                      })
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "form-group" }, [
+                      _c(
+                        "label",
+                        { attrs: { for: "example-password-input" } },
+                        [_vm._v("Contraseña")]
+                      ),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.userData.password,
+                            expression: "userData.password"
+                          }
+                        ],
+                        staticClass: "form-control",
+                        attrs: { type: "password" },
+                        domProps: { value: _vm.userData.password },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(
+                              _vm.userData,
+                              "password",
+                              $event.target.value
+                            )
+                          }
+                        }
+                      })
+                    ])
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass:
+                        "block-content block-content-full text-right border-top"
+                    },
+                    [
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-sm btn-light",
+                          attrs: { type: "button", "data-dismiss": "modal" }
+                        },
+                        [_vm._v("Cerrar")]
+                      ),
+                      _vm._v(" "),
+                      _vm.modal_type == "store"
+                        ? _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-sm btn-success",
+                              attrs: {
+                                type: "button",
+                                "data-dismiss": "modal"
+                              },
+                              on: {
+                                click: function($event) {
+                                  return _vm.storeData()
+                                }
+                              }
+                            },
+                            [
+                              _c("i", { staticClass: "fa fa-check mr-1" }),
+                              _vm._v("Guardar")
+                            ]
+                          )
+                        : _vm._e(),
+                      _vm._v(" "),
+                      _vm.modal_type == "edit"
+                        ? _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-sm btn-success",
+                              attrs: {
+                                type: "button",
+                                "data-dismiss": "modal"
+                              },
+                              on: {
+                                click: function($event) {
+                                  return _vm.updateData()
+                                }
+                              }
+                            },
+                            [
+                              _c("i", { staticClass: "fa fa-check mr-1" }),
+                              _vm._v("Actualizar")
+                            ]
+                          )
+                        : _vm._e()
+                    ]
+                  )
+                ]
+              )
+            ])
+          ]
+        )
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", [
+        _c("th", [_vm._v("#")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Nombre")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Correo Electronico")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Rol")]),
+        _vm._v(" "),
+        _c(
+          "th",
+          { staticClass: "text-center", staticStyle: { width: "100px" } },
+          [_vm._v("Acciones")]
+        )
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("td", { staticClass: "d-none d-sm-table-cell" }, [
+      _c("span", { staticClass: "badge badge-info" }, [_vm._v("Business")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "block-options" }, [
+      _c(
+        "button",
+        {
+          staticClass: "btn-block-option",
+          attrs: {
+            type: "button",
+            "data-dismiss": "modal",
+            "aria-label": "Close"
+          }
+        },
+        [_c("i", { staticClass: "fa fa-fw fa-times" })]
+      )
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=template&id=ae87b2fa&":
+/*!********************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=template&id=ae87b2fa& ***!
+  \********************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "container" }, [
+    _c("div", { staticClass: "row mt-4 mb-4" }, [
+      _c("div", { staticClass: "col-lg-3" }, [
+        _c("span", [
+          _vm._v(
+            "Pagina " +
+              _vm._s(_vm.table_pagination.current_page) +
+              " De " +
+              _vm._s(_vm.table_pagination.last_page) +
+              "."
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-lg-6 text-center" }, [
+        _c(
+          "div",
+          {
+            staticClass: "btn-group",
+            attrs: { role: "group", "aria-label": "Basic example" }
+          },
+          [
+            _vm.table_pagination.current_page > 1
+              ? _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-outline-primary",
+                    attrs: { type: "button" },
+                    on: {
+                      click: function($event) {
+                        $event.preventDefault()
+                        return _vm.$emit(
+                          "changePage",
+                          _vm.table_pagination.current_page - 1
+                        )
+                      }
+                    }
+                  },
+                  [
+                    _vm._v(
+                      "\r\n                    Anterior   \r\n                "
+                    )
+                  ]
+                )
+              : _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-outline-primary disabled",
+                    attrs: { type: "button" }
+                  },
+                  [
+                    _vm._v(
+                      "\r\n                    Anterior   \r\n                "
+                    )
+                  ]
+                ),
+            _vm._v(" "),
+            _vm._l(_vm.pagesNumber, function(page) {
+              return _c(
+                "button",
+                {
+                  staticClass: "btn btn-outline-primary",
+                  class: [page == _vm.isActived ? "active" : ""],
+                  attrs: { type: "button" },
+                  on: {
+                    click: function($event) {
+                      $event.preventDefault()
+                      return _vm.$emit("changePage", page)
+                    }
+                  }
+                },
+                [
+                  _vm._v(
+                    "\r\n                    " +
+                      _vm._s(page) +
+                      "\r\n                "
+                  )
+                ]
+              )
+            }),
+            _vm._v(" "),
+            _vm.table_pagination.current_page < _vm.table_pagination.last_page
+              ? _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-outline-primary",
+                    attrs: { type: "button" },
+                    on: {
+                      click: function($event) {
+                        $event.preventDefault()
+                        return _vm.$emit(
+                          "changePage",
+                          _vm.table_pagination.current_page + 1
+                        )
+                      }
+                    }
+                  },
+                  [
+                    _vm._v(
+                      "\r\n                    Siguiente\r\n                "
+                    )
+                  ]
+                )
+              : _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-outline-primary disabled",
+                    attrs: { type: "button" }
+                  },
+                  [
+                    _vm._v(
+                      "\r\n                    Siguiente\r\n                "
+                    )
+                  ]
+                )
+          ],
+          2
+        )
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-lg-3 text-right" }, [
+        _vm._v(
+          "\r\n            " +
+            _vm._s(_vm.table_pagination.total) +
+            " Registros Encontrados.\r\n        "
+        )
+      ])
+    ])
+  ])
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -70330,6 +75517,17 @@ function normalizeComponent (
   }
 }
 
+
+/***/ }),
+
+/***/ "./node_modules/vue-multiselect/dist/vue-multiselect.min.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/vue-multiselect/dist/vue-multiselect.min.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+!function(t,e){ true?module.exports=e():undefined}(this,function(){return function(t){function e(i){if(n[i])return n[i].exports;var r=n[i]={i:i,l:!1,exports:{}};return t[i].call(r.exports,r,r.exports,e),r.l=!0,r.exports}var n={};return e.m=t,e.c=n,e.i=function(t){return t},e.d=function(t,n,i){e.o(t,n)||Object.defineProperty(t,n,{configurable:!1,enumerable:!0,get:i})},e.n=function(t){var n=t&&t.__esModule?function(){return t.default}:function(){return t};return e.d(n,"a",n),n},e.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},e.p="/",e(e.s=60)}([function(t,e){var n=t.exports="undefined"!=typeof window&&window.Math==Math?window:"undefined"!=typeof self&&self.Math==Math?self:Function("return this")();"number"==typeof __g&&(__g=n)},function(t,e,n){var i=n(49)("wks"),r=n(30),o=n(0).Symbol,s="function"==typeof o;(t.exports=function(t){return i[t]||(i[t]=s&&o[t]||(s?o:r)("Symbol."+t))}).store=i},function(t,e,n){var i=n(5);t.exports=function(t){if(!i(t))throw TypeError(t+" is not an object!");return t}},function(t,e,n){var i=n(0),r=n(10),o=n(8),s=n(6),u=n(11),a=function(t,e,n){var l,c,f,p,h=t&a.F,d=t&a.G,v=t&a.S,g=t&a.P,y=t&a.B,m=d?i:v?i[e]||(i[e]={}):(i[e]||{}).prototype,b=d?r:r[e]||(r[e]={}),_=b.prototype||(b.prototype={});d&&(n=e);for(l in n)c=!h&&m&&void 0!==m[l],f=(c?m:n)[l],p=y&&c?u(f,i):g&&"function"==typeof f?u(Function.call,f):f,m&&s(m,l,f,t&a.U),b[l]!=f&&o(b,l,p),g&&_[l]!=f&&(_[l]=f)};i.core=r,a.F=1,a.G=2,a.S=4,a.P=8,a.B=16,a.W=32,a.U=64,a.R=128,t.exports=a},function(t,e,n){t.exports=!n(7)(function(){return 7!=Object.defineProperty({},"a",{get:function(){return 7}}).a})},function(t,e){t.exports=function(t){return"object"==typeof t?null!==t:"function"==typeof t}},function(t,e,n){var i=n(0),r=n(8),o=n(12),s=n(30)("src"),u=Function.toString,a=(""+u).split("toString");n(10).inspectSource=function(t){return u.call(t)},(t.exports=function(t,e,n,u){var l="function"==typeof n;l&&(o(n,"name")||r(n,"name",e)),t[e]!==n&&(l&&(o(n,s)||r(n,s,t[e]?""+t[e]:a.join(String(e)))),t===i?t[e]=n:u?t[e]?t[e]=n:r(t,e,n):(delete t[e],r(t,e,n)))})(Function.prototype,"toString",function(){return"function"==typeof this&&this[s]||u.call(this)})},function(t,e){t.exports=function(t){try{return!!t()}catch(t){return!0}}},function(t,e,n){var i=n(13),r=n(25);t.exports=n(4)?function(t,e,n){return i.f(t,e,r(1,n))}:function(t,e,n){return t[e]=n,t}},function(t,e){var n={}.toString;t.exports=function(t){return n.call(t).slice(8,-1)}},function(t,e){var n=t.exports={version:"2.5.7"};"number"==typeof __e&&(__e=n)},function(t,e,n){var i=n(14);t.exports=function(t,e,n){if(i(t),void 0===e)return t;switch(n){case 1:return function(n){return t.call(e,n)};case 2:return function(n,i){return t.call(e,n,i)};case 3:return function(n,i,r){return t.call(e,n,i,r)}}return function(){return t.apply(e,arguments)}}},function(t,e){var n={}.hasOwnProperty;t.exports=function(t,e){return n.call(t,e)}},function(t,e,n){var i=n(2),r=n(41),o=n(29),s=Object.defineProperty;e.f=n(4)?Object.defineProperty:function(t,e,n){if(i(t),e=o(e,!0),i(n),r)try{return s(t,e,n)}catch(t){}if("get"in n||"set"in n)throw TypeError("Accessors not supported!");return"value"in n&&(t[e]=n.value),t}},function(t,e){t.exports=function(t){if("function"!=typeof t)throw TypeError(t+" is not a function!");return t}},function(t,e){t.exports={}},function(t,e){t.exports=function(t){if(void 0==t)throw TypeError("Can't call method on  "+t);return t}},function(t,e,n){"use strict";var i=n(7);t.exports=function(t,e){return!!t&&i(function(){e?t.call(null,function(){},1):t.call(null)})}},function(t,e,n){var i=n(23),r=n(16);t.exports=function(t){return i(r(t))}},function(t,e,n){var i=n(53),r=Math.min;t.exports=function(t){return t>0?r(i(t),9007199254740991):0}},function(t,e,n){var i=n(11),r=n(23),o=n(28),s=n(19),u=n(64);t.exports=function(t,e){var n=1==t,a=2==t,l=3==t,c=4==t,f=6==t,p=5==t||f,h=e||u;return function(e,u,d){for(var v,g,y=o(e),m=r(y),b=i(u,d,3),_=s(m.length),x=0,w=n?h(e,_):a?h(e,0):void 0;_>x;x++)if((p||x in m)&&(v=m[x],g=b(v,x,y),t))if(n)w[x]=g;else if(g)switch(t){case 3:return!0;case 5:return v;case 6:return x;case 2:w.push(v)}else if(c)return!1;return f?-1:l||c?c:w}}},function(t,e,n){var i=n(5),r=n(0).document,o=i(r)&&i(r.createElement);t.exports=function(t){return o?r.createElement(t):{}}},function(t,e){t.exports="constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf".split(",")},function(t,e,n){var i=n(9);t.exports=Object("z").propertyIsEnumerable(0)?Object:function(t){return"String"==i(t)?t.split(""):Object(t)}},function(t,e){t.exports=!1},function(t,e){t.exports=function(t,e){return{enumerable:!(1&t),configurable:!(2&t),writable:!(4&t),value:e}}},function(t,e,n){var i=n(13).f,r=n(12),o=n(1)("toStringTag");t.exports=function(t,e,n){t&&!r(t=n?t:t.prototype,o)&&i(t,o,{configurable:!0,value:e})}},function(t,e,n){var i=n(49)("keys"),r=n(30);t.exports=function(t){return i[t]||(i[t]=r(t))}},function(t,e,n){var i=n(16);t.exports=function(t){return Object(i(t))}},function(t,e,n){var i=n(5);t.exports=function(t,e){if(!i(t))return t;var n,r;if(e&&"function"==typeof(n=t.toString)&&!i(r=n.call(t)))return r;if("function"==typeof(n=t.valueOf)&&!i(r=n.call(t)))return r;if(!e&&"function"==typeof(n=t.toString)&&!i(r=n.call(t)))return r;throw TypeError("Can't convert object to primitive value")}},function(t,e){var n=0,i=Math.random();t.exports=function(t){return"Symbol(".concat(void 0===t?"":t,")_",(++n+i).toString(36))}},function(t,e,n){"use strict";var i=n(0),r=n(12),o=n(9),s=n(67),u=n(29),a=n(7),l=n(77).f,c=n(45).f,f=n(13).f,p=n(51).trim,h=i.Number,d=h,v=h.prototype,g="Number"==o(n(44)(v)),y="trim"in String.prototype,m=function(t){var e=u(t,!1);if("string"==typeof e&&e.length>2){e=y?e.trim():p(e,3);var n,i,r,o=e.charCodeAt(0);if(43===o||45===o){if(88===(n=e.charCodeAt(2))||120===n)return NaN}else if(48===o){switch(e.charCodeAt(1)){case 66:case 98:i=2,r=49;break;case 79:case 111:i=8,r=55;break;default:return+e}for(var s,a=e.slice(2),l=0,c=a.length;l<c;l++)if((s=a.charCodeAt(l))<48||s>r)return NaN;return parseInt(a,i)}}return+e};if(!h(" 0o1")||!h("0b1")||h("+0x1")){h=function(t){var e=arguments.length<1?0:t,n=this;return n instanceof h&&(g?a(function(){v.valueOf.call(n)}):"Number"!=o(n))?s(new d(m(e)),n,h):m(e)};for(var b,_=n(4)?l(d):"MAX_VALUE,MIN_VALUE,NaN,NEGATIVE_INFINITY,POSITIVE_INFINITY,EPSILON,isFinite,isInteger,isNaN,isSafeInteger,MAX_SAFE_INTEGER,MIN_SAFE_INTEGER,parseFloat,parseInt,isInteger".split(","),x=0;_.length>x;x++)r(d,b=_[x])&&!r(h,b)&&f(h,b,c(d,b));h.prototype=v,v.constructor=h,n(6)(i,"Number",h)}},function(t,e,n){"use strict";function i(t){return 0!==t&&(!(!Array.isArray(t)||0!==t.length)||!t)}function r(t){return function(){return!t.apply(void 0,arguments)}}function o(t,e){return void 0===t&&(t="undefined"),null===t&&(t="null"),!1===t&&(t="false"),-1!==t.toString().toLowerCase().indexOf(e.trim())}function s(t,e,n,i){return t.filter(function(t){return o(i(t,n),e)})}function u(t){return t.filter(function(t){return!t.$isLabel})}function a(t,e){return function(n){return n.reduce(function(n,i){return i[t]&&i[t].length?(n.push({$groupLabel:i[e],$isLabel:!0}),n.concat(i[t])):n},[])}}function l(t,e,i,r,o){return function(u){return u.map(function(u){var a;if(!u[i])return console.warn("Options passed to vue-multiselect do not contain groups, despite the config."),[];var l=s(u[i],t,e,o);return l.length?(a={},n.i(d.a)(a,r,u[r]),n.i(d.a)(a,i,l),a):[]})}}var c=n(59),f=n(54),p=(n.n(f),n(95)),h=(n.n(p),n(31)),d=(n.n(h),n(58)),v=n(91),g=(n.n(v),n(98)),y=(n.n(g),n(92)),m=(n.n(y),n(88)),b=(n.n(m),n(97)),_=(n.n(b),n(89)),x=(n.n(_),n(96)),w=(n.n(x),n(93)),S=(n.n(w),n(90)),O=(n.n(S),function(){for(var t=arguments.length,e=new Array(t),n=0;n<t;n++)e[n]=arguments[n];return function(t){return e.reduce(function(t,e){return e(t)},t)}});e.a={data:function(){return{search:"",isOpen:!1,preferredOpenDirection:"below",optimizedHeight:this.maxHeight}},props:{internalSearch:{type:Boolean,default:!0},options:{type:Array,required:!0},multiple:{type:Boolean,default:!1},value:{type:null,default:function(){return[]}},trackBy:{type:String},label:{type:String},searchable:{type:Boolean,default:!0},clearOnSelect:{type:Boolean,default:!0},hideSelected:{type:Boolean,default:!1},placeholder:{type:String,default:"Select option"},allowEmpty:{type:Boolean,default:!0},resetAfter:{type:Boolean,default:!1},closeOnSelect:{type:Boolean,default:!0},customLabel:{type:Function,default:function(t,e){return i(t)?"":e?t[e]:t}},taggable:{type:Boolean,default:!1},tagPlaceholder:{type:String,default:"Press enter to create a tag"},tagPosition:{type:String,default:"top"},max:{type:[Number,Boolean],default:!1},id:{default:null},optionsLimit:{type:Number,default:1e3},groupValues:{type:String},groupLabel:{type:String},groupSelect:{type:Boolean,default:!1},blockKeys:{type:Array,default:function(){return[]}},preserveSearch:{type:Boolean,default:!1},preselectFirst:{type:Boolean,default:!1}},mounted:function(){!this.multiple&&this.max&&console.warn("[Vue-Multiselect warn]: Max prop should not be used when prop Multiple equals false."),this.preselectFirst&&!this.internalValue.length&&this.options.length&&this.select(this.filteredOptions[0])},computed:{internalValue:function(){return this.value||0===this.value?Array.isArray(this.value)?this.value:[this.value]:[]},filteredOptions:function(){var t=this.search||"",e=t.toLowerCase().trim(),n=this.options.concat();return n=this.internalSearch?this.groupValues?this.filterAndFlat(n,e,this.label):s(n,e,this.label,this.customLabel):this.groupValues?a(this.groupValues,this.groupLabel)(n):n,n=this.hideSelected?n.filter(r(this.isSelected)):n,this.taggable&&e.length&&!this.isExistingOption(e)&&("bottom"===this.tagPosition?n.push({isTag:!0,label:t}):n.unshift({isTag:!0,label:t})),n.slice(0,this.optionsLimit)},valueKeys:function(){var t=this;return this.trackBy?this.internalValue.map(function(e){return e[t.trackBy]}):this.internalValue},optionKeys:function(){var t=this;return(this.groupValues?this.flatAndStrip(this.options):this.options).map(function(e){return t.customLabel(e,t.label).toString().toLowerCase()})},currentOptionLabel:function(){return this.multiple?this.searchable?"":this.placeholder:this.internalValue.length?this.getOptionLabel(this.internalValue[0]):this.searchable?"":this.placeholder}},watch:{internalValue:function(){this.resetAfter&&this.internalValue.length&&(this.search="",this.$emit("input",this.multiple?[]:null))},search:function(){this.$emit("search-change",this.search,this.id)}},methods:{getValue:function(){return this.multiple?this.internalValue:0===this.internalValue.length?null:this.internalValue[0]},filterAndFlat:function(t,e,n){return O(l(e,n,this.groupValues,this.groupLabel,this.customLabel),a(this.groupValues,this.groupLabel))(t)},flatAndStrip:function(t){return O(a(this.groupValues,this.groupLabel),u)(t)},updateSearch:function(t){this.search=t},isExistingOption:function(t){return!!this.options&&this.optionKeys.indexOf(t)>-1},isSelected:function(t){var e=this.trackBy?t[this.trackBy]:t;return this.valueKeys.indexOf(e)>-1},isOptionDisabled:function(t){return!!t.$isDisabled},getOptionLabel:function(t){if(i(t))return"";if(t.isTag)return t.label;if(t.$isLabel)return t.$groupLabel;var e=this.customLabel(t,this.label);return i(e)?"":e},select:function(t,e){if(t.$isLabel&&this.groupSelect)return void this.selectGroup(t);if(!(-1!==this.blockKeys.indexOf(e)||this.disabled||t.$isDisabled||t.$isLabel)&&(!this.max||!this.multiple||this.internalValue.length!==this.max)&&("Tab"!==e||this.pointerDirty)){if(t.isTag)this.$emit("tag",t.label,this.id),this.search="",this.closeOnSelect&&!this.multiple&&this.deactivate();else{if(this.isSelected(t))return void("Tab"!==e&&this.removeElement(t));this.$emit("select",t,this.id),this.multiple?this.$emit("input",this.internalValue.concat([t]),this.id):this.$emit("input",t,this.id),this.clearOnSelect&&(this.search="")}this.closeOnSelect&&this.deactivate()}},selectGroup:function(t){var e=this,n=this.options.find(function(n){return n[e.groupLabel]===t.$groupLabel});if(n)if(this.wholeGroupSelected(n)){this.$emit("remove",n[this.groupValues],this.id);var i=this.internalValue.filter(function(t){return-1===n[e.groupValues].indexOf(t)});this.$emit("input",i,this.id)}else{var r=n[this.groupValues].filter(function(t){return!(e.isOptionDisabled(t)||e.isSelected(t))});this.$emit("select",r,this.id),this.$emit("input",this.internalValue.concat(r),this.id)}},wholeGroupSelected:function(t){var e=this;return t[this.groupValues].every(function(t){return e.isSelected(t)||e.isOptionDisabled(t)})},wholeGroupDisabled:function(t){return t[this.groupValues].every(this.isOptionDisabled)},removeElement:function(t){var e=!(arguments.length>1&&void 0!==arguments[1])||arguments[1];if(!this.disabled&&!t.$isDisabled){if(!this.allowEmpty&&this.internalValue.length<=1)return void this.deactivate();var i="object"===n.i(c.a)(t)?this.valueKeys.indexOf(t[this.trackBy]):this.valueKeys.indexOf(t);if(this.$emit("remove",t,this.id),this.multiple){var r=this.internalValue.slice(0,i).concat(this.internalValue.slice(i+1));this.$emit("input",r,this.id)}else this.$emit("input",null,this.id);this.closeOnSelect&&e&&this.deactivate()}},removeLastElement:function(){-1===this.blockKeys.indexOf("Delete")&&0===this.search.length&&Array.isArray(this.internalValue)&&this.internalValue.length&&this.removeElement(this.internalValue[this.internalValue.length-1],!1)},activate:function(){var t=this;this.isOpen||this.disabled||(this.adjustPosition(),this.groupValues&&0===this.pointer&&this.filteredOptions.length&&(this.pointer=1),this.isOpen=!0,this.searchable?(this.preserveSearch||(this.search=""),this.$nextTick(function(){return t.$refs.search.focus()})):this.$el.focus(),this.$emit("open",this.id))},deactivate:function(){this.isOpen&&(this.isOpen=!1,this.searchable?this.$refs.search.blur():this.$el.blur(),this.preserveSearch||(this.search=""),this.$emit("close",this.getValue(),this.id))},toggle:function(){this.isOpen?this.deactivate():this.activate()},adjustPosition:function(){if("undefined"!=typeof window){var t=this.$el.getBoundingClientRect().top,e=window.innerHeight-this.$el.getBoundingClientRect().bottom;e>this.maxHeight||e>t||"below"===this.openDirection||"bottom"===this.openDirection?(this.preferredOpenDirection="below",this.optimizedHeight=Math.min(e-40,this.maxHeight)):(this.preferredOpenDirection="above",this.optimizedHeight=Math.min(t-40,this.maxHeight))}}}}},function(t,e,n){"use strict";var i=n(54),r=(n.n(i),n(31));n.n(r);e.a={data:function(){return{pointer:0,pointerDirty:!1}},props:{showPointer:{type:Boolean,default:!0},optionHeight:{type:Number,default:40}},computed:{pointerPosition:function(){return this.pointer*this.optionHeight},visibleElements:function(){return this.optimizedHeight/this.optionHeight}},watch:{filteredOptions:function(){this.pointerAdjust()},isOpen:function(){this.pointerDirty=!1}},methods:{optionHighlight:function(t,e){return{"multiselect__option--highlight":t===this.pointer&&this.showPointer,"multiselect__option--selected":this.isSelected(e)}},groupHighlight:function(t,e){var n=this;if(!this.groupSelect)return["multiselect__option--group","multiselect__option--disabled"];var i=this.options.find(function(t){return t[n.groupLabel]===e.$groupLabel});return i&&!this.wholeGroupDisabled(i)?["multiselect__option--group",{"multiselect__option--highlight":t===this.pointer&&this.showPointer},{"multiselect__option--group-selected":this.wholeGroupSelected(i)}]:"multiselect__option--disabled"},addPointerElement:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"Enter",e=t.key;this.filteredOptions.length>0&&this.select(this.filteredOptions[this.pointer],e),this.pointerReset()},pointerForward:function(){this.pointer<this.filteredOptions.length-1&&(this.pointer++,this.$refs.list.scrollTop<=this.pointerPosition-(this.visibleElements-1)*this.optionHeight&&(this.$refs.list.scrollTop=this.pointerPosition-(this.visibleElements-1)*this.optionHeight),this.filteredOptions[this.pointer]&&this.filteredOptions[this.pointer].$isLabel&&!this.groupSelect&&this.pointerForward()),this.pointerDirty=!0},pointerBackward:function(){this.pointer>0?(this.pointer--,this.$refs.list.scrollTop>=this.pointerPosition&&(this.$refs.list.scrollTop=this.pointerPosition),this.filteredOptions[this.pointer]&&this.filteredOptions[this.pointer].$isLabel&&!this.groupSelect&&this.pointerBackward()):this.filteredOptions[this.pointer]&&this.filteredOptions[0].$isLabel&&!this.groupSelect&&this.pointerForward(),this.pointerDirty=!0},pointerReset:function(){this.closeOnSelect&&(this.pointer=0,this.$refs.list&&(this.$refs.list.scrollTop=0))},pointerAdjust:function(){this.pointer>=this.filteredOptions.length-1&&(this.pointer=this.filteredOptions.length?this.filteredOptions.length-1:0),this.filteredOptions.length>0&&this.filteredOptions[this.pointer].$isLabel&&!this.groupSelect&&this.pointerForward()},pointerSet:function(t){this.pointer=t,this.pointerDirty=!0}}}},function(t,e,n){"use strict";var i=n(36),r=n(74),o=n(15),s=n(18);t.exports=n(72)(Array,"Array",function(t,e){this._t=s(t),this._i=0,this._k=e},function(){var t=this._t,e=this._k,n=this._i++;return!t||n>=t.length?(this._t=void 0,r(1)):"keys"==e?r(0,n):"values"==e?r(0,t[n]):r(0,[n,t[n]])},"values"),o.Arguments=o.Array,i("keys"),i("values"),i("entries")},function(t,e,n){"use strict";var i=n(31),r=(n.n(i),n(32)),o=n(33);e.a={name:"vue-multiselect",mixins:[r.a,o.a],props:{name:{type:String,default:""},selectLabel:{type:String,default:"Press enter to select"},selectGroupLabel:{type:String,default:"Press enter to select group"},selectedLabel:{type:String,default:"Selected"},deselectLabel:{type:String,default:"Press enter to remove"},deselectGroupLabel:{type:String,default:"Press enter to deselect group"},showLabels:{type:Boolean,default:!0},limit:{type:Number,default:99999},maxHeight:{type:Number,default:300},limitText:{type:Function,default:function(t){return"and ".concat(t," more")}},loading:{type:Boolean,default:!1},disabled:{type:Boolean,default:!1},openDirection:{type:String,default:""},showNoOptions:{type:Boolean,default:!0},showNoResults:{type:Boolean,default:!0},tabindex:{type:Number,default:0}},computed:{isSingleLabelVisible:function(){return(this.singleValue||0===this.singleValue)&&(!this.isOpen||!this.searchable)&&!this.visibleValues.length},isPlaceholderVisible:function(){return!(this.internalValue.length||this.searchable&&this.isOpen)},visibleValues:function(){return this.multiple?this.internalValue.slice(0,this.limit):[]},singleValue:function(){return this.internalValue[0]},deselectLabelText:function(){return this.showLabels?this.deselectLabel:""},deselectGroupLabelText:function(){return this.showLabels?this.deselectGroupLabel:""},selectLabelText:function(){return this.showLabels?this.selectLabel:""},selectGroupLabelText:function(){return this.showLabels?this.selectGroupLabel:""},selectedLabelText:function(){return this.showLabels?this.selectedLabel:""},inputStyle:function(){if(this.searchable||this.multiple&&this.value&&this.value.length)return this.isOpen?{width:"100%"}:{width:"0",position:"absolute",padding:"0"}},contentStyle:function(){return this.options.length?{display:"inline-block"}:{display:"block"}},isAbove:function(){return"above"===this.openDirection||"top"===this.openDirection||"below"!==this.openDirection&&"bottom"!==this.openDirection&&"above"===this.preferredOpenDirection},showSearchInput:function(){return this.searchable&&(!this.hasSingleSelectedSlot||!this.visibleSingleValue&&0!==this.visibleSingleValue||this.isOpen)}}}},function(t,e,n){var i=n(1)("unscopables"),r=Array.prototype;void 0==r[i]&&n(8)(r,i,{}),t.exports=function(t){r[i][t]=!0}},function(t,e,n){var i=n(18),r=n(19),o=n(85);t.exports=function(t){return function(e,n,s){var u,a=i(e),l=r(a.length),c=o(s,l);if(t&&n!=n){for(;l>c;)if((u=a[c++])!=u)return!0}else for(;l>c;c++)if((t||c in a)&&a[c]===n)return t||c||0;return!t&&-1}}},function(t,e,n){var i=n(9),r=n(1)("toStringTag"),o="Arguments"==i(function(){return arguments}()),s=function(t,e){try{return t[e]}catch(t){}};t.exports=function(t){var e,n,u;return void 0===t?"Undefined":null===t?"Null":"string"==typeof(n=s(e=Object(t),r))?n:o?i(e):"Object"==(u=i(e))&&"function"==typeof e.callee?"Arguments":u}},function(t,e,n){"use strict";var i=n(2);t.exports=function(){var t=i(this),e="";return t.global&&(e+="g"),t.ignoreCase&&(e+="i"),t.multiline&&(e+="m"),t.unicode&&(e+="u"),t.sticky&&(e+="y"),e}},function(t,e,n){var i=n(0).document;t.exports=i&&i.documentElement},function(t,e,n){t.exports=!n(4)&&!n(7)(function(){return 7!=Object.defineProperty(n(21)("div"),"a",{get:function(){return 7}}).a})},function(t,e,n){var i=n(9);t.exports=Array.isArray||function(t){return"Array"==i(t)}},function(t,e,n){"use strict";function i(t){var e,n;this.promise=new t(function(t,i){if(void 0!==e||void 0!==n)throw TypeError("Bad Promise constructor");e=t,n=i}),this.resolve=r(e),this.reject=r(n)}var r=n(14);t.exports.f=function(t){return new i(t)}},function(t,e,n){var i=n(2),r=n(76),o=n(22),s=n(27)("IE_PROTO"),u=function(){},a=function(){var t,e=n(21)("iframe"),i=o.length;for(e.style.display="none",n(40).appendChild(e),e.src="javascript:",t=e.contentWindow.document,t.open(),t.write("<script>document.F=Object<\/script>"),t.close(),a=t.F;i--;)delete a.prototype[o[i]];return a()};t.exports=Object.create||function(t,e){var n;return null!==t?(u.prototype=i(t),n=new u,u.prototype=null,n[s]=t):n=a(),void 0===e?n:r(n,e)}},function(t,e,n){var i=n(79),r=n(25),o=n(18),s=n(29),u=n(12),a=n(41),l=Object.getOwnPropertyDescriptor;e.f=n(4)?l:function(t,e){if(t=o(t),e=s(e,!0),a)try{return l(t,e)}catch(t){}if(u(t,e))return r(!i.f.call(t,e),t[e])}},function(t,e,n){var i=n(12),r=n(18),o=n(37)(!1),s=n(27)("IE_PROTO");t.exports=function(t,e){var n,u=r(t),a=0,l=[];for(n in u)n!=s&&i(u,n)&&l.push(n);for(;e.length>a;)i(u,n=e[a++])&&(~o(l,n)||l.push(n));return l}},function(t,e,n){var i=n(46),r=n(22);t.exports=Object.keys||function(t){return i(t,r)}},function(t,e,n){var i=n(2),r=n(5),o=n(43);t.exports=function(t,e){if(i(t),r(e)&&e.constructor===t)return e;var n=o.f(t);return(0,n.resolve)(e),n.promise}},function(t,e,n){var i=n(10),r=n(0),o=r["__core-js_shared__"]||(r["__core-js_shared__"]={});(t.exports=function(t,e){return o[t]||(o[t]=void 0!==e?e:{})})("versions",[]).push({version:i.version,mode:n(24)?"pure":"global",copyright:"© 2018 Denis Pushkarev (zloirock.ru)"})},function(t,e,n){var i=n(2),r=n(14),o=n(1)("species");t.exports=function(t,e){var n,s=i(t).constructor;return void 0===s||void 0==(n=i(s)[o])?e:r(n)}},function(t,e,n){var i=n(3),r=n(16),o=n(7),s=n(84),u="["+s+"]",a="​",l=RegExp("^"+u+u+"*"),c=RegExp(u+u+"*$"),f=function(t,e,n){var r={},u=o(function(){return!!s[t]()||a[t]()!=a}),l=r[t]=u?e(p):s[t];n&&(r[n]=l),i(i.P+i.F*u,"String",r)},p=f.trim=function(t,e){return t=String(r(t)),1&e&&(t=t.replace(l,"")),2&e&&(t=t.replace(c,"")),t};t.exports=f},function(t,e,n){var i,r,o,s=n(11),u=n(68),a=n(40),l=n(21),c=n(0),f=c.process,p=c.setImmediate,h=c.clearImmediate,d=c.MessageChannel,v=c.Dispatch,g=0,y={},m=function(){var t=+this;if(y.hasOwnProperty(t)){var e=y[t];delete y[t],e()}},b=function(t){m.call(t.data)};p&&h||(p=function(t){for(var e=[],n=1;arguments.length>n;)e.push(arguments[n++]);return y[++g]=function(){u("function"==typeof t?t:Function(t),e)},i(g),g},h=function(t){delete y[t]},"process"==n(9)(f)?i=function(t){f.nextTick(s(m,t,1))}:v&&v.now?i=function(t){v.now(s(m,t,1))}:d?(r=new d,o=r.port2,r.port1.onmessage=b,i=s(o.postMessage,o,1)):c.addEventListener&&"function"==typeof postMessage&&!c.importScripts?(i=function(t){c.postMessage(t+"","*")},c.addEventListener("message",b,!1)):i="onreadystatechange"in l("script")?function(t){a.appendChild(l("script")).onreadystatechange=function(){a.removeChild(this),m.call(t)}}:function(t){setTimeout(s(m,t,1),0)}),t.exports={set:p,clear:h}},function(t,e){var n=Math.ceil,i=Math.floor;t.exports=function(t){return isNaN(t=+t)?0:(t>0?i:n)(t)}},function(t,e,n){"use strict";var i=n(3),r=n(20)(5),o=!0;"find"in[]&&Array(1).find(function(){o=!1}),i(i.P+i.F*o,"Array",{find:function(t){return r(this,t,arguments.length>1?arguments[1]:void 0)}}),n(36)("find")},function(t,e,n){"use strict";var i,r,o,s,u=n(24),a=n(0),l=n(11),c=n(38),f=n(3),p=n(5),h=n(14),d=n(61),v=n(66),g=n(50),y=n(52).set,m=n(75)(),b=n(43),_=n(80),x=n(86),w=n(48),S=a.TypeError,O=a.process,L=O&&O.versions,k=L&&L.v8||"",P=a.Promise,T="process"==c(O),V=function(){},E=r=b.f,A=!!function(){try{var t=P.resolve(1),e=(t.constructor={})[n(1)("species")]=function(t){t(V,V)};return(T||"function"==typeof PromiseRejectionEvent)&&t.then(V)instanceof e&&0!==k.indexOf("6.6")&&-1===x.indexOf("Chrome/66")}catch(t){}}(),C=function(t){var e;return!(!p(t)||"function"!=typeof(e=t.then))&&e},D=function(t,e){if(!t._n){t._n=!0;var n=t._c;m(function(){for(var i=t._v,r=1==t._s,o=0;n.length>o;)!function(e){var n,o,s,u=r?e.ok:e.fail,a=e.resolve,l=e.reject,c=e.domain;try{u?(r||(2==t._h&&$(t),t._h=1),!0===u?n=i:(c&&c.enter(),n=u(i),c&&(c.exit(),s=!0)),n===e.promise?l(S("Promise-chain cycle")):(o=C(n))?o.call(n,a,l):a(n)):l(i)}catch(t){c&&!s&&c.exit(),l(t)}}(n[o++]);t._c=[],t._n=!1,e&&!t._h&&j(t)})}},j=function(t){y.call(a,function(){var e,n,i,r=t._v,o=N(t);if(o&&(e=_(function(){T?O.emit("unhandledRejection",r,t):(n=a.onunhandledrejection)?n({promise:t,reason:r}):(i=a.console)&&i.error&&i.error("Unhandled promise rejection",r)}),t._h=T||N(t)?2:1),t._a=void 0,o&&e.e)throw e.v})},N=function(t){return 1!==t._h&&0===(t._a||t._c).length},$=function(t){y.call(a,function(){var e;T?O.emit("rejectionHandled",t):(e=a.onrejectionhandled)&&e({promise:t,reason:t._v})})},F=function(t){var e=this;e._d||(e._d=!0,e=e._w||e,e._v=t,e._s=2,e._a||(e._a=e._c.slice()),D(e,!0))},M=function(t){var e,n=this;if(!n._d){n._d=!0,n=n._w||n;try{if(n===t)throw S("Promise can't be resolved itself");(e=C(t))?m(function(){var i={_w:n,_d:!1};try{e.call(t,l(M,i,1),l(F,i,1))}catch(t){F.call(i,t)}}):(n._v=t,n._s=1,D(n,!1))}catch(t){F.call({_w:n,_d:!1},t)}}};A||(P=function(t){d(this,P,"Promise","_h"),h(t),i.call(this);try{t(l(M,this,1),l(F,this,1))}catch(t){F.call(this,t)}},i=function(t){this._c=[],this._a=void 0,this._s=0,this._d=!1,this._v=void 0,this._h=0,this._n=!1},i.prototype=n(81)(P.prototype,{then:function(t,e){var n=E(g(this,P));return n.ok="function"!=typeof t||t,n.fail="function"==typeof e&&e,n.domain=T?O.domain:void 0,this._c.push(n),this._a&&this._a.push(n),this._s&&D(this,!1),n.promise},catch:function(t){return this.then(void 0,t)}}),o=function(){var t=new i;this.promise=t,this.resolve=l(M,t,1),this.reject=l(F,t,1)},b.f=E=function(t){return t===P||t===s?new o(t):r(t)}),f(f.G+f.W+f.F*!A,{Promise:P}),n(26)(P,"Promise"),n(83)("Promise"),s=n(10).Promise,f(f.S+f.F*!A,"Promise",{reject:function(t){var e=E(this);return(0,e.reject)(t),e.promise}}),f(f.S+f.F*(u||!A),"Promise",{resolve:function(t){return w(u&&this===s?P:this,t)}}),f(f.S+f.F*!(A&&n(73)(function(t){P.all(t).catch(V)})),"Promise",{all:function(t){var e=this,n=E(e),i=n.resolve,r=n.reject,o=_(function(){var n=[],o=0,s=1;v(t,!1,function(t){var u=o++,a=!1;n.push(void 0),s++,e.resolve(t).then(function(t){a||(a=!0,n[u]=t,--s||i(n))},r)}),--s||i(n)});return o.e&&r(o.v),n.promise},race:function(t){var e=this,n=E(e),i=n.reject,r=_(function(){v(t,!1,function(t){e.resolve(t).then(n.resolve,i)})});return r.e&&i(r.v),n.promise}})},function(t,e,n){"use strict";var i=n(3),r=n(10),o=n(0),s=n(50),u=n(48);i(i.P+i.R,"Promise",{finally:function(t){var e=s(this,r.Promise||o.Promise),n="function"==typeof t;return this.then(n?function(n){return u(e,t()).then(function(){return n})}:t,n?function(n){return u(e,t()).then(function(){throw n})}:t)}})},function(t,e,n){"use strict";function i(t){n(99)}var r=n(35),o=n(101),s=n(100),u=i,a=s(r.a,o.a,!1,u,null,null);e.a=a.exports},function(t,e,n){"use strict";function i(t,e,n){return e in t?Object.defineProperty(t,e,{value:n,enumerable:!0,configurable:!0,writable:!0}):t[e]=n,t}e.a=i},function(t,e,n){"use strict";function i(t){return(i="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(t){return typeof t}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t})(t)}function r(t){return(r="function"==typeof Symbol&&"symbol"===i(Symbol.iterator)?function(t){return i(t)}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":i(t)})(t)}e.a=r},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var i=n(34),r=(n.n(i),n(55)),o=(n.n(r),n(56)),s=(n.n(o),n(57)),u=n(32),a=n(33);n.d(e,"Multiselect",function(){return s.a}),n.d(e,"multiselectMixin",function(){return u.a}),n.d(e,"pointerMixin",function(){return a.a}),e.default=s.a},function(t,e){t.exports=function(t,e,n,i){if(!(t instanceof e)||void 0!==i&&i in t)throw TypeError(n+": incorrect invocation!");return t}},function(t,e,n){var i=n(14),r=n(28),o=n(23),s=n(19);t.exports=function(t,e,n,u,a){i(e);var l=r(t),c=o(l),f=s(l.length),p=a?f-1:0,h=a?-1:1;if(n<2)for(;;){if(p in c){u=c[p],p+=h;break}if(p+=h,a?p<0:f<=p)throw TypeError("Reduce of empty array with no initial value")}for(;a?p>=0:f>p;p+=h)p in c&&(u=e(u,c[p],p,l));return u}},function(t,e,n){var i=n(5),r=n(42),o=n(1)("species");t.exports=function(t){var e;return r(t)&&(e=t.constructor,"function"!=typeof e||e!==Array&&!r(e.prototype)||(e=void 0),i(e)&&null===(e=e[o])&&(e=void 0)),void 0===e?Array:e}},function(t,e,n){var i=n(63);t.exports=function(t,e){return new(i(t))(e)}},function(t,e,n){"use strict";var i=n(8),r=n(6),o=n(7),s=n(16),u=n(1);t.exports=function(t,e,n){var a=u(t),l=n(s,a,""[t]),c=l[0],f=l[1];o(function(){var e={};return e[a]=function(){return 7},7!=""[t](e)})&&(r(String.prototype,t,c),i(RegExp.prototype,a,2==e?function(t,e){return f.call(t,this,e)}:function(t){return f.call(t,this)}))}},function(t,e,n){var i=n(11),r=n(70),o=n(69),s=n(2),u=n(19),a=n(87),l={},c={},e=t.exports=function(t,e,n,f,p){var h,d,v,g,y=p?function(){return t}:a(t),m=i(n,f,e?2:1),b=0;if("function"!=typeof y)throw TypeError(t+" is not iterable!");if(o(y)){for(h=u(t.length);h>b;b++)if((g=e?m(s(d=t[b])[0],d[1]):m(t[b]))===l||g===c)return g}else for(v=y.call(t);!(d=v.next()).done;)if((g=r(v,m,d.value,e))===l||g===c)return g};e.BREAK=l,e.RETURN=c},function(t,e,n){var i=n(5),r=n(82).set;t.exports=function(t,e,n){var o,s=e.constructor;return s!==n&&"function"==typeof s&&(o=s.prototype)!==n.prototype&&i(o)&&r&&r(t,o),t}},function(t,e){t.exports=function(t,e,n){var i=void 0===n;switch(e.length){case 0:return i?t():t.call(n);case 1:return i?t(e[0]):t.call(n,e[0]);case 2:return i?t(e[0],e[1]):t.call(n,e[0],e[1]);case 3:return i?t(e[0],e[1],e[2]):t.call(n,e[0],e[1],e[2]);case 4:return i?t(e[0],e[1],e[2],e[3]):t.call(n,e[0],e[1],e[2],e[3])}return t.apply(n,e)}},function(t,e,n){var i=n(15),r=n(1)("iterator"),o=Array.prototype;t.exports=function(t){return void 0!==t&&(i.Array===t||o[r]===t)}},function(t,e,n){var i=n(2);t.exports=function(t,e,n,r){try{return r?e(i(n)[0],n[1]):e(n)}catch(e){var o=t.return;throw void 0!==o&&i(o.call(t)),e}}},function(t,e,n){"use strict";var i=n(44),r=n(25),o=n(26),s={};n(8)(s,n(1)("iterator"),function(){return this}),t.exports=function(t,e,n){t.prototype=i(s,{next:r(1,n)}),o(t,e+" Iterator")}},function(t,e,n){"use strict";var i=n(24),r=n(3),o=n(6),s=n(8),u=n(15),a=n(71),l=n(26),c=n(78),f=n(1)("iterator"),p=!([].keys&&"next"in[].keys()),h=function(){return this};t.exports=function(t,e,n,d,v,g,y){a(n,e,d);var m,b,_,x=function(t){if(!p&&t in L)return L[t];switch(t){case"keys":case"values":return function(){return new n(this,t)}}return function(){return new n(this,t)}},w=e+" Iterator",S="values"==v,O=!1,L=t.prototype,k=L[f]||L["@@iterator"]||v&&L[v],P=k||x(v),T=v?S?x("entries"):P:void 0,V="Array"==e?L.entries||k:k;if(V&&(_=c(V.call(new t)))!==Object.prototype&&_.next&&(l(_,w,!0),i||"function"==typeof _[f]||s(_,f,h)),S&&k&&"values"!==k.name&&(O=!0,P=function(){return k.call(this)}),i&&!y||!p&&!O&&L[f]||s(L,f,P),u[e]=P,u[w]=h,v)if(m={values:S?P:x("values"),keys:g?P:x("keys"),entries:T},y)for(b in m)b in L||o(L,b,m[b]);else r(r.P+r.F*(p||O),e,m);return m}},function(t,e,n){var i=n(1)("iterator"),r=!1;try{var o=[7][i]();o.return=function(){r=!0},Array.from(o,function(){throw 2})}catch(t){}t.exports=function(t,e){if(!e&&!r)return!1;var n=!1;try{var o=[7],s=o[i]();s.next=function(){return{done:n=!0}},o[i]=function(){return s},t(o)}catch(t){}return n}},function(t,e){t.exports=function(t,e){return{value:e,done:!!t}}},function(t,e,n){var i=n(0),r=n(52).set,o=i.MutationObserver||i.WebKitMutationObserver,s=i.process,u=i.Promise,a="process"==n(9)(s);t.exports=function(){var t,e,n,l=function(){var i,r;for(a&&(i=s.domain)&&i.exit();t;){r=t.fn,t=t.next;try{r()}catch(i){throw t?n():e=void 0,i}}e=void 0,i&&i.enter()};if(a)n=function(){s.nextTick(l)};else if(!o||i.navigator&&i.navigator.standalone)if(u&&u.resolve){var c=u.resolve(void 0);n=function(){c.then(l)}}else n=function(){r.call(i,l)};else{var f=!0,p=document.createTextNode("");new o(l).observe(p,{characterData:!0}),n=function(){p.data=f=!f}}return function(i){var r={fn:i,next:void 0};e&&(e.next=r),t||(t=r,n()),e=r}}},function(t,e,n){var i=n(13),r=n(2),o=n(47);t.exports=n(4)?Object.defineProperties:function(t,e){r(t);for(var n,s=o(e),u=s.length,a=0;u>a;)i.f(t,n=s[a++],e[n]);return t}},function(t,e,n){var i=n(46),r=n(22).concat("length","prototype");e.f=Object.getOwnPropertyNames||function(t){return i(t,r)}},function(t,e,n){var i=n(12),r=n(28),o=n(27)("IE_PROTO"),s=Object.prototype;t.exports=Object.getPrototypeOf||function(t){return t=r(t),i(t,o)?t[o]:"function"==typeof t.constructor&&t instanceof t.constructor?t.constructor.prototype:t instanceof Object?s:null}},function(t,e){e.f={}.propertyIsEnumerable},function(t,e){t.exports=function(t){try{return{e:!1,v:t()}}catch(t){return{e:!0,v:t}}}},function(t,e,n){var i=n(6);t.exports=function(t,e,n){for(var r in e)i(t,r,e[r],n);return t}},function(t,e,n){var i=n(5),r=n(2),o=function(t,e){if(r(t),!i(e)&&null!==e)throw TypeError(e+": can't set as prototype!")};t.exports={set:Object.setPrototypeOf||("__proto__"in{}?function(t,e,i){try{i=n(11)(Function.call,n(45).f(Object.prototype,"__proto__").set,2),i(t,[]),e=!(t instanceof Array)}catch(t){e=!0}return function(t,n){return o(t,n),e?t.__proto__=n:i(t,n),t}}({},!1):void 0),check:o}},function(t,e,n){"use strict";var i=n(0),r=n(13),o=n(4),s=n(1)("species");t.exports=function(t){var e=i[t];o&&e&&!e[s]&&r.f(e,s,{configurable:!0,get:function(){return this}})}},function(t,e){t.exports="\t\n\v\f\r   ᠎             　\u2028\u2029\ufeff"},function(t,e,n){var i=n(53),r=Math.max,o=Math.min;t.exports=function(t,e){return t=i(t),t<0?r(t+e,0):o(t,e)}},function(t,e,n){var i=n(0),r=i.navigator;t.exports=r&&r.userAgent||""},function(t,e,n){var i=n(38),r=n(1)("iterator"),o=n(15);t.exports=n(10).getIteratorMethod=function(t){if(void 0!=t)return t[r]||t["@@iterator"]||o[i(t)]}},function(t,e,n){"use strict";var i=n(3),r=n(20)(2);i(i.P+i.F*!n(17)([].filter,!0),"Array",{filter:function(t){return r(this,t,arguments[1])}})},function(t,e,n){"use strict";var i=n(3),r=n(37)(!1),o=[].indexOf,s=!!o&&1/[1].indexOf(1,-0)<0;i(i.P+i.F*(s||!n(17)(o)),"Array",{indexOf:function(t){return s?o.apply(this,arguments)||0:r(this,t,arguments[1])}})},function(t,e,n){var i=n(3);i(i.S,"Array",{isArray:n(42)})},function(t,e,n){"use strict";var i=n(3),r=n(20)(1);i(i.P+i.F*!n(17)([].map,!0),"Array",{map:function(t){return r(this,t,arguments[1])}})},function(t,e,n){"use strict";var i=n(3),r=n(62);i(i.P+i.F*!n(17)([].reduce,!0),"Array",{reduce:function(t){return r(this,t,arguments.length,arguments[1],!1)}})},function(t,e,n){var i=Date.prototype,r=i.toString,o=i.getTime;new Date(NaN)+""!="Invalid Date"&&n(6)(i,"toString",function(){var t=o.call(this);return t===t?r.call(this):"Invalid Date"})},function(t,e,n){n(4)&&"g"!=/./g.flags&&n(13).f(RegExp.prototype,"flags",{configurable:!0,get:n(39)})},function(t,e,n){n(65)("search",1,function(t,e,n){return[function(n){"use strict";var i=t(this),r=void 0==n?void 0:n[e];return void 0!==r?r.call(n,i):new RegExp(n)[e](String(i))},n]})},function(t,e,n){"use strict";n(94);var i=n(2),r=n(39),o=n(4),s=/./.toString,u=function(t){n(6)(RegExp.prototype,"toString",t,!0)};n(7)(function(){return"/a/b"!=s.call({source:"a",flags:"b"})})?u(function(){var t=i(this);return"/".concat(t.source,"/","flags"in t?t.flags:!o&&t instanceof RegExp?r.call(t):void 0)}):"toString"!=s.name&&u(function(){return s.call(this)})},function(t,e,n){"use strict";n(51)("trim",function(t){return function(){return t(this,3)}})},function(t,e,n){for(var i=n(34),r=n(47),o=n(6),s=n(0),u=n(8),a=n(15),l=n(1),c=l("iterator"),f=l("toStringTag"),p=a.Array,h={CSSRuleList:!0,CSSStyleDeclaration:!1,CSSValueList:!1,ClientRectList:!1,DOMRectList:!1,DOMStringList:!1,DOMTokenList:!0,DataTransferItemList:!1,FileList:!1,HTMLAllCollection:!1,HTMLCollection:!1,HTMLFormElement:!1,HTMLSelectElement:!1,MediaList:!0,MimeTypeArray:!1,NamedNodeMap:!1,NodeList:!0,PaintRequestList:!1,Plugin:!1,PluginArray:!1,SVGLengthList:!1,SVGNumberList:!1,SVGPathSegList:!1,SVGPointList:!1,SVGStringList:!1,SVGTransformList:!1,SourceBufferList:!1,StyleSheetList:!0,TextTrackCueList:!1,TextTrackList:!1,TouchList:!1},d=r(h),v=0;v<d.length;v++){var g,y=d[v],m=h[y],b=s[y],_=b&&b.prototype;if(_&&(_[c]||u(_,c,p),_[f]||u(_,f,y),a[y]=p,m))for(g in i)_[g]||o(_,g,i[g],!0)}},function(t,e){},function(t,e){t.exports=function(t,e,n,i,r,o){var s,u=t=t||{},a=typeof t.default;"object"!==a&&"function"!==a||(s=t,u=t.default);var l="function"==typeof u?u.options:u;e&&(l.render=e.render,l.staticRenderFns=e.staticRenderFns,l._compiled=!0),n&&(l.functional=!0),r&&(l._scopeId=r);var c;if(o?(c=function(t){t=t||this.$vnode&&this.$vnode.ssrContext||this.parent&&this.parent.$vnode&&this.parent.$vnode.ssrContext,t||"undefined"==typeof __VUE_SSR_CONTEXT__||(t=__VUE_SSR_CONTEXT__),i&&i.call(this,t),t&&t._registeredComponents&&t._registeredComponents.add(o)},l._ssrRegister=c):i&&(c=i),c){var f=l.functional,p=f?l.render:l.beforeCreate;f?(l._injectStyles=c,l.render=function(t,e){return c.call(e),p(t,e)}):l.beforeCreate=p?[].concat(p,c):[c]}return{esModule:s,exports:u,options:l}}},function(t,e,n){"use strict";var i=function(){var t=this,e=t.$createElement,n=t._self._c||e;return n("div",{staticClass:"multiselect",class:{"multiselect--active":t.isOpen,"multiselect--disabled":t.disabled,"multiselect--above":t.isAbove},attrs:{tabindex:t.searchable?-1:t.tabindex},on:{focus:function(e){t.activate()},blur:function(e){!t.searchable&&t.deactivate()},keydown:[function(e){return"button"in e||!t._k(e.keyCode,"down",40,e.key,["Down","ArrowDown"])?e.target!==e.currentTarget?null:(e.preventDefault(),void t.pointerForward()):null},function(e){return"button"in e||!t._k(e.keyCode,"up",38,e.key,["Up","ArrowUp"])?e.target!==e.currentTarget?null:(e.preventDefault(),void t.pointerBackward()):null}],keypress:function(e){return"button"in e||!t._k(e.keyCode,"enter",13,e.key,"Enter")||!t._k(e.keyCode,"tab",9,e.key,"Tab")?(e.stopPropagation(),e.target!==e.currentTarget?null:void t.addPointerElement(e)):null},keyup:function(e){if(!("button"in e)&&t._k(e.keyCode,"esc",27,e.key,"Escape"))return null;t.deactivate()}}},[t._t("caret",[n("div",{staticClass:"multiselect__select",on:{mousedown:function(e){e.preventDefault(),e.stopPropagation(),t.toggle()}}})],{toggle:t.toggle}),t._v(" "),t._t("clear",null,{search:t.search}),t._v(" "),n("div",{ref:"tags",staticClass:"multiselect__tags"},[t._t("selection",[n("div",{directives:[{name:"show",rawName:"v-show",value:t.visibleValues.length>0,expression:"visibleValues.length > 0"}],staticClass:"multiselect__tags-wrap"},[t._l(t.visibleValues,function(e,i){return[t._t("tag",[n("span",{key:i,staticClass:"multiselect__tag"},[n("span",{domProps:{textContent:t._s(t.getOptionLabel(e))}}),t._v(" "),n("i",{staticClass:"multiselect__tag-icon",attrs:{"aria-hidden":"true",tabindex:"1"},on:{keypress:function(n){if(!("button"in n)&&t._k(n.keyCode,"enter",13,n.key,"Enter"))return null;n.preventDefault(),t.removeElement(e)},mousedown:function(n){n.preventDefault(),t.removeElement(e)}}})])],{option:e,search:t.search,remove:t.removeElement})]})],2),t._v(" "),t.internalValue&&t.internalValue.length>t.limit?[t._t("limit",[n("strong",{staticClass:"multiselect__strong",domProps:{textContent:t._s(t.limitText(t.internalValue.length-t.limit))}})])]:t._e()],{search:t.search,remove:t.removeElement,values:t.visibleValues,isOpen:t.isOpen}),t._v(" "),n("transition",{attrs:{name:"multiselect__loading"}},[t._t("loading",[n("div",{directives:[{name:"show",rawName:"v-show",value:t.loading,expression:"loading"}],staticClass:"multiselect__spinner"})])],2),t._v(" "),t.searchable?n("input",{ref:"search",staticClass:"multiselect__input",style:t.inputStyle,attrs:{name:t.name,id:t.id,type:"text",autocomplete:"nope",placeholder:t.placeholder,disabled:t.disabled,tabindex:t.tabindex},domProps:{value:t.search},on:{input:function(e){t.updateSearch(e.target.value)},focus:function(e){e.preventDefault(),t.activate()},blur:function(e){e.preventDefault(),t.deactivate()},keyup:function(e){if(!("button"in e)&&t._k(e.keyCode,"esc",27,e.key,"Escape"))return null;t.deactivate()},keydown:[function(e){if(!("button"in e)&&t._k(e.keyCode,"down",40,e.key,["Down","ArrowDown"]))return null;e.preventDefault(),t.pointerForward()},function(e){if(!("button"in e)&&t._k(e.keyCode,"up",38,e.key,["Up","ArrowUp"]))return null;e.preventDefault(),t.pointerBackward()},function(e){if(!("button"in e)&&t._k(e.keyCode,"delete",[8,46],e.key,["Backspace","Delete"]))return null;e.stopPropagation(),t.removeLastElement()}],keypress:function(e){return"button"in e||!t._k(e.keyCode,"enter",13,e.key,"Enter")?(e.preventDefault(),e.stopPropagation(),e.target!==e.currentTarget?null:void t.addPointerElement(e)):null}}}):t._e(),t._v(" "),t.isSingleLabelVisible?n("span",{staticClass:"multiselect__single",on:{mousedown:function(e){return e.preventDefault(),t.toggle(e)}}},[t._t("singleLabel",[[t._v(t._s(t.currentOptionLabel))]],{option:t.singleValue})],2):t._e(),t._v(" "),t.isPlaceholderVisible?n("span",{staticClass:"multiselect__placeholder",on:{mousedown:function(e){return e.preventDefault(),t.toggle(e)}}},[t._t("placeholder",[t._v("\n          "+t._s(t.placeholder)+"\n        ")])],2):t._e()],2),t._v(" "),n("transition",{attrs:{name:"multiselect"}},[n("div",{directives:[{name:"show",rawName:"v-show",value:t.isOpen,expression:"isOpen"}],ref:"list",staticClass:"multiselect__content-wrapper",style:{maxHeight:t.optimizedHeight+"px"},attrs:{tabindex:"-1"},on:{focus:t.activate,mousedown:function(t){t.preventDefault()}}},[n("ul",{staticClass:"multiselect__content",style:t.contentStyle},[t._t("beforeList"),t._v(" "),t.multiple&&t.max===t.internalValue.length?n("li",[n("span",{staticClass:"multiselect__option"},[t._t("maxElements",[t._v("Maximum of "+t._s(t.max)+" options selected. First remove a selected option to select another.")])],2)]):t._e(),t._v(" "),!t.max||t.internalValue.length<t.max?t._l(t.filteredOptions,function(e,i){return n("li",{key:i,staticClass:"multiselect__element"},[e&&(e.$isLabel||e.$isDisabled)?t._e():n("span",{staticClass:"multiselect__option",class:t.optionHighlight(i,e),attrs:{"data-select":e&&e.isTag?t.tagPlaceholder:t.selectLabelText,"data-selected":t.selectedLabelText,"data-deselect":t.deselectLabelText},on:{click:function(n){n.stopPropagation(),t.select(e)},mouseenter:function(e){if(e.target!==e.currentTarget)return null;t.pointerSet(i)}}},[t._t("option",[n("span",[t._v(t._s(t.getOptionLabel(e)))])],{option:e,search:t.search})],2),t._v(" "),e&&(e.$isLabel||e.$isDisabled)?n("span",{staticClass:"multiselect__option",class:t.groupHighlight(i,e),attrs:{"data-select":t.groupSelect&&t.selectGroupLabelText,"data-deselect":t.groupSelect&&t.deselectGroupLabelText},on:{mouseenter:function(e){if(e.target!==e.currentTarget)return null;t.groupSelect&&t.pointerSet(i)},mousedown:function(n){n.preventDefault(),t.selectGroup(e)}}},[t._t("option",[n("span",[t._v(t._s(t.getOptionLabel(e)))])],{option:e,search:t.search})],2):t._e()])}):t._e(),t._v(" "),n("li",{directives:[{name:"show",rawName:"v-show",value:t.showNoResults&&0===t.filteredOptions.length&&t.search&&!t.loading,expression:"showNoResults && (filteredOptions.length === 0 && search && !loading)"}]},[n("span",{staticClass:"multiselect__option"},[t._t("noResult",[t._v("No elements found. Consider changing the search query.")],{search:t.search})],2)]),t._v(" "),n("li",{directives:[{name:"show",rawName:"v-show",value:t.showNoOptions&&0===t.options.length&&!t.search&&!t.loading,expression:"showNoOptions && (options.length === 0 && !search && !loading)"}]},[n("span",{staticClass:"multiselect__option"},[t._t("noOptions",[t._v("List is empty.")])],2)]),t._v(" "),t._t("afterList")],2)])])],2)},r=[],o={render:i,staticRenderFns:r};e.a=o}])});
 
 /***/ }),
 
@@ -82298,6 +87496,2456 @@ if (false) {} else {
 
 /***/ }),
 
+/***/ "./node_modules/vuejs-datepicker/dist/vuejs-datepicker.esm.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/vuejs-datepicker/dist/vuejs-datepicker.esm.js ***!
+  \********************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+function _typeof(obj) {
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
+}
+
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+function _objectSpread(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+    var ownKeys = Object.keys(source);
+
+    if (typeof Object.getOwnPropertySymbols === 'function') {
+      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+      }));
+    }
+
+    ownKeys.forEach(function (key) {
+      _defineProperty(target, key, source[key]);
+    });
+  }
+
+  return target;
+}
+
+var Language =
+/*#__PURE__*/
+function () {
+  function Language(language, months, monthsAbbr, days) {
+    _classCallCheck(this, Language);
+
+    this.language = language;
+    this.months = months;
+    this.monthsAbbr = monthsAbbr;
+    this.days = days;
+    this.rtl = false;
+    this.ymd = false;
+    this.yearSuffix = '';
+  }
+
+  _createClass(Language, [{
+    key: "language",
+    get: function get() {
+      return this._language;
+    },
+    set: function set(language) {
+      if (typeof language !== 'string') {
+        throw new TypeError('Language must be a string');
+      }
+
+      this._language = language;
+    }
+  }, {
+    key: "months",
+    get: function get() {
+      return this._months;
+    },
+    set: function set(months) {
+      if (months.length !== 12) {
+        throw new RangeError("There must be 12 months for ".concat(this.language, " language"));
+      }
+
+      this._months = months;
+    }
+  }, {
+    key: "monthsAbbr",
+    get: function get() {
+      return this._monthsAbbr;
+    },
+    set: function set(monthsAbbr) {
+      if (monthsAbbr.length !== 12) {
+        throw new RangeError("There must be 12 abbreviated months for ".concat(this.language, " language"));
+      }
+
+      this._monthsAbbr = monthsAbbr;
+    }
+  }, {
+    key: "days",
+    get: function get() {
+      return this._days;
+    },
+    set: function set(days) {
+      if (days.length !== 7) {
+        throw new RangeError("There must be 7 days for ".concat(this.language, " language"));
+      }
+
+      this._days = days;
+    }
+  }]);
+
+  return Language;
+}(); // eslint-disable-next-line
+
+var en = new Language('English', ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']) // eslint-disable-next-line
+;
+
+var utils = {
+  /**
+   * @type {Boolean}
+   */
+  useUtc: false,
+
+  /**
+   * Returns the full year, using UTC or not
+   * @param {Date} date
+   */
+  getFullYear: function getFullYear(date) {
+    return this.useUtc ? date.getUTCFullYear() : date.getFullYear();
+  },
+
+  /**
+   * Returns the month, using UTC or not
+   * @param {Date} date
+   */
+  getMonth: function getMonth(date) {
+    return this.useUtc ? date.getUTCMonth() : date.getMonth();
+  },
+
+  /**
+   * Returns the date, using UTC or not
+   * @param {Date} date
+   */
+  getDate: function getDate(date) {
+    return this.useUtc ? date.getUTCDate() : date.getDate();
+  },
+
+  /**
+   * Returns the day, using UTC or not
+   * @param {Date} date
+   */
+  getDay: function getDay(date) {
+    return this.useUtc ? date.getUTCDay() : date.getDay();
+  },
+
+  /**
+   * Returns the hours, using UTC or not
+   * @param {Date} date
+   */
+  getHours: function getHours(date) {
+    return this.useUtc ? date.getUTCHours() : date.getHours();
+  },
+
+  /**
+   * Returns the minutes, using UTC or not
+   * @param {Date} date
+   */
+  getMinutes: function getMinutes(date) {
+    return this.useUtc ? date.getUTCMinutes() : date.getMinutes();
+  },
+
+  /**
+   * Sets the full year, using UTC or not
+   * @param {Date} date
+   */
+  setFullYear: function setFullYear(date, value, useUtc) {
+    return this.useUtc ? date.setUTCFullYear(value) : date.setFullYear(value);
+  },
+
+  /**
+   * Sets the month, using UTC or not
+   * @param {Date} date
+   */
+  setMonth: function setMonth(date, value, useUtc) {
+    return this.useUtc ? date.setUTCMonth(value) : date.setMonth(value);
+  },
+
+  /**
+   * Sets the date, using UTC or not
+   * @param {Date} date
+   * @param {Number} value
+   */
+  setDate: function setDate(date, value, useUtc) {
+    return this.useUtc ? date.setUTCDate(value) : date.setDate(value);
+  },
+
+  /**
+   * Check if date1 is equivalent to date2, without comparing the time
+   * @see https://stackoverflow.com/a/6202196/4455925
+   * @param {Date} date1
+   * @param {Date} date2
+   */
+  compareDates: function compareDates(date1, date2) {
+    var d1 = new Date(date1.getTime());
+    var d2 = new Date(date2.getTime());
+
+    if (this.useUtc) {
+      d1.setUTCHours(0, 0, 0, 0);
+      d2.setUTCHours(0, 0, 0, 0);
+    } else {
+      d1.setHours(0, 0, 0, 0);
+      d2.setHours(0, 0, 0, 0);
+    }
+
+    return d1.getTime() === d2.getTime();
+  },
+
+  /**
+   * Validates a date object
+   * @param {Date} date - an object instantiated with the new Date constructor
+   * @return {Boolean}
+   */
+  isValidDate: function isValidDate(date) {
+    if (Object.prototype.toString.call(date) !== '[object Date]') {
+      return false;
+    }
+
+    return !isNaN(date.getTime());
+  },
+
+  /**
+   * Return abbreviated week day name
+   * @param {Date}
+   * @param {Array}
+   * @return {String}
+   */
+  getDayNameAbbr: function getDayNameAbbr(date, days) {
+    if (_typeof(date) !== 'object') {
+      throw TypeError('Invalid Type');
+    }
+
+    return days[this.getDay(date)];
+  },
+
+  /**
+   * Return name of the month
+   * @param {Number|Date}
+   * @param {Array}
+   * @return {String}
+   */
+  getMonthName: function getMonthName(month, months) {
+    if (!months) {
+      throw Error('missing 2nd parameter Months array');
+    }
+
+    if (_typeof(month) === 'object') {
+      return months[this.getMonth(month)];
+    }
+
+    if (typeof month === 'number') {
+      return months[month];
+    }
+
+    throw TypeError('Invalid type');
+  },
+
+  /**
+   * Return an abbreviated version of the month
+   * @param {Number|Date}
+   * @return {String}
+   */
+  getMonthNameAbbr: function getMonthNameAbbr(month, monthsAbbr) {
+    if (!monthsAbbr) {
+      throw Error('missing 2nd paramter Months array');
+    }
+
+    if (_typeof(month) === 'object') {
+      return monthsAbbr[this.getMonth(month)];
+    }
+
+    if (typeof month === 'number') {
+      return monthsAbbr[month];
+    }
+
+    throw TypeError('Invalid type');
+  },
+
+  /**
+   * Alternative get total number of days in month
+   * @param {Number} year
+   * @param {Number} m
+   * @return {Number}
+   */
+  daysInMonth: function daysInMonth(year, month) {
+    return /8|3|5|10/.test(month) ? 30 : month === 1 ? !(year % 4) && year % 100 || !(year % 400) ? 29 : 28 : 31;
+  },
+
+  /**
+   * Get nth suffix for date
+   * @param {Number} day
+   * @return {String}
+   */
+  getNthSuffix: function getNthSuffix(day) {
+    switch (day) {
+      case 1:
+      case 21:
+      case 31:
+        return 'st';
+
+      case 2:
+      case 22:
+        return 'nd';
+
+      case 3:
+      case 23:
+        return 'rd';
+
+      default:
+        return 'th';
+    }
+  },
+
+  /**
+   * Formats date object
+   * @param {Date}
+   * @param {String}
+   * @param {Object}
+   * @return {String}
+   */
+  formatDate: function formatDate(date, format, translation) {
+    translation = !translation ? en : translation;
+    var year = this.getFullYear(date);
+    var month = this.getMonth(date) + 1;
+    var day = this.getDate(date);
+    var str = format.replace(/dd/, ('0' + day).slice(-2)).replace(/d/, day).replace(/yyyy/, year).replace(/yy/, String(year).slice(2)).replace(/MMMM/, this.getMonthName(this.getMonth(date), translation.months)).replace(/MMM/, this.getMonthNameAbbr(this.getMonth(date), translation.monthsAbbr)).replace(/MM/, ('0' + month).slice(-2)).replace(/M(?!a|ä|e)/, month).replace(/su/, this.getNthSuffix(this.getDate(date))).replace(/D(?!e|é|i)/, this.getDayNameAbbr(date, translation.days));
+    return str;
+  },
+
+  /**
+   * Creates an array of dates for each day in between two dates.
+   * @param {Date} start
+   * @param {Date} end
+   * @return {Array}
+   */
+  createDateArray: function createDateArray(start, end) {
+    var dates = [];
+
+    while (start <= end) {
+      dates.push(new Date(start));
+      start = this.setDate(new Date(start), this.getDate(new Date(start)) + 1);
+    }
+
+    return dates;
+  },
+
+  /**
+   * method used as a prop validator for input values
+   * @param {*} val
+   * @return {Boolean}
+   */
+  validateDateInput: function validateDateInput(val) {
+    return val === null || val instanceof Date || typeof val === 'string' || typeof val === 'number';
+  }
+};
+var makeDateUtils = function makeDateUtils(useUtc) {
+  return _objectSpread({}, utils, {
+    useUtc: useUtc
+  });
+};
+var utils$1 = _objectSpread({}, utils) // eslint-disable-next-line
+;
+
+var script = {
+  props: {
+    selectedDate: Date,
+    resetTypedDate: [Date],
+    format: [String, Function],
+    translation: Object,
+    inline: Boolean,
+    id: String,
+    name: String,
+    refName: String,
+    openDate: Date,
+    placeholder: String,
+    inputClass: [String, Object, Array],
+    clearButton: Boolean,
+    clearButtonIcon: String,
+    calendarButton: Boolean,
+    calendarButtonIcon: String,
+    calendarButtonIconContent: String,
+    disabled: Boolean,
+    required: Boolean,
+    typeable: Boolean,
+    bootstrapStyling: Boolean,
+    useUtc: Boolean
+  },
+  data: function data() {
+    var constructedDateUtils = makeDateUtils(this.useUtc);
+    return {
+      input: null,
+      typedDate: false,
+      utils: constructedDateUtils
+    };
+  },
+  computed: {
+    formattedValue: function formattedValue() {
+      if (!this.selectedDate) {
+        return null;
+      }
+
+      if (this.typedDate) {
+        return this.typedDate;
+      }
+
+      return typeof this.format === 'function' ? this.format(this.selectedDate) : this.utils.formatDate(new Date(this.selectedDate), this.format, this.translation);
+    },
+    computedInputClass: function computedInputClass() {
+      if (this.bootstrapStyling) {
+        if (typeof this.inputClass === 'string') {
+          return [this.inputClass, 'form-control'].join(' ');
+        }
+
+        return _objectSpread({
+          'form-control': true
+        }, this.inputClass);
+      }
+
+      return this.inputClass;
+    }
+  },
+  watch: {
+    resetTypedDate: function resetTypedDate() {
+      this.typedDate = false;
+    }
+  },
+  methods: {
+    showCalendar: function showCalendar() {
+      this.$emit('showCalendar');
+    },
+
+    /**
+     * Attempt to parse a typed date
+     * @param {Event} event
+     */
+    parseTypedDate: function parseTypedDate(event) {
+      // close calendar if escape or enter are pressed
+      if ([27, // escape
+      13 // enter
+      ].includes(event.keyCode)) {
+        this.input.blur();
+      }
+
+      if (this.typeable) {
+        var typedDate = Date.parse(this.input.value);
+
+        if (!isNaN(typedDate)) {
+          this.typedDate = this.input.value;
+          this.$emit('typedDate', new Date(this.typedDate));
+        }
+      }
+    },
+
+    /**
+     * nullify the typed date to defer to regular formatting
+     * called once the input is blurred
+     */
+    inputBlurred: function inputBlurred() {
+      if (this.typeable && isNaN(Date.parse(this.input.value))) {
+        this.clearDate();
+        this.input.value = null;
+        this.typedDate = null;
+      }
+
+      this.$emit('closeCalendar');
+    },
+
+    /**
+     * emit a clearDate event
+     */
+    clearDate: function clearDate() {
+      this.$emit('clearDate');
+    }
+  },
+  mounted: function mounted() {
+    this.input = this.$el.querySelector('input');
+  }
+} // eslint-disable-next-line
+;
+
+function normalizeComponent(template, style, script, scopeId, isFunctionalTemplate, moduleIdentifier
+/* server only */
+, shadowMode, createInjector, createInjectorSSR, createInjectorShadow) {
+  if (typeof shadowMode !== 'boolean') {
+    createInjectorSSR = createInjector;
+    createInjector = shadowMode;
+    shadowMode = false;
+  } // Vue.extend constructor export interop.
+
+
+  var options = typeof script === 'function' ? script.options : script; // render functions
+
+  if (template && template.render) {
+    options.render = template.render;
+    options.staticRenderFns = template.staticRenderFns;
+    options._compiled = true; // functional template
+
+    if (isFunctionalTemplate) {
+      options.functional = true;
+    }
+  } // scopedId
+
+
+  if (scopeId) {
+    options._scopeId = scopeId;
+  }
+
+  var hook;
+
+  if (moduleIdentifier) {
+    // server build
+    hook = function hook(context) {
+      // 2.3 injection
+      context = context || // cached call
+      this.$vnode && this.$vnode.ssrContext || // stateful
+      this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext; // functional
+      // 2.2 with runInNewContext: true
+
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__;
+      } // inject component styles
+
+
+      if (style) {
+        style.call(this, createInjectorSSR(context));
+      } // register component module identifier for async chunk inference
+
+
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier);
+      }
+    }; // used by ssr in case component is cached and beforeCreate
+    // never gets called
+
+
+    options._ssrRegister = hook;
+  } else if (style) {
+    hook = shadowMode ? function () {
+      style.call(this, createInjectorShadow(this.$root.$options.shadowRoot));
+    } : function (context) {
+      style.call(this, createInjector(context));
+    };
+  }
+
+  if (hook) {
+    if (options.functional) {
+      // register for functional component in vue file
+      var originalRender = options.render;
+
+      options.render = function renderWithStyleInjection(h, context) {
+        hook.call(context);
+        return originalRender(h, context);
+      };
+    } else {
+      // inject component registration as beforeCreate hook
+      var existing = options.beforeCreate;
+      options.beforeCreate = existing ? [].concat(existing, hook) : [hook];
+    }
+  }
+
+  return script;
+}
+
+var normalizeComponent_1 = normalizeComponent;
+
+/* script */
+const __vue_script__ = script;
+
+/* template */
+var __vue_render__ = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    { class: { "input-group": _vm.bootstrapStyling } },
+    [
+      _vm.calendarButton
+        ? _c(
+            "span",
+            {
+              staticClass: "vdp-datepicker__calendar-button",
+              class: { "input-group-prepend": _vm.bootstrapStyling },
+              style: { "cursor:not-allowed;": _vm.disabled },
+              on: { click: _vm.showCalendar }
+            },
+            [
+              _c(
+                "span",
+                { class: { "input-group-text": _vm.bootstrapStyling } },
+                [
+                  _c("i", { class: _vm.calendarButtonIcon }, [
+                    _vm._v(
+                      "\n        " +
+                        _vm._s(_vm.calendarButtonIconContent) +
+                        "\n        "
+                    ),
+                    !_vm.calendarButtonIcon
+                      ? _c("span", [_vm._v("…")])
+                      : _vm._e()
+                  ])
+                ]
+              )
+            ]
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _c("input", {
+        ref: _vm.refName,
+        class: _vm.computedInputClass,
+        attrs: {
+          type: _vm.inline ? "hidden" : "text",
+          name: _vm.name,
+          id: _vm.id,
+          "open-date": _vm.openDate,
+          placeholder: _vm.placeholder,
+          "clear-button": _vm.clearButton,
+          disabled: _vm.disabled,
+          required: _vm.required,
+          readonly: !_vm.typeable,
+          autocomplete: "off"
+        },
+        domProps: { value: _vm.formattedValue },
+        on: {
+          click: _vm.showCalendar,
+          keyup: _vm.parseTypedDate,
+          blur: _vm.inputBlurred
+        }
+      }),
+      _vm._v(" "),
+      _vm.clearButton && _vm.selectedDate
+        ? _c(
+            "span",
+            {
+              staticClass: "vdp-datepicker__clear-button",
+              class: { "input-group-append": _vm.bootstrapStyling },
+              on: {
+                click: function($event) {
+                  return _vm.clearDate()
+                }
+              }
+            },
+            [
+              _c(
+                "span",
+                { class: { "input-group-text": _vm.bootstrapStyling } },
+                [
+                  _c("i", { class: _vm.clearButtonIcon }, [
+                    !_vm.clearButtonIcon ? _c("span", [_vm._v("×")]) : _vm._e()
+                  ])
+                ]
+              )
+            ]
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _vm._t("afterDateInput")
+    ],
+    2
+  )
+};
+var __vue_staticRenderFns__ = [];
+__vue_render__._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__ = undefined;
+  /* scoped */
+  const __vue_scope_id__ = undefined;
+  /* module identifier */
+  const __vue_module_identifier__ = undefined;
+  /* functional template */
+  const __vue_is_functional_template__ = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var DateInput = normalizeComponent_1(
+    { render: __vue_render__, staticRenderFns: __vue_staticRenderFns__ },
+    __vue_inject_styles__,
+    __vue_script__,
+    __vue_scope_id__,
+    __vue_is_functional_template__,
+    __vue_module_identifier__,
+    undefined,
+    undefined
+  );
+
+//
+var script$1 = {
+  props: {
+    showDayView: Boolean,
+    selectedDate: Date,
+    pageDate: Date,
+    pageTimestamp: Number,
+    fullMonthName: Boolean,
+    allowedToShowView: Function,
+    dayCellContent: {
+      type: Function,
+      "default": function _default(day) {
+        return day.date;
+      }
+    },
+    disabledDates: Object,
+    highlighted: Object,
+    calendarClass: [String, Object, Array],
+    calendarStyle: Object,
+    translation: Object,
+    isRtl: Boolean,
+    mondayFirst: Boolean,
+    useUtc: Boolean
+  },
+  data: function data() {
+    var constructedDateUtils = makeDateUtils(this.useUtc);
+    return {
+      utils: constructedDateUtils
+    };
+  },
+  computed: {
+    /**
+     * Returns an array of day names
+     * @return {String[]}
+     */
+    daysOfWeek: function daysOfWeek() {
+      if (this.mondayFirst) {
+        var tempDays = this.translation.days.slice();
+        tempDays.push(tempDays.shift());
+        return tempDays;
+      }
+
+      return this.translation.days;
+    },
+
+    /**
+     * Returns the day number of the week less one for the first of the current month
+     * Used to show amount of empty cells before the first in the day calendar layout
+     * @return {Number}
+     */
+    blankDays: function blankDays() {
+      var d = this.pageDate;
+      var dObj = this.useUtc ? new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)) : new Date(d.getFullYear(), d.getMonth(), 1, d.getHours(), d.getMinutes());
+
+      if (this.mondayFirst) {
+        return this.utils.getDay(dObj) > 0 ? this.utils.getDay(dObj) - 1 : 6;
+      }
+
+      return this.utils.getDay(dObj);
+    },
+
+    /**
+     * @return {Object[]}
+     */
+    days: function days() {
+      var d = this.pageDate;
+      var days = []; // set up a new date object to the beginning of the current 'page'
+
+      var dObj = this.useUtc ? new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)) : new Date(d.getFullYear(), d.getMonth(), 1, d.getHours(), d.getMinutes());
+      var daysInMonth = this.utils.daysInMonth(this.utils.getFullYear(dObj), this.utils.getMonth(dObj));
+
+      for (var i = 0; i < daysInMonth; i++) {
+        days.push({
+          date: this.utils.getDate(dObj),
+          timestamp: dObj.getTime(),
+          isSelected: this.isSelectedDate(dObj),
+          isDisabled: this.isDisabledDate(dObj),
+          isHighlighted: this.isHighlightedDate(dObj),
+          isHighlightStart: this.isHighlightStart(dObj),
+          isHighlightEnd: this.isHighlightEnd(dObj),
+          isToday: this.utils.compareDates(dObj, new Date()),
+          isWeekend: this.utils.getDay(dObj) === 0 || this.utils.getDay(dObj) === 6,
+          isSaturday: this.utils.getDay(dObj) === 6,
+          isSunday: this.utils.getDay(dObj) === 0
+        });
+        this.utils.setDate(dObj, this.utils.getDate(dObj) + 1);
+      }
+
+      return days;
+    },
+
+    /**
+     * Gets the name of the month the current page is on
+     * @return {String}
+     */
+    currMonthName: function currMonthName() {
+      var monthName = this.fullMonthName ? this.translation.months : this.translation.monthsAbbr;
+      return this.utils.getMonthNameAbbr(this.utils.getMonth(this.pageDate), monthName);
+    },
+
+    /**
+     * Gets the name of the year that current page is on
+     * @return {Number}
+     */
+    currYearName: function currYearName() {
+      var yearSuffix = this.translation.yearSuffix;
+      return "".concat(this.utils.getFullYear(this.pageDate)).concat(yearSuffix);
+    },
+
+    /**
+     * Is this translation using year/month/day format?
+     * @return {Boolean}
+     */
+    isYmd: function isYmd() {
+      return this.translation.ymd && this.translation.ymd === true;
+    },
+
+    /**
+     * Is the left hand navigation button disabled?
+     * @return {Boolean}
+     */
+    isLeftNavDisabled: function isLeftNavDisabled() {
+      return this.isRtl ? this.isNextMonthDisabled(this.pageTimestamp) : this.isPreviousMonthDisabled(this.pageTimestamp);
+    },
+
+    /**
+     * Is the right hand navigation button disabled?
+     * @return {Boolean}
+     */
+    isRightNavDisabled: function isRightNavDisabled() {
+      return this.isRtl ? this.isPreviousMonthDisabled(this.pageTimestamp) : this.isNextMonthDisabled(this.pageTimestamp);
+    }
+  },
+  methods: {
+    selectDate: function selectDate(date) {
+      if (date.isDisabled) {
+        this.$emit('selectedDisabled', date);
+        return false;
+      }
+
+      this.$emit('selectDate', date);
+    },
+
+    /**
+     * @return {Number}
+     */
+    getPageMonth: function getPageMonth() {
+      return this.utils.getMonth(this.pageDate);
+    },
+
+    /**
+     * Emit an event to show the month picker
+     */
+    showMonthCalendar: function showMonthCalendar() {
+      this.$emit('showMonthCalendar');
+    },
+
+    /**
+     * Change the page month
+     * @param {Number} incrementBy
+     */
+    changeMonth: function changeMonth(incrementBy) {
+      var date = this.pageDate;
+      this.utils.setMonth(date, this.utils.getMonth(date) + incrementBy);
+      this.$emit('changedMonth', date);
+    },
+
+    /**
+     * Decrement the page month
+     */
+    previousMonth: function previousMonth() {
+      if (!this.isPreviousMonthDisabled()) {
+        this.changeMonth(-1);
+      }
+    },
+
+    /**
+     * Is the previous month disabled?
+     * @return {Boolean}
+     */
+    isPreviousMonthDisabled: function isPreviousMonthDisabled() {
+      if (!this.disabledDates || !this.disabledDates.to) {
+        return false;
+      }
+
+      var d = this.pageDate;
+      return this.utils.getMonth(this.disabledDates.to) >= this.utils.getMonth(d) && this.utils.getFullYear(this.disabledDates.to) >= this.utils.getFullYear(d);
+    },
+
+    /**
+     * Increment the current page month
+     */
+    nextMonth: function nextMonth() {
+      if (!this.isNextMonthDisabled()) {
+        this.changeMonth(+1);
+      }
+    },
+
+    /**
+     * Is the next month disabled?
+     * @return {Boolean}
+     */
+    isNextMonthDisabled: function isNextMonthDisabled() {
+      if (!this.disabledDates || !this.disabledDates.from) {
+        return false;
+      }
+
+      var d = this.pageDate;
+      return this.utils.getMonth(this.disabledDates.from) <= this.utils.getMonth(d) && this.utils.getFullYear(this.disabledDates.from) <= this.utils.getFullYear(d);
+    },
+
+    /**
+     * Whether a day is selected
+     * @param {Date}
+     * @return {Boolean}
+     */
+    isSelectedDate: function isSelectedDate(dObj) {
+      return this.selectedDate && this.utils.compareDates(this.selectedDate, dObj);
+    },
+
+    /**
+     * Whether a day is disabled
+     * @param {Date}
+     * @return {Boolean}
+     */
+    isDisabledDate: function isDisabledDate(date) {
+      var _this = this;
+
+      var disabledDates = false;
+
+      if (typeof this.disabledDates === 'undefined') {
+        return false;
+      }
+
+      if (typeof this.disabledDates.dates !== 'undefined') {
+        this.disabledDates.dates.forEach(function (d) {
+          if (_this.utils.compareDates(date, d)) {
+            disabledDates = true;
+            return true;
+          }
+        });
+      }
+
+      if (typeof this.disabledDates.to !== 'undefined' && this.disabledDates.to && date < this.disabledDates.to) {
+        disabledDates = true;
+      }
+
+      if (typeof this.disabledDates.from !== 'undefined' && this.disabledDates.from && date > this.disabledDates.from) {
+        disabledDates = true;
+      }
+
+      if (typeof this.disabledDates.ranges !== 'undefined') {
+        this.disabledDates.ranges.forEach(function (range) {
+          if (typeof range.from !== 'undefined' && range.from && typeof range.to !== 'undefined' && range.to) {
+            if (date < range.to && date > range.from) {
+              disabledDates = true;
+              return true;
+            }
+          }
+        });
+      }
+
+      if (typeof this.disabledDates.days !== 'undefined' && this.disabledDates.days.indexOf(this.utils.getDay(date)) !== -1) {
+        disabledDates = true;
+      }
+
+      if (typeof this.disabledDates.daysOfMonth !== 'undefined' && this.disabledDates.daysOfMonth.indexOf(this.utils.getDate(date)) !== -1) {
+        disabledDates = true;
+      }
+
+      if (typeof this.disabledDates.customPredictor === 'function' && this.disabledDates.customPredictor(date)) {
+        disabledDates = true;
+      }
+
+      return disabledDates;
+    },
+
+    /**
+     * Whether a day is highlighted (only if it is not disabled already except when highlighted.includeDisabled is true)
+     * @param {Date}
+     * @return {Boolean}
+     */
+    isHighlightedDate: function isHighlightedDate(date) {
+      var _this2 = this;
+
+      if (!(this.highlighted && this.highlighted.includeDisabled) && this.isDisabledDate(date)) {
+        return false;
+      }
+
+      var highlighted = false;
+
+      if (typeof this.highlighted === 'undefined') {
+        return false;
+      }
+
+      if (typeof this.highlighted.dates !== 'undefined') {
+        this.highlighted.dates.forEach(function (d) {
+          if (_this2.utils.compareDates(date, d)) {
+            highlighted = true;
+            return true;
+          }
+        });
+      }
+
+      if (this.isDefined(this.highlighted.from) && this.isDefined(this.highlighted.to)) {
+        highlighted = date >= this.highlighted.from && date <= this.highlighted.to;
+      }
+
+      if (typeof this.highlighted.days !== 'undefined' && this.highlighted.days.indexOf(this.utils.getDay(date)) !== -1) {
+        highlighted = true;
+      }
+
+      if (typeof this.highlighted.daysOfMonth !== 'undefined' && this.highlighted.daysOfMonth.indexOf(this.utils.getDate(date)) !== -1) {
+        highlighted = true;
+      }
+
+      if (typeof this.highlighted.customPredictor === 'function' && this.highlighted.customPredictor(date)) {
+        highlighted = true;
+      }
+
+      return highlighted;
+    },
+    dayClasses: function dayClasses(day) {
+      return {
+        'selected': day.isSelected,
+        'disabled': day.isDisabled,
+        'highlighted': day.isHighlighted,
+        'today': day.isToday,
+        'weekend': day.isWeekend,
+        'sat': day.isSaturday,
+        'sun': day.isSunday,
+        'highlight-start': day.isHighlightStart,
+        'highlight-end': day.isHighlightEnd
+      };
+    },
+
+    /**
+     * Whether a day is highlighted and it is the first date
+     * in the highlighted range of dates
+     * @param {Date}
+     * @return {Boolean}
+     */
+    isHighlightStart: function isHighlightStart(date) {
+      return this.isHighlightedDate(date) && this.highlighted.from instanceof Date && this.utils.getFullYear(this.highlighted.from) === this.utils.getFullYear(date) && this.utils.getMonth(this.highlighted.from) === this.utils.getMonth(date) && this.utils.getDate(this.highlighted.from) === this.utils.getDate(date);
+    },
+
+    /**
+     * Whether a day is highlighted and it is the first date
+     * in the highlighted range of dates
+     * @param {Date}
+     * @return {Boolean}
+     */
+    isHighlightEnd: function isHighlightEnd(date) {
+      return this.isHighlightedDate(date) && this.highlighted.to instanceof Date && this.utils.getFullYear(this.highlighted.to) === this.utils.getFullYear(date) && this.utils.getMonth(this.highlighted.to) === this.utils.getMonth(date) && this.utils.getDate(this.highlighted.to) === this.utils.getDate(date);
+    },
+
+    /**
+     * Helper
+     * @param  {mixed}  prop
+     * @return {Boolean}
+     */
+    isDefined: function isDefined(prop) {
+      return typeof prop !== 'undefined' && prop;
+    }
+  } // eslint-disable-next-line
+
+};
+
+/* script */
+const __vue_script__$1 = script$1;
+
+/* template */
+var __vue_render__$1 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    {
+      directives: [
+        {
+          name: "show",
+          rawName: "v-show",
+          value: _vm.showDayView,
+          expression: "showDayView"
+        }
+      ],
+      class: [_vm.calendarClass, "vdp-datepicker__calendar"],
+      style: _vm.calendarStyle,
+      on: {
+        mousedown: function($event) {
+          $event.preventDefault();
+        }
+      }
+    },
+    [
+      _vm._t("beforeCalendarHeader"),
+      _vm._v(" "),
+      _c("header", [
+        _c(
+          "span",
+          {
+            staticClass: "prev",
+            class: { disabled: _vm.isLeftNavDisabled },
+            on: {
+              click: function($event) {
+                _vm.isRtl ? _vm.nextMonth() : _vm.previousMonth();
+              }
+            }
+          },
+          [_vm._v("<")]
+        ),
+        _vm._v(" "),
+        _c(
+          "span",
+          {
+            staticClass: "day__month_btn",
+            class: _vm.allowedToShowView("month") ? "up" : "",
+            on: { click: _vm.showMonthCalendar }
+          },
+          [
+            _vm._v(
+              _vm._s(_vm.isYmd ? _vm.currYearName : _vm.currMonthName) +
+                " " +
+                _vm._s(_vm.isYmd ? _vm.currMonthName : _vm.currYearName)
+            )
+          ]
+        ),
+        _vm._v(" "),
+        _c(
+          "span",
+          {
+            staticClass: "next",
+            class: { disabled: _vm.isRightNavDisabled },
+            on: {
+              click: function($event) {
+                _vm.isRtl ? _vm.previousMonth() : _vm.nextMonth();
+              }
+            }
+          },
+          [_vm._v(">")]
+        )
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { class: _vm.isRtl ? "flex-rtl" : "" },
+        [
+          _vm._l(_vm.daysOfWeek, function(d) {
+            return _c(
+              "span",
+              { key: d.timestamp, staticClass: "cell day-header" },
+              [_vm._v(_vm._s(d))]
+            )
+          }),
+          _vm._v(" "),
+          _vm.blankDays > 0
+            ? _vm._l(_vm.blankDays, function(d) {
+                return _c("span", {
+                  key: d.timestamp,
+                  staticClass: "cell day blank"
+                })
+              })
+            : _vm._e(),
+          _vm._l(_vm.days, function(day) {
+            return _c("span", {
+              key: day.timestamp,
+              staticClass: "cell day",
+              class: _vm.dayClasses(day),
+              domProps: { innerHTML: _vm._s(_vm.dayCellContent(day)) },
+              on: {
+                click: function($event) {
+                  return _vm.selectDate(day)
+                }
+              }
+            })
+          })
+        ],
+        2
+      )
+    ],
+    2
+  )
+};
+var __vue_staticRenderFns__$1 = [];
+__vue_render__$1._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$1 = undefined;
+  /* scoped */
+  const __vue_scope_id__$1 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$1 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$1 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var PickerDay = normalizeComponent_1(
+    { render: __vue_render__$1, staticRenderFns: __vue_staticRenderFns__$1 },
+    __vue_inject_styles__$1,
+    __vue_script__$1,
+    __vue_scope_id__$1,
+    __vue_is_functional_template__$1,
+    __vue_module_identifier__$1,
+    undefined,
+    undefined
+  );
+
+//
+var script$2 = {
+  props: {
+    showMonthView: Boolean,
+    selectedDate: Date,
+    pageDate: Date,
+    pageTimestamp: Number,
+    disabledDates: Object,
+    calendarClass: [String, Object, Array],
+    calendarStyle: Object,
+    translation: Object,
+    isRtl: Boolean,
+    allowedToShowView: Function,
+    useUtc: Boolean
+  },
+  data: function data() {
+    var constructedDateUtils = makeDateUtils(this.useUtc);
+    return {
+      utils: constructedDateUtils
+    };
+  },
+  computed: {
+    months: function months() {
+      var d = this.pageDate;
+      var months = []; // set up a new date object to the beginning of the current 'page'
+
+      var dObj = this.useUtc ? new Date(Date.UTC(d.getUTCFullYear(), 0, d.getUTCDate())) : new Date(d.getFullYear(), 0, d.getDate(), d.getHours(), d.getMinutes());
+
+      for (var i = 0; i < 12; i++) {
+        months.push({
+          month: this.utils.getMonthName(i, this.translation.months),
+          timestamp: dObj.getTime(),
+          isSelected: this.isSelectedMonth(dObj),
+          isDisabled: this.isDisabledMonth(dObj)
+        });
+        this.utils.setMonth(dObj, this.utils.getMonth(dObj) + 1);
+      }
+
+      return months;
+    },
+
+    /**
+     * Get year name on current page.
+     * @return {String}
+     */
+    pageYearName: function pageYearName() {
+      var yearSuffix = this.translation.yearSuffix;
+      return "".concat(this.utils.getFullYear(this.pageDate)).concat(yearSuffix);
+    },
+
+    /**
+     * Is the left hand navigation disabled
+     * @return {Boolean}
+     */
+    isLeftNavDisabled: function isLeftNavDisabled() {
+      return this.isRtl ? this.isNextYearDisabled(this.pageTimestamp) : this.isPreviousYearDisabled(this.pageTimestamp);
+    },
+
+    /**
+     * Is the right hand navigation disabled
+     * @return {Boolean}
+     */
+    isRightNavDisabled: function isRightNavDisabled() {
+      return this.isRtl ? this.isPreviousYearDisabled(this.pageTimestamp) : this.isNextYearDisabled(this.pageTimestamp);
+    }
+  },
+  methods: {
+    /**
+     * Emits a selectMonth event
+     * @param {Object} month
+     */
+    selectMonth: function selectMonth(month) {
+      if (month.isDisabled) {
+        return false;
+      }
+
+      this.$emit('selectMonth', month);
+    },
+
+    /**
+     * Changes the year up or down
+     * @param {Number} incrementBy
+     */
+    changeYear: function changeYear(incrementBy) {
+      var date = this.pageDate;
+      this.utils.setFullYear(date, this.utils.getFullYear(date) + incrementBy);
+      this.$emit('changedYear', date);
+    },
+
+    /**
+     * Decrements the year
+     */
+    previousYear: function previousYear() {
+      if (!this.isPreviousYearDisabled()) {
+        this.changeYear(-1);
+      }
+    },
+
+    /**
+     * Checks if the previous year is disabled or not
+     * @return {Boolean}
+     */
+    isPreviousYearDisabled: function isPreviousYearDisabled() {
+      if (!this.disabledDates || !this.disabledDates.to) {
+        return false;
+      }
+
+      return this.utils.getFullYear(this.disabledDates.to) >= this.utils.getFullYear(this.pageDate);
+    },
+
+    /**
+     * Increments the year
+     */
+    nextYear: function nextYear() {
+      if (!this.isNextYearDisabled()) {
+        this.changeYear(1);
+      }
+    },
+
+    /**
+     * Checks if the next year is disabled or not
+     * @return {Boolean}
+     */
+    isNextYearDisabled: function isNextYearDisabled() {
+      if (!this.disabledDates || !this.disabledDates.from) {
+        return false;
+      }
+
+      return this.utils.getFullYear(this.disabledDates.from) <= this.utils.getFullYear(this.pageDate);
+    },
+
+    /**
+     * Emits an event that shows the year calendar
+     */
+    showYearCalendar: function showYearCalendar() {
+      this.$emit('showYearCalendar');
+    },
+
+    /**
+     * Whether the selected date is in this month
+     * @param {Date}
+     * @return {Boolean}
+     */
+    isSelectedMonth: function isSelectedMonth(date) {
+      return this.selectedDate && this.utils.getFullYear(this.selectedDate) === this.utils.getFullYear(date) && this.utils.getMonth(this.selectedDate) === this.utils.getMonth(date);
+    },
+
+    /**
+     * Whether a month is disabled
+     * @param {Date}
+     * @return {Boolean}
+     */
+    isDisabledMonth: function isDisabledMonth(date) {
+      var disabledDates = false;
+
+      if (typeof this.disabledDates === 'undefined') {
+        return false;
+      }
+
+      if (typeof this.disabledDates.to !== 'undefined' && this.disabledDates.to) {
+        if (this.utils.getMonth(date) < this.utils.getMonth(this.disabledDates.to) && this.utils.getFullYear(date) <= this.utils.getFullYear(this.disabledDates.to) || this.utils.getFullYear(date) < this.utils.getFullYear(this.disabledDates.to)) {
+          disabledDates = true;
+        }
+      }
+
+      if (typeof this.disabledDates.from !== 'undefined' && this.disabledDates.from) {
+        if (this.utils.getMonth(date) > this.utils.getMonth(this.disabledDates.from) && this.utils.getFullYear(date) >= this.utils.getFullYear(this.disabledDates.from) || this.utils.getFullYear(date) > this.utils.getFullYear(this.disabledDates.from)) {
+          disabledDates = true;
+        }
+      }
+
+      if (typeof this.disabledDates.customPredictor === 'function' && this.disabledDates.customPredictor(date)) {
+        disabledDates = true;
+      }
+
+      return disabledDates;
+    }
+  } // eslint-disable-next-line
+
+};
+
+/* script */
+const __vue_script__$2 = script$2;
+
+/* template */
+var __vue_render__$2 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    {
+      directives: [
+        {
+          name: "show",
+          rawName: "v-show",
+          value: _vm.showMonthView,
+          expression: "showMonthView"
+        }
+      ],
+      class: [_vm.calendarClass, "vdp-datepicker__calendar"],
+      style: _vm.calendarStyle,
+      on: {
+        mousedown: function($event) {
+          $event.preventDefault();
+        }
+      }
+    },
+    [
+      _vm._t("beforeCalendarHeader"),
+      _vm._v(" "),
+      _c("header", [
+        _c(
+          "span",
+          {
+            staticClass: "prev",
+            class: { disabled: _vm.isLeftNavDisabled },
+            on: {
+              click: function($event) {
+                _vm.isRtl ? _vm.nextYear() : _vm.previousYear();
+              }
+            }
+          },
+          [_vm._v("<")]
+        ),
+        _vm._v(" "),
+        _c(
+          "span",
+          {
+            staticClass: "month__year_btn",
+            class: _vm.allowedToShowView("year") ? "up" : "",
+            on: { click: _vm.showYearCalendar }
+          },
+          [_vm._v(_vm._s(_vm.pageYearName))]
+        ),
+        _vm._v(" "),
+        _c(
+          "span",
+          {
+            staticClass: "next",
+            class: { disabled: _vm.isRightNavDisabled },
+            on: {
+              click: function($event) {
+                _vm.isRtl ? _vm.previousYear() : _vm.nextYear();
+              }
+            }
+          },
+          [_vm._v(">")]
+        )
+      ]),
+      _vm._v(" "),
+      _vm._l(_vm.months, function(month) {
+        return _c(
+          "span",
+          {
+            key: month.timestamp,
+            staticClass: "cell month",
+            class: { selected: month.isSelected, disabled: month.isDisabled },
+            on: {
+              click: function($event) {
+                $event.stopPropagation();
+                return _vm.selectMonth(month)
+              }
+            }
+          },
+          [_vm._v(_vm._s(month.month))]
+        )
+      })
+    ],
+    2
+  )
+};
+var __vue_staticRenderFns__$2 = [];
+__vue_render__$2._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$2 = undefined;
+  /* scoped */
+  const __vue_scope_id__$2 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$2 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$2 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var PickerMonth = normalizeComponent_1(
+    { render: __vue_render__$2, staticRenderFns: __vue_staticRenderFns__$2 },
+    __vue_inject_styles__$2,
+    __vue_script__$2,
+    __vue_scope_id__$2,
+    __vue_is_functional_template__$2,
+    __vue_module_identifier__$2,
+    undefined,
+    undefined
+  );
+
+//
+var script$3 = {
+  props: {
+    showYearView: Boolean,
+    selectedDate: Date,
+    pageDate: Date,
+    pageTimestamp: Number,
+    disabledDates: Object,
+    highlighted: Object,
+    calendarClass: [String, Object, Array],
+    calendarStyle: Object,
+    translation: Object,
+    isRtl: Boolean,
+    allowedToShowView: Function,
+    useUtc: Boolean
+  },
+  computed: {
+    years: function years() {
+      var d = this.pageDate;
+      var years = []; // set up a new date object to the beginning of the current 'page'7
+
+      var dObj = this.useUtc ? new Date(Date.UTC(Math.floor(d.getUTCFullYear() / 10) * 10, d.getUTCMonth(), d.getUTCDate())) : new Date(Math.floor(d.getFullYear() / 10) * 10, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes());
+
+      for (var i = 0; i < 10; i++) {
+        years.push({
+          year: this.utils.getFullYear(dObj),
+          timestamp: dObj.getTime(),
+          isSelected: this.isSelectedYear(dObj),
+          isDisabled: this.isDisabledYear(dObj)
+        });
+        this.utils.setFullYear(dObj, this.utils.getFullYear(dObj) + 1);
+      }
+
+      return years;
+    },
+
+    /**
+     * @return {String}
+     */
+    getPageDecade: function getPageDecade() {
+      var decadeStart = Math.floor(this.utils.getFullYear(this.pageDate) / 10) * 10;
+      var decadeEnd = decadeStart + 9;
+      var yearSuffix = this.translation.yearSuffix;
+      return "".concat(decadeStart, " - ").concat(decadeEnd).concat(yearSuffix);
+    },
+
+    /**
+     * Is the left hand navigation button disabled?
+     * @return {Boolean}
+     */
+    isLeftNavDisabled: function isLeftNavDisabled() {
+      return this.isRtl ? this.isNextDecadeDisabled(this.pageTimestamp) : this.isPreviousDecadeDisabled(this.pageTimestamp);
+    },
+
+    /**
+     * Is the right hand navigation button disabled?
+     * @return {Boolean}
+     */
+    isRightNavDisabled: function isRightNavDisabled() {
+      return this.isRtl ? this.isPreviousDecadeDisabled(this.pageTimestamp) : this.isNextDecadeDisabled(this.pageTimestamp);
+    }
+  },
+  data: function data() {
+    var constructedDateUtils = makeDateUtils(this.useUtc);
+    return {
+      utils: constructedDateUtils
+    };
+  },
+  methods: {
+    selectYear: function selectYear(year) {
+      if (year.isDisabled) {
+        return false;
+      }
+
+      this.$emit('selectYear', year);
+    },
+    changeYear: function changeYear(incrementBy) {
+      var date = this.pageDate;
+      this.utils.setFullYear(date, this.utils.getFullYear(date) + incrementBy);
+      this.$emit('changedDecade', date);
+    },
+    previousDecade: function previousDecade() {
+      if (this.isPreviousDecadeDisabled()) {
+        return false;
+      }
+
+      this.changeYear(-10);
+    },
+    isPreviousDecadeDisabled: function isPreviousDecadeDisabled() {
+      if (!this.disabledDates || !this.disabledDates.to) {
+        return false;
+      }
+
+      var disabledYear = this.utils.getFullYear(this.disabledDates.to);
+      var lastYearInPreviousPage = Math.floor(this.utils.getFullYear(this.pageDate) / 10) * 10 - 1;
+      return disabledYear > lastYearInPreviousPage;
+    },
+    nextDecade: function nextDecade() {
+      if (this.isNextDecadeDisabled()) {
+        return false;
+      }
+
+      this.changeYear(10);
+    },
+    isNextDecadeDisabled: function isNextDecadeDisabled() {
+      if (!this.disabledDates || !this.disabledDates.from) {
+        return false;
+      }
+
+      var disabledYear = this.utils.getFullYear(this.disabledDates.from);
+      var firstYearInNextPage = Math.ceil(this.utils.getFullYear(this.pageDate) / 10) * 10;
+      return disabledYear < firstYearInNextPage;
+    },
+
+    /**
+     * Whether the selected date is in this year
+     * @param {Date}
+     * @return {Boolean}
+     */
+    isSelectedYear: function isSelectedYear(date) {
+      return this.selectedDate && this.utils.getFullYear(this.selectedDate) === this.utils.getFullYear(date);
+    },
+
+    /**
+     * Whether a year is disabled
+     * @param {Date}
+     * @return {Boolean}
+     */
+    isDisabledYear: function isDisabledYear(date) {
+      var disabledDates = false;
+
+      if (typeof this.disabledDates === 'undefined' || !this.disabledDates) {
+        return false;
+      }
+
+      if (typeof this.disabledDates.to !== 'undefined' && this.disabledDates.to) {
+        if (this.utils.getFullYear(date) < this.utils.getFullYear(this.disabledDates.to)) {
+          disabledDates = true;
+        }
+      }
+
+      if (typeof this.disabledDates.from !== 'undefined' && this.disabledDates.from) {
+        if (this.utils.getFullYear(date) > this.utils.getFullYear(this.disabledDates.from)) {
+          disabledDates = true;
+        }
+      }
+
+      if (typeof this.disabledDates.customPredictor === 'function' && this.disabledDates.customPredictor(date)) {
+        disabledDates = true;
+      }
+
+      return disabledDates;
+    }
+  } // eslint-disable-next-line
+
+};
+
+/* script */
+const __vue_script__$3 = script$3;
+
+/* template */
+var __vue_render__$3 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    {
+      directives: [
+        {
+          name: "show",
+          rawName: "v-show",
+          value: _vm.showYearView,
+          expression: "showYearView"
+        }
+      ],
+      class: [_vm.calendarClass, "vdp-datepicker__calendar"],
+      style: _vm.calendarStyle,
+      on: {
+        mousedown: function($event) {
+          $event.preventDefault();
+        }
+      }
+    },
+    [
+      _vm._t("beforeCalendarHeader"),
+      _vm._v(" "),
+      _c("header", [
+        _c(
+          "span",
+          {
+            staticClass: "prev",
+            class: { disabled: _vm.isLeftNavDisabled },
+            on: {
+              click: function($event) {
+                _vm.isRtl ? _vm.nextDecade() : _vm.previousDecade();
+              }
+            }
+          },
+          [_vm._v("<")]
+        ),
+        _vm._v(" "),
+        _c("span", [_vm._v(_vm._s(_vm.getPageDecade))]),
+        _vm._v(" "),
+        _c(
+          "span",
+          {
+            staticClass: "next",
+            class: { disabled: _vm.isRightNavDisabled },
+            on: {
+              click: function($event) {
+                _vm.isRtl ? _vm.previousDecade() : _vm.nextDecade();
+              }
+            }
+          },
+          [_vm._v(">")]
+        )
+      ]),
+      _vm._v(" "),
+      _vm._l(_vm.years, function(year) {
+        return _c(
+          "span",
+          {
+            key: year.timestamp,
+            staticClass: "cell year",
+            class: { selected: year.isSelected, disabled: year.isDisabled },
+            on: {
+              click: function($event) {
+                $event.stopPropagation();
+                return _vm.selectYear(year)
+              }
+            }
+          },
+          [_vm._v(_vm._s(year.year))]
+        )
+      })
+    ],
+    2
+  )
+};
+var __vue_staticRenderFns__$3 = [];
+__vue_render__$3._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$3 = undefined;
+  /* scoped */
+  const __vue_scope_id__$3 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$3 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$3 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var PickerYear = normalizeComponent_1(
+    { render: __vue_render__$3, staticRenderFns: __vue_staticRenderFns__$3 },
+    __vue_inject_styles__$3,
+    __vue_script__$3,
+    __vue_scope_id__$3,
+    __vue_is_functional_template__$3,
+    __vue_module_identifier__$3,
+    undefined,
+    undefined
+  );
+
+//
+var script$4 = {
+  components: {
+    DateInput: DateInput,
+    PickerDay: PickerDay,
+    PickerMonth: PickerMonth,
+    PickerYear: PickerYear
+  },
+  props: {
+    value: {
+      validator: function validator(val) {
+        return utils$1.validateDateInput(val);
+      }
+    },
+    name: String,
+    refName: String,
+    id: String,
+    format: {
+      type: [String, Function],
+      "default": 'dd MMM yyyy'
+    },
+    language: {
+      type: Object,
+      "default": function _default() {
+        return en;
+      }
+    },
+    openDate: {
+      validator: function validator(val) {
+        return utils$1.validateDateInput(val);
+      }
+    },
+    dayCellContent: Function,
+    fullMonthName: Boolean,
+    disabledDates: Object,
+    highlighted: Object,
+    placeholder: String,
+    inline: Boolean,
+    calendarClass: [String, Object, Array],
+    inputClass: [String, Object, Array],
+    wrapperClass: [String, Object, Array],
+    mondayFirst: Boolean,
+    clearButton: Boolean,
+    clearButtonIcon: String,
+    calendarButton: Boolean,
+    calendarButtonIcon: String,
+    calendarButtonIconContent: String,
+    bootstrapStyling: Boolean,
+    initialView: String,
+    disabled: Boolean,
+    required: Boolean,
+    typeable: Boolean,
+    useUtc: Boolean,
+    minimumView: {
+      type: String,
+      "default": 'day'
+    },
+    maximumView: {
+      type: String,
+      "default": 'year'
+    }
+  },
+  data: function data() {
+    var startDate = this.openDate ? new Date(this.openDate) : new Date();
+    var constructedDateUtils = makeDateUtils(this.useUtc);
+    var pageTimestamp = constructedDateUtils.setDate(startDate, 1);
+    return {
+      /*
+       * Vue cannot observe changes to a Date Object so date must be stored as a timestamp
+       * This represents the first day of the current viewing month
+       * {Number}
+       */
+      pageTimestamp: pageTimestamp,
+
+      /*
+       * Selected Date
+       * {Date}
+       */
+      selectedDate: null,
+
+      /*
+       * Flags to show calendar views
+       * {Boolean}
+       */
+      showDayView: false,
+      showMonthView: false,
+      showYearView: false,
+
+      /*
+       * Positioning
+       */
+      calendarHeight: 0,
+      resetTypedDate: new Date(),
+      utils: constructedDateUtils
+    };
+  },
+  watch: {
+    value: function value(_value) {
+      this.setValue(_value);
+    },
+    openDate: function openDate() {
+      this.setPageDate();
+    },
+    initialView: function initialView() {
+      this.setInitialView();
+    }
+  },
+  computed: {
+    computedInitialView: function computedInitialView() {
+      if (!this.initialView) {
+        return this.minimumView;
+      }
+
+      return this.initialView;
+    },
+    pageDate: function pageDate() {
+      return new Date(this.pageTimestamp);
+    },
+    translation: function translation() {
+      return this.language;
+    },
+    calendarStyle: function calendarStyle() {
+      return {
+        position: this.isInline ? 'static' : undefined
+      };
+    },
+    isOpen: function isOpen() {
+      return this.showDayView || this.showMonthView || this.showYearView;
+    },
+    isInline: function isInline() {
+      return !!this.inline;
+    },
+    isRtl: function isRtl() {
+      return this.translation.rtl === true;
+    }
+  },
+  methods: {
+    /**
+     * Called in the event that the user navigates to date pages and
+     * closes the picker without selecting a date.
+     */
+    resetDefaultPageDate: function resetDefaultPageDate() {
+      if (this.selectedDate === null) {
+        this.setPageDate();
+        return;
+      }
+
+      this.setPageDate(this.selectedDate);
+    },
+
+    /**
+     * Effectively a toggle to show/hide the calendar
+     * @return {mixed}
+     */
+    showCalendar: function showCalendar() {
+      if (this.disabled || this.isInline) {
+        return false;
+      }
+
+      if (this.isOpen) {
+        return this.close(true);
+      }
+
+      this.setInitialView();
+    },
+
+    /**
+     * Sets the initial picker page view: day, month or year
+     */
+    setInitialView: function setInitialView() {
+      var initialView = this.computedInitialView;
+
+      if (!this.allowedToShowView(initialView)) {
+        throw new Error("initialView '".concat(this.initialView, "' cannot be rendered based on minimum '").concat(this.minimumView, "' and maximum '").concat(this.maximumView, "'"));
+      }
+
+      switch (initialView) {
+        case 'year':
+          this.showYearCalendar();
+          break;
+
+        case 'month':
+          this.showMonthCalendar();
+          break;
+
+        default:
+          this.showDayCalendar();
+          break;
+      }
+    },
+
+    /**
+     * Are we allowed to show a specific picker view?
+     * @param {String} view
+     * @return {Boolean}
+     */
+    allowedToShowView: function allowedToShowView(view) {
+      var views = ['day', 'month', 'year'];
+      var minimumViewIndex = views.indexOf(this.minimumView);
+      var maximumViewIndex = views.indexOf(this.maximumView);
+      var viewIndex = views.indexOf(view);
+      return viewIndex >= minimumViewIndex && viewIndex <= maximumViewIndex;
+    },
+
+    /**
+     * Show the day picker
+     * @return {Boolean}
+     */
+    showDayCalendar: function showDayCalendar() {
+      if (!this.allowedToShowView('day')) {
+        return false;
+      }
+
+      this.close();
+      this.showDayView = true;
+      return true;
+    },
+
+    /**
+     * Show the month picker
+     * @return {Boolean}
+     */
+    showMonthCalendar: function showMonthCalendar() {
+      if (!this.allowedToShowView('month')) {
+        return false;
+      }
+
+      this.close();
+      this.showMonthView = true;
+      return true;
+    },
+
+    /**
+     * Show the year picker
+     * @return {Boolean}
+     */
+    showYearCalendar: function showYearCalendar() {
+      if (!this.allowedToShowView('year')) {
+        return false;
+      }
+
+      this.close();
+      this.showYearView = true;
+      return true;
+    },
+
+    /**
+     * Set the selected date
+     * @param {Number} timestamp
+     */
+    setDate: function setDate(timestamp) {
+      var date = new Date(timestamp);
+      this.selectedDate = date;
+      this.setPageDate(date);
+      this.$emit('selected', date);
+      this.$emit('input', date);
+    },
+
+    /**
+     * Clear the selected date
+     */
+    clearDate: function clearDate() {
+      this.selectedDate = null;
+      this.setPageDate();
+      this.$emit('selected', null);
+      this.$emit('input', null);
+      this.$emit('cleared');
+    },
+
+    /**
+     * @param {Object} date
+     */
+    selectDate: function selectDate(date) {
+      this.setDate(date.timestamp);
+
+      if (!this.isInline) {
+        this.close(true);
+      }
+
+      this.resetTypedDate = new Date();
+    },
+
+    /**
+     * @param {Object} date
+     */
+    selectDisabledDate: function selectDisabledDate(date) {
+      this.$emit('selectedDisabled', date);
+    },
+
+    /**
+     * @param {Object} month
+     */
+    selectMonth: function selectMonth(month) {
+      var date = new Date(month.timestamp);
+
+      if (this.allowedToShowView('day')) {
+        this.setPageDate(date);
+        this.$emit('changedMonth', month);
+        this.showDayCalendar();
+      } else {
+        this.selectDate(month);
+      }
+    },
+
+    /**
+     * @param {Object} year
+     */
+    selectYear: function selectYear(year) {
+      var date = new Date(year.timestamp);
+
+      if (this.allowedToShowView('month')) {
+        this.setPageDate(date);
+        this.$emit('changedYear', year);
+        this.showMonthCalendar();
+      } else {
+        this.selectDate(year);
+      }
+    },
+
+    /**
+     * Set the datepicker value
+     * @param {Date|String|Number|null} date
+     */
+    setValue: function setValue(date) {
+      if (typeof date === 'string' || typeof date === 'number') {
+        var parsed = new Date(date);
+        date = isNaN(parsed.valueOf()) ? null : parsed;
+      }
+
+      if (!date) {
+        this.setPageDate();
+        this.selectedDate = null;
+        return;
+      }
+
+      this.selectedDate = date;
+      this.setPageDate(date);
+    },
+
+    /**
+     * Sets the date that the calendar should open on
+     */
+    setPageDate: function setPageDate(date) {
+      if (!date) {
+        if (this.openDate) {
+          date = new Date(this.openDate);
+        } else {
+          date = new Date();
+        }
+      }
+
+      this.pageTimestamp = this.utils.setDate(new Date(date), 1);
+    },
+
+    /**
+     * Handles a month change from the day picker
+     */
+    handleChangedMonthFromDayPicker: function handleChangedMonthFromDayPicker(date) {
+      this.setPageDate(date);
+      this.$emit('changedMonth', date);
+    },
+
+    /**
+     * Set the date from a typedDate event
+     */
+    setTypedDate: function setTypedDate(date) {
+      this.setDate(date.getTime());
+    },
+
+    /**
+     * Close all calendar layers
+     * @param {Boolean} emitEvent - emit close event
+     */
+    close: function close(emitEvent) {
+      this.showDayView = this.showMonthView = this.showYearView = false;
+
+      if (!this.isInline) {
+        if (emitEvent) {
+          this.$emit('closed');
+        }
+
+        document.removeEventListener('click', this.clickOutside, false);
+      }
+    },
+
+    /**
+     * Initiate the component
+     */
+    init: function init() {
+      if (this.value) {
+        this.setValue(this.value);
+      }
+
+      if (this.isInline) {
+        this.setInitialView();
+      }
+    }
+  },
+  mounted: function mounted() {
+    this.init();
+  }
+} // eslint-disable-next-line
+;
+
+var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\\b/.test(navigator.userAgent.toLowerCase());
+function createInjector(context) {
+  return function (id, style) {
+    return addStyle(id, style);
+  };
+}
+var HEAD = document.head || document.getElementsByTagName('head')[0];
+var styles = {};
+
+function addStyle(id, css) {
+  var group = isOldIE ? css.media || 'default' : id;
+  var style = styles[group] || (styles[group] = {
+    ids: new Set(),
+    styles: []
+  });
+
+  if (!style.ids.has(id)) {
+    style.ids.add(id);
+    var code = css.source;
+
+    if (css.map) {
+      // https://developer.chrome.com/devtools/docs/javascript-debugging
+      // this makes source maps inside style tags work properly in Chrome
+      code += '\n/*# sourceURL=' + css.map.sources[0] + ' */'; // http://stackoverflow.com/a/26603875
+
+      code += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(css.map)))) + ' */';
+    }
+
+    if (!style.element) {
+      style.element = document.createElement('style');
+      style.element.type = 'text/css';
+      if (css.media) style.element.setAttribute('media', css.media);
+      HEAD.appendChild(style.element);
+    }
+
+    if ('styleSheet' in style.element) {
+      style.styles.push(code);
+      style.element.styleSheet.cssText = style.styles.filter(Boolean).join('\n');
+    } else {
+      var index = style.ids.size - 1;
+      var textNode = document.createTextNode(code);
+      var nodes = style.element.childNodes;
+      if (nodes[index]) style.element.removeChild(nodes[index]);
+      if (nodes.length) style.element.insertBefore(textNode, nodes[index]);else style.element.appendChild(textNode);
+    }
+  }
+}
+
+var browser = createInjector;
+
+/* script */
+const __vue_script__$4 = script$4;
+
+/* template */
+var __vue_render__$4 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    {
+      staticClass: "vdp-datepicker",
+      class: [_vm.wrapperClass, _vm.isRtl ? "rtl" : ""]
+    },
+    [
+      _c(
+        "date-input",
+        {
+          attrs: {
+            selectedDate: _vm.selectedDate,
+            resetTypedDate: _vm.resetTypedDate,
+            format: _vm.format,
+            translation: _vm.translation,
+            inline: _vm.inline,
+            id: _vm.id,
+            name: _vm.name,
+            refName: _vm.refName,
+            openDate: _vm.openDate,
+            placeholder: _vm.placeholder,
+            inputClass: _vm.inputClass,
+            typeable: _vm.typeable,
+            clearButton: _vm.clearButton,
+            clearButtonIcon: _vm.clearButtonIcon,
+            calendarButton: _vm.calendarButton,
+            calendarButtonIcon: _vm.calendarButtonIcon,
+            calendarButtonIconContent: _vm.calendarButtonIconContent,
+            disabled: _vm.disabled,
+            required: _vm.required,
+            bootstrapStyling: _vm.bootstrapStyling,
+            "use-utc": _vm.useUtc
+          },
+          on: {
+            showCalendar: _vm.showCalendar,
+            closeCalendar: _vm.close,
+            typedDate: _vm.setTypedDate,
+            clearDate: _vm.clearDate
+          }
+        },
+        [_vm._t("afterDateInput", null, { slot: "afterDateInput" })],
+        2
+      ),
+      _vm._v(" "),
+      _vm.allowedToShowView("day")
+        ? _c(
+            "picker-day",
+            {
+              attrs: {
+                pageDate: _vm.pageDate,
+                selectedDate: _vm.selectedDate,
+                showDayView: _vm.showDayView,
+                fullMonthName: _vm.fullMonthName,
+                allowedToShowView: _vm.allowedToShowView,
+                disabledDates: _vm.disabledDates,
+                highlighted: _vm.highlighted,
+                calendarClass: _vm.calendarClass,
+                calendarStyle: _vm.calendarStyle,
+                translation: _vm.translation,
+                pageTimestamp: _vm.pageTimestamp,
+                isRtl: _vm.isRtl,
+                mondayFirst: _vm.mondayFirst,
+                dayCellContent: _vm.dayCellContent,
+                "use-utc": _vm.useUtc
+              },
+              on: {
+                changedMonth: _vm.handleChangedMonthFromDayPicker,
+                selectDate: _vm.selectDate,
+                showMonthCalendar: _vm.showMonthCalendar,
+                selectedDisabled: _vm.selectDisabledDate
+              }
+            },
+            [
+              _vm._t("beforeCalendarHeader", null, {
+                slot: "beforeCalendarHeader"
+              })
+            ],
+            2
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.allowedToShowView("month")
+        ? _c(
+            "picker-month",
+            {
+              attrs: {
+                pageDate: _vm.pageDate,
+                selectedDate: _vm.selectedDate,
+                showMonthView: _vm.showMonthView,
+                allowedToShowView: _vm.allowedToShowView,
+                disabledDates: _vm.disabledDates,
+                calendarClass: _vm.calendarClass,
+                calendarStyle: _vm.calendarStyle,
+                translation: _vm.translation,
+                isRtl: _vm.isRtl,
+                "use-utc": _vm.useUtc
+              },
+              on: {
+                selectMonth: _vm.selectMonth,
+                showYearCalendar: _vm.showYearCalendar,
+                changedYear: _vm.setPageDate
+              }
+            },
+            [
+              _vm._t("beforeCalendarHeader", null, {
+                slot: "beforeCalendarHeader"
+              })
+            ],
+            2
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.allowedToShowView("year")
+        ? _c(
+            "picker-year",
+            {
+              attrs: {
+                pageDate: _vm.pageDate,
+                selectedDate: _vm.selectedDate,
+                showYearView: _vm.showYearView,
+                allowedToShowView: _vm.allowedToShowView,
+                disabledDates: _vm.disabledDates,
+                calendarClass: _vm.calendarClass,
+                calendarStyle: _vm.calendarStyle,
+                translation: _vm.translation,
+                isRtl: _vm.isRtl,
+                "use-utc": _vm.useUtc
+              },
+              on: { selectYear: _vm.selectYear, changedDecade: _vm.setPageDate }
+            },
+            [
+              _vm._t("beforeCalendarHeader", null, {
+                slot: "beforeCalendarHeader"
+              })
+            ],
+            2
+          )
+        : _vm._e()
+    ],
+    1
+  )
+};
+var __vue_staticRenderFns__$4 = [];
+__vue_render__$4._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$4 = function (inject) {
+    if (!inject) return
+    inject("data-v-64ca2bb5_0", { source: ".rtl {\n  direction: rtl;\n}\n.vdp-datepicker {\n  position: relative;\n  text-align: left;\n}\n.vdp-datepicker * {\n  box-sizing: border-box;\n}\n.vdp-datepicker__calendar {\n  position: absolute;\n  z-index: 100;\n  background: #fff;\n  width: 300px;\n  border: 1px solid #ccc;\n}\n.vdp-datepicker__calendar header {\n  display: block;\n  line-height: 40px;\n}\n.vdp-datepicker__calendar header span {\n  display: inline-block;\n  text-align: center;\n  width: 71.42857142857143%;\n  float: left;\n}\n.vdp-datepicker__calendar header .prev,\n.vdp-datepicker__calendar header .next {\n  width: 14.285714285714286%;\n  float: left;\n  text-indent: -10000px;\n  position: relative;\n}\n.vdp-datepicker__calendar header .prev:after,\n.vdp-datepicker__calendar header .next:after {\n  content: '';\n  position: absolute;\n  left: 50%;\n  top: 50%;\n  transform: translateX(-50%) translateY(-50%);\n  border: 6px solid transparent;\n}\n.vdp-datepicker__calendar header .prev:after {\n  border-right: 10px solid #000;\n  margin-left: -5px;\n}\n.vdp-datepicker__calendar header .prev.disabled:after {\n  border-right: 10px solid #ddd;\n}\n.vdp-datepicker__calendar header .next:after {\n  border-left: 10px solid #000;\n  margin-left: 5px;\n}\n.vdp-datepicker__calendar header .next.disabled:after {\n  border-left: 10px solid #ddd;\n}\n.vdp-datepicker__calendar header .prev:not(.disabled),\n.vdp-datepicker__calendar header .next:not(.disabled),\n.vdp-datepicker__calendar header .up:not(.disabled) {\n  cursor: pointer;\n}\n.vdp-datepicker__calendar header .prev:not(.disabled):hover,\n.vdp-datepicker__calendar header .next:not(.disabled):hover,\n.vdp-datepicker__calendar header .up:not(.disabled):hover {\n  background: #eee;\n}\n.vdp-datepicker__calendar .disabled {\n  color: #ddd;\n  cursor: default;\n}\n.vdp-datepicker__calendar .flex-rtl {\n  display: flex;\n  width: inherit;\n  flex-wrap: wrap;\n}\n.vdp-datepicker__calendar .cell {\n  display: inline-block;\n  padding: 0 5px;\n  width: 14.285714285714286%;\n  height: 40px;\n  line-height: 40px;\n  text-align: center;\n  vertical-align: middle;\n  border: 1px solid transparent;\n}\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).day,\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).month,\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).year {\n  cursor: pointer;\n}\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).day:hover,\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).month:hover,\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).year:hover {\n  border: 1px solid #4bd;\n}\n.vdp-datepicker__calendar .cell.selected {\n  background: #4bd;\n}\n.vdp-datepicker__calendar .cell.selected:hover {\n  background: #4bd;\n}\n.vdp-datepicker__calendar .cell.selected.highlighted {\n  background: #4bd;\n}\n.vdp-datepicker__calendar .cell.highlighted {\n  background: #cae5ed;\n}\n.vdp-datepicker__calendar .cell.highlighted.disabled {\n  color: #a3a3a3;\n}\n.vdp-datepicker__calendar .cell.grey {\n  color: #888;\n}\n.vdp-datepicker__calendar .cell.grey:hover {\n  background: inherit;\n}\n.vdp-datepicker__calendar .cell.day-header {\n  font-size: 75%;\n  white-space: nowrap;\n  cursor: inherit;\n}\n.vdp-datepicker__calendar .cell.day-header:hover {\n  background: inherit;\n}\n.vdp-datepicker__calendar .month,\n.vdp-datepicker__calendar .year {\n  width: 33.333%;\n}\n.vdp-datepicker__clear-button,\n.vdp-datepicker__calendar-button {\n  cursor: pointer;\n  font-style: normal;\n}\n.vdp-datepicker__clear-button.disabled,\n.vdp-datepicker__calendar-button.disabled {\n  color: #999;\n  cursor: default;\n}\n", map: {"version":3,"sources":["Datepicker.vue"],"names":[],"mappings":"AAAA;EACE,cAAc;AAChB;AACA;EACE,kBAAkB;EAClB,gBAAgB;AAClB;AACA;EACE,sBAAsB;AACxB;AACA;EACE,kBAAkB;EAClB,YAAY;EACZ,gBAAgB;EAChB,YAAY;EACZ,sBAAsB;AACxB;AACA;EACE,cAAc;EACd,iBAAiB;AACnB;AACA;EACE,qBAAqB;EACrB,kBAAkB;EAClB,yBAAyB;EACzB,WAAW;AACb;AACA;;EAEE,0BAA0B;EAC1B,WAAW;EACX,qBAAqB;EACrB,kBAAkB;AACpB;AACA;;EAEE,WAAW;EACX,kBAAkB;EAClB,SAAS;EACT,QAAQ;EACR,4CAA4C;EAC5C,6BAA6B;AAC/B;AACA;EACE,6BAA6B;EAC7B,iBAAiB;AACnB;AACA;EACE,6BAA6B;AAC/B;AACA;EACE,4BAA4B;EAC5B,gBAAgB;AAClB;AACA;EACE,4BAA4B;AAC9B;AACA;;;EAGE,eAAe;AACjB;AACA;;;EAGE,gBAAgB;AAClB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,aAAa;EACb,cAAc;EACd,eAAe;AACjB;AACA;EACE,qBAAqB;EACrB,cAAc;EACd,0BAA0B;EAC1B,YAAY;EACZ,iBAAiB;EACjB,kBAAkB;EAClB,sBAAsB;EACtB,6BAA6B;AAC/B;AACA;;;EAGE,eAAe;AACjB;AACA;;;EAGE,sBAAsB;AACxB;AACA;EACE,gBAAgB;AAClB;AACA;EACE,gBAAgB;AAClB;AACA;EACE,gBAAgB;AAClB;AACA;EACE,mBAAmB;AACrB;AACA;EACE,cAAc;AAChB;AACA;EACE,WAAW;AACb;AACA;EACE,mBAAmB;AACrB;AACA;EACE,cAAc;EACd,mBAAmB;EACnB,eAAe;AACjB;AACA;EACE,mBAAmB;AACrB;AACA;;EAEE,cAAc;AAChB;AACA;;EAEE,eAAe;EACf,kBAAkB;AACpB;AACA;;EAEE,WAAW;EACX,eAAe;AACjB","file":"Datepicker.vue","sourcesContent":[".rtl {\n  direction: rtl;\n}\n.vdp-datepicker {\n  position: relative;\n  text-align: left;\n}\n.vdp-datepicker * {\n  box-sizing: border-box;\n}\n.vdp-datepicker__calendar {\n  position: absolute;\n  z-index: 100;\n  background: #fff;\n  width: 300px;\n  border: 1px solid #ccc;\n}\n.vdp-datepicker__calendar header {\n  display: block;\n  line-height: 40px;\n}\n.vdp-datepicker__calendar header span {\n  display: inline-block;\n  text-align: center;\n  width: 71.42857142857143%;\n  float: left;\n}\n.vdp-datepicker__calendar header .prev,\n.vdp-datepicker__calendar header .next {\n  width: 14.285714285714286%;\n  float: left;\n  text-indent: -10000px;\n  position: relative;\n}\n.vdp-datepicker__calendar header .prev:after,\n.vdp-datepicker__calendar header .next:after {\n  content: '';\n  position: absolute;\n  left: 50%;\n  top: 50%;\n  transform: translateX(-50%) translateY(-50%);\n  border: 6px solid transparent;\n}\n.vdp-datepicker__calendar header .prev:after {\n  border-right: 10px solid #000;\n  margin-left: -5px;\n}\n.vdp-datepicker__calendar header .prev.disabled:after {\n  border-right: 10px solid #ddd;\n}\n.vdp-datepicker__calendar header .next:after {\n  border-left: 10px solid #000;\n  margin-left: 5px;\n}\n.vdp-datepicker__calendar header .next.disabled:after {\n  border-left: 10px solid #ddd;\n}\n.vdp-datepicker__calendar header .prev:not(.disabled),\n.vdp-datepicker__calendar header .next:not(.disabled),\n.vdp-datepicker__calendar header .up:not(.disabled) {\n  cursor: pointer;\n}\n.vdp-datepicker__calendar header .prev:not(.disabled):hover,\n.vdp-datepicker__calendar header .next:not(.disabled):hover,\n.vdp-datepicker__calendar header .up:not(.disabled):hover {\n  background: #eee;\n}\n.vdp-datepicker__calendar .disabled {\n  color: #ddd;\n  cursor: default;\n}\n.vdp-datepicker__calendar .flex-rtl {\n  display: flex;\n  width: inherit;\n  flex-wrap: wrap;\n}\n.vdp-datepicker__calendar .cell {\n  display: inline-block;\n  padding: 0 5px;\n  width: 14.285714285714286%;\n  height: 40px;\n  line-height: 40px;\n  text-align: center;\n  vertical-align: middle;\n  border: 1px solid transparent;\n}\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).day,\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).month,\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).year {\n  cursor: pointer;\n}\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).day:hover,\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).month:hover,\n.vdp-datepicker__calendar .cell:not(.blank):not(.disabled).year:hover {\n  border: 1px solid #4bd;\n}\n.vdp-datepicker__calendar .cell.selected {\n  background: #4bd;\n}\n.vdp-datepicker__calendar .cell.selected:hover {\n  background: #4bd;\n}\n.vdp-datepicker__calendar .cell.selected.highlighted {\n  background: #4bd;\n}\n.vdp-datepicker__calendar .cell.highlighted {\n  background: #cae5ed;\n}\n.vdp-datepicker__calendar .cell.highlighted.disabled {\n  color: #a3a3a3;\n}\n.vdp-datepicker__calendar .cell.grey {\n  color: #888;\n}\n.vdp-datepicker__calendar .cell.grey:hover {\n  background: inherit;\n}\n.vdp-datepicker__calendar .cell.day-header {\n  font-size: 75%;\n  white-space: nowrap;\n  cursor: inherit;\n}\n.vdp-datepicker__calendar .cell.day-header:hover {\n  background: inherit;\n}\n.vdp-datepicker__calendar .month,\n.vdp-datepicker__calendar .year {\n  width: 33.333%;\n}\n.vdp-datepicker__clear-button,\n.vdp-datepicker__calendar-button {\n  cursor: pointer;\n  font-style: normal;\n}\n.vdp-datepicker__clear-button.disabled,\n.vdp-datepicker__calendar-button.disabled {\n  color: #999;\n  cursor: default;\n}\n"]}, media: undefined });
+
+  };
+  /* scoped */
+  const __vue_scope_id__$4 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$4 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$4 = false;
+  /* style inject SSR */
+  
+
+  
+  var Datepicker = normalizeComponent_1(
+    { render: __vue_render__$4, staticRenderFns: __vue_staticRenderFns__$4 },
+    __vue_inject_styles__$4,
+    __vue_script__$4,
+    __vue_scope_id__$4,
+    __vue_is_functional_template__$4,
+    __vue_module_identifier__$4,
+    browser,
+    undefined
+  );
+
+/* harmony default export */ __webpack_exports__["default"] = (Datepicker);
+
+
+/***/ }),
+
 /***/ "./node_modules/webpack/buildin/amd-define.js":
 /*!***************************************!*\
   !*** (webpack)/buildin/amd-define.js ***!
@@ -82380,33 +90028,60 @@ module.exports = function(module) {
 /*!*****************************!*\
   !*** ./resources/js/app.js ***!
   \*****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var sweetalert__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! sweetalert */ "./node_modules/sweetalert/dist/sweetalert.min.js");
+/* harmony import */ var sweetalert__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(sweetalert__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var vue_alertify__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue-alertify */ "./node_modules/vue-alertify/es/index.js");
+/* harmony import */ var vue_multiselect__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vue-multiselect */ "./node_modules/vue-multiselect/dist/vue-multiselect.min.js");
+/* harmony import */ var vue_multiselect__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(vue_multiselect__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var vuejs_datepicker__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! vuejs-datepicker */ "./node_modules/vuejs-datepicker/dist/vuejs-datepicker.esm.js");
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
-window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js"); // Componentes
+window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js"); // DECLARANDO COMPONENTES
 
-Vue.component('example-component', __webpack_require__(/*! ./components/ExampleComponent.vue */ "./resources/js/components/ExampleComponent.vue")["default"]);
+Vue.component('pagination', __webpack_require__(/*! ./components/Utilities/PaginationComponent.vue */ "./resources/js/components/Utilities/PaginationComponent.vue")["default"]);
+Vue.component('chart-component', __webpack_require__(/*! ./components/Charts/ChartComponent.vue */ "./resources/js/components/Charts/ChartComponent.vue")["default"]);
+Vue.component('user-component', __webpack_require__(/*! ./components/Users/UserComponent.vue */ "./resources/js/components/Users/UserComponent.vue")["default"]);
+/* PLUGINS */
+
+
+
+Vue.use(vue_alertify__WEBPACK_IMPORTED_MODULE_1__["default"], {
+  notifier: {
+    delay: 5,
+    position: 'top-right',
+    closeButton: true
+  }
+});
+
+Vue.component('multiselect', vue_multiselect__WEBPACK_IMPORTED_MODULE_2___default.a);
+
+Vue.component('datepicker', vuejs_datepicker__WEBPACK_IMPORTED_MODULE_3__["default"]);
+/* FIN DE PLUGINS */
+
 var app = new Vue({
   el: '#app',
   methods: {
-    /* REUTILIZADAS */
-    loading: function loading(name, content, img) {
-      swal({
+    /* REUTILIZABLESS */
+    loading: function loading(name, content) {
+      sweetalert__WEBPACK_IMPORTED_MODULE_0___default()({
         title: name,
         text: content,
         button: {
           text: "Ok!",
           closeModal: false
         },
-        icon: img,
+        icon: '/img/spin.gif',
         closeOnClickOutside: false,
-        timer: 3000
+        timer: 3500
       });
     },
     alert: function alert(name, content, img) {
-      swal({
+      sweetalert__WEBPACK_IMPORTED_MODULE_0___default()({
         title: name,
         text: content,
         button: {
@@ -82424,22 +90099,10 @@ var app = new Vue({
 /*!***********************************!*\
   !*** ./resources/js/bootstrap.js ***!
   \***********************************/
-/*! no exports provided */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var chart_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! chart.js */ "./node_modules/chart.js/dist/Chart.js");
-/* harmony import */ var chart_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(chart_js__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var vue_chartjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue-chartjs */ "./node_modules/vue-chartjs/es/index.js");
-/* harmony import */ var sweetalert__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! sweetalert */ "./node_modules/sweetalert/dist/sweetalert.min.js");
-/* harmony import */ var sweetalert__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(sweetalert__WEBPACK_IMPORTED_MODULE_2__);
 window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
-/**
- * We'll load jQuery and the Bootstrap jQuery plugin which provides support
- * for JavaScript based Bootstrap features such as modals and tabs. This
- * code may be modified to fit the specific needs of your application.
- */
 
 try {
   window.Popper = __webpack_require__(/*! popper.js */ "./node_modules/popper.js/dist/esm/popper.js")["default"];
@@ -82447,21 +90110,9 @@ try {
 
   __webpack_require__(/*! bootstrap */ "./node_modules/bootstrap/dist/js/bootstrap.js");
 } catch (e) {}
-/**
- * We'll load the axios HTTP library which allows us to easily issue requests
- * to our Laravel back-end. This library automatically handles sending the
- * CSRF token as a header based on the value of the "XSRF" token cookie.
- */
-
 
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-/**
- * Next we will register the CSRF Token as a common header with Axios so that
- * all outgoing HTTP requests automatically have it attached. This is just
- * a simple convenience so we don't have to attach every token manually.
- */
-
 var token = document.head.querySelector('meta[name="csrf-token"]');
 
 if (token) {
@@ -82469,42 +90120,26 @@ if (token) {
 } else {
   console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
 }
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allows your team to easily build robust real-time web applications.
- */
-// import Echo from 'laravel-echo'
-// window.Pusher = require('pusher-js');
-// window.Echo = new Echo({
-//     broadcaster: 'pusher',
-//     key: process.env.MIX_PUSHER_APP_KEY,
-//     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-//     encrypted: true
-// });
-
-/* DISEÑOS */
+/* PLUGINS */
 
 
 window.toastr = __webpack_require__(/*! toastr */ "./node_modules/toastr/toastr.js");
-
-
-
+/* FIN DE PLUGINS */
 
 /***/ }),
 
-/***/ "./resources/js/components/ExampleComponent.vue":
-/*!******************************************************!*\
-  !*** ./resources/js/components/ExampleComponent.vue ***!
-  \******************************************************/
+/***/ "./resources/js/components/Charts/ChartComponent.vue":
+/*!***********************************************************!*\
+  !*** ./resources/js/components/Charts/ChartComponent.vue ***!
+  \***********************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
-/* harmony import */ var _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* harmony import */ var _ChartComponent_vue_vue_type_template_id_489cddfe___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ChartComponent.vue?vue&type=template&id=489cddfe& */ "./resources/js/components/Charts/ChartComponent.vue?vue&type=template&id=489cddfe&");
+/* harmony import */ var _ChartComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ChartComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/Charts/ChartComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
 
 
@@ -82513,9 +90148,9 @@ __webpack_require__.r(__webpack_exports__);
 /* normalize component */
 
 var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
-  _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"],
-  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  _ChartComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _ChartComponent_vue_vue_type_template_id_489cddfe___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _ChartComponent_vue_vue_type_template_id_489cddfe___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
   false,
   null,
   null,
@@ -82525,38 +90160,194 @@ var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_
 
 /* hot reload */
 if (false) { var api; }
-component.options.__file = "resources/js/components/ExampleComponent.vue"
+component.options.__file = "resources/js/components/Charts/ChartComponent.vue"
 /* harmony default export */ __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
 
-/***/ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&":
-/*!*******************************************************************************!*\
-  !*** ./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js& ***!
-  \*******************************************************************************/
+/***/ "./resources/js/components/Charts/ChartComponent.vue?vue&type=script&lang=js&":
+/*!************************************************************************************!*\
+  !*** ./resources/js/components/Charts/ChartComponent.vue?vue&type=script&lang=js& ***!
+  \************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ChartComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./ChartComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Charts/ChartComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ChartComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
 
 /***/ }),
 
-/***/ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&":
-/*!*************************************************************************************!*\
-  !*** ./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e& ***!
-  \*************************************************************************************/
+/***/ "./resources/js/components/Charts/ChartComponent.vue?vue&type=template&id=489cddfe&":
+/*!******************************************************************************************!*\
+  !*** ./resources/js/components/Charts/ChartComponent.vue?vue&type=template&id=489cddfe& ***!
+  \******************************************************************************************/
 /*! exports provided: render, staticRenderFns */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ChartComponent_vue_vue_type_template_id_489cddfe___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./ChartComponent.vue?vue&type=template&id=489cddfe& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Charts/ChartComponent.vue?vue&type=template&id=489cddfe&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ChartComponent_vue_vue_type_template_id_489cddfe___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ChartComponent_vue_vue_type_template_id_489cddfe___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/components/Users/UserComponent.vue":
+/*!*********************************************************!*\
+  !*** ./resources/js/components/Users/UserComponent.vue ***!
+  \*********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _UserComponent_vue_vue_type_template_id_007a99f0___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./UserComponent.vue?vue&type=template&id=007a99f0& */ "./resources/js/components/Users/UserComponent.vue?vue&type=template&id=007a99f0&");
+/* harmony import */ var _UserComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./UserComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/Users/UserComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _UserComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _UserComponent_vue_vue_type_template_id_007a99f0___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _UserComponent_vue_vue_type_template_id_007a99f0___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/Users/UserComponent.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/Users/UserComponent.vue?vue&type=script&lang=js&":
+/*!**********************************************************************************!*\
+  !*** ./resources/js/components/Users/UserComponent.vue?vue&type=script&lang=js& ***!
+  \**********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_UserComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./UserComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Users/UserComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_UserComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/Users/UserComponent.vue?vue&type=template&id=007a99f0&":
+/*!****************************************************************************************!*\
+  !*** ./resources/js/components/Users/UserComponent.vue?vue&type=template&id=007a99f0& ***!
+  \****************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_UserComponent_vue_vue_type_template_id_007a99f0___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./UserComponent.vue?vue&type=template&id=007a99f0& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Users/UserComponent.vue?vue&type=template&id=007a99f0&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_UserComponent_vue_vue_type_template_id_007a99f0___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_UserComponent_vue_vue_type_template_id_007a99f0___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/components/Utilities/PaginationComponent.vue":
+/*!*******************************************************************!*\
+  !*** ./resources/js/components/Utilities/PaginationComponent.vue ***!
+  \*******************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _PaginationComponent_vue_vue_type_template_id_ae87b2fa___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./PaginationComponent.vue?vue&type=template&id=ae87b2fa& */ "./resources/js/components/Utilities/PaginationComponent.vue?vue&type=template&id=ae87b2fa&");
+/* harmony import */ var _PaginationComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./PaginationComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/Utilities/PaginationComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _PaginationComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./PaginationComponent.vue?vue&type=style&index=0&lang=css& */ "./resources/js/components/Utilities/PaginationComponent.vue?vue&type=style&index=0&lang=css&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__["default"])(
+  _PaginationComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _PaginationComponent_vue_vue_type_template_id_ae87b2fa___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _PaginationComponent_vue_vue_type_template_id_ae87b2fa___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/Utilities/PaginationComponent.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/Utilities/PaginationComponent.vue?vue&type=script&lang=js&":
+/*!********************************************************************************************!*\
+  !*** ./resources/js/components/Utilities/PaginationComponent.vue?vue&type=script&lang=js& ***!
+  \********************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./PaginationComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/Utilities/PaginationComponent.vue?vue&type=style&index=0&lang=css&":
+/*!****************************************************************************************************!*\
+  !*** ./resources/js/components/Utilities/PaginationComponent.vue?vue&type=style&index=0&lang=css& ***!
+  \****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/style-loader!../../../../node_modules/css-loader??ref--6-1!../../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../../node_modules/postcss-loader/src??ref--6-2!../../../../node_modules/vue-loader/lib??vue-loader-options!./PaginationComponent.vue?vue&type=style&index=0&lang=css& */ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=style&index=0&lang=css&");
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__[key]; }) }(__WEBPACK_IMPORT_KEY__));
+ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0___default.a); 
+
+/***/ }),
+
+/***/ "./resources/js/components/Utilities/PaginationComponent.vue?vue&type=template&id=ae87b2fa&":
+/*!**************************************************************************************************!*\
+  !*** ./resources/js/components/Utilities/PaginationComponent.vue?vue&type=template&id=ae87b2fa& ***!
+  \**************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_template_id_ae87b2fa___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./PaginationComponent.vue?vue&type=template&id=ae87b2fa& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Utilities/PaginationComponent.vue?vue&type=template&id=ae87b2fa&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_template_id_ae87b2fa___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PaginationComponent_vue_vue_type_template_id_ae87b2fa___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 

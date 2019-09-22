@@ -8,6 +8,6 @@
     </div>
 </div>
 <div class="content content-narrow">
-    <h3>Aqui van varias graficas!</h3>
+	<chart-component></chart-component>
 </div>
 @stop

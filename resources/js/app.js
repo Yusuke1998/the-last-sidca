@@ -2,14 +2,32 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 
-// Componentes
-Vue.component('example-component', require('./components/ExampleComponent.vue').default);
+// DECLARANDO COMPONENTES
+Vue.component('pagination', require('./components/Utilities/PaginationComponent.vue').default);
+Vue.component('chart-component', require('./components/Charts/ChartComponent.vue').default);
+Vue.component('user-component', require('./components/Users/UserComponent.vue').default);
+
+/* PLUGINS */
+import swal from 'sweetalert';
+import VueAlertify from 'vue-alertify';
+    Vue.use(VueAlertify,{
+        notifier: {
+            delay: 5,
+            position: 'top-right',
+            closeButton: true,
+        }
+    });
+import Multiselect from 'vue-multiselect';
+    Vue.component('multiselect', Multiselect)
+import Datepicker from 'vuejs-datepicker';
+    Vue.component('datepicker', Datepicker)
+/* FIN DE PLUGINS */
 
 const app = new Vue({
     el: '#app',
     methods:{
-        /* REUTILIZADAS */
-        loading(name, content, img){
+        /* REUTILIZABLESS */
+        loading(name, content){
             swal({
                 title:name,
                 text:content,
@@ -17,9 +35,9 @@ const app = new Vue({
                     text: "Ok!",
                     closeModal: false,
                 },
-                icon:img,
+                icon:'/img/spin.gif',
                 closeOnClickOutside: false,
-                timer: 3000
+                timer: 3500
             })
         },
         alert(name, content, img){
