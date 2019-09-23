@@ -156,6 +156,7 @@
 <script>
 export default {
     mounted(){
+        this.$alertify.success('Solo funciona con internet');
         this.getDocuments();
         this.getData();
         this.getTypes();
@@ -254,7 +255,7 @@ export default {
         },
 		getData(page)
         {
-        	this.$alertify.success('Usuarios Cargados')
+        	// this.$alertify.success('Usuarios Cargados')
             let url =  "/get-users" 
             axios.post(url,{
                 page   : page, 
@@ -278,13 +279,13 @@ export default {
                 $("#UserModal").modal('hide')
                 swal.close()
                 this.getData()
-        		this.$alertify.success('El usuario se registro con exito')
+        		// this.$alertify.success('El usuario se registro con exito')
             }).catch(errors => {
                 swal.close()
                 if (status = 204)
 				{
 					Object.values(errors.response.data.errors).forEach((element,indx) => {
-                        this.$alertify.error(element.toString())
+                        // this.$alertify.error(element.toString())
                     });
 				}
             })
@@ -299,13 +300,13 @@ export default {
                 $("#UserModal").modal('hide')
                 swal.close()
                 this.getData()
-        		this.$alertify.success('El usuario fue actualizado con exito')
+        		// this.$alertify.success('El usuario fue actualizado con exito')
             }).catch(errors => {
                 swal.close()
                 if (status = 204)
 				{
 					Object.values(errors.response.data.errors).forEach(element => {
-                        this.$alertify.error(element.toString())
+                        // this.$alertify.error(element.toString())
                     });
 				}
             })
@@ -326,7 +327,7 @@ export default {
 		            }).then(response => {
 		                swal.close()
 		                this.getData()
-		        		this.$alertify.success('El usuario fue eliminado con exito')
+		        		// this.$alertify.success('El usuario fue eliminado con exito')
 		            }).catch(errors => {
 		                swal.close()
 		            })
