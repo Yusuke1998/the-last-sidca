@@ -1,16 +1,19 @@
 <?php
 
 Auth::routes();
-
 Route::view('/','welcome');
-
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/dashboard', 'HomeController@dashboard')->name('dashboard');
 
-Auth::routes();
+// DATA
+Route::get('/get-documents', 'DocumentController@getall');
+Route::get('/get-types', 'TypeController@getall');
+// FIN DATA
 
+// USUARIOS
 Route::get('/users', 'UsersController@index')->name('users.index');
-Route::post('/get-users','UsersController@userDataTable')->name('users.datatable');
-Route::post('/store-user','UsersController@store')->name('users.store');
-Route::post('/update-user','UsersController@update')->name('users.update');
-Route::post('/delete-user','UsersController@destroy')->name('users.destroy');
+Route::post('/get-users','UsersController@userDataTable');
+Route::post('/store-user','UsersController@store');
+Route::post('/update-user','UsersController@update');
+Route::post('/delete-user','UsersController@destroy');
+// FIN USUARIOS

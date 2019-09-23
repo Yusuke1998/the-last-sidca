@@ -34,7 +34,7 @@
 			                    <th>#</th>
 			                    <th>Nombre</th>
 			                    <th>Correo Electronico</th>
-			                    <th>Rol</th>
+			                    <th>Tipo</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
@@ -74,7 +74,7 @@
 		</div>
 
         <div class="modal fade" id="UserModal" tabindex="-1" role="dialog" aria-labelledby="UserModal" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-popout" role="document">
+            <div class="modal-dialog modal-dialog-popout modal-lg" role="document">
                 <div class="modal-content">
                     <div class="block block-themed block-transparent mb-0">
                         <div class="block-header bg-primary-dark">
@@ -86,17 +86,58 @@
                             </div>
                         </div>
                         <div class="block-content font-size-sm">
-                        	<div class="form-group">
-                                <label for="example-text-input">Nombre de Usuario</label>
-                                <input type="text" v-model="userData.username" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="example-email-input">Correo Electronico</label>
-                                <input type="email" v-model="userData.email" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="example-password-input">Contraseña</label>
-                                <input type="password" v-model="userData.password" class="form-control">
+                            <div class="row">
+                                <!-- col-12 -->
+                                <div class="form-group col-6">
+                                    <label for="example-text-input">Nombres</label>
+                                    <input type="text" v-model="personData.firstname" class="form-control">
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="example-email-input">Apellidos</label>
+                                    <input type="email" v-model="personData.lastname" class="form-control">
+                                </div>
+                                <div class="form-group col-4">
+                                    <label>Tipo de Documento</label>
+                                    <multiselect 
+                                        class="border rounded border-primary"
+                                        v-model="personData.document"
+                                        :options="list_documents"
+                                        :searchable="false" 
+                                        :show-labels="false" 
+                                        track-by="id" 
+                                        label="name" 
+                                        placeholder="Seleccione un documento">
+                                    </multiselect>
+                                </div>
+                                <div class="form-group col-4">
+                                    <label>Nro de Documento</label>
+                                    <input type="password" v-model="personData.nro_document" class="form-control">
+                                </div>
+                                <div class="col-4 form-group">
+                                    <label>Foto del Documento</label>
+                                    <input type="file" :disabled="personData.img_document" @change="onFileChanged" class="form-control">
+                                </div>
+
+                                <!-- <div class="col-4 form-group">
+                                    <figure>
+                                        <img :src="miniatura" class="img" width="300" height="200" alt="Foto del Documento">
+                                    </figure>
+                                </div> -->
+                                
+                                <!-- col-12 -->
+                            	<div class="form-group col-4">
+                                    <label for="example-text-input">Nombre de Usuario</label>
+                                    <input type="text" v-model="userData.username" class="form-control">
+                                </div>
+                                <div class="form-group col-4">
+                                    <label for="example-email-input">Correo Electronico</label>
+                                    <input type="email" v-model="userData.email" class="form-control">
+                                </div>
+                                <div class="form-group col-4">
+                                    <label>Contraseña</label>
+                                    <input type="password" v-model="userData.password" class="form-control">
+                                </div>
+                                <!-- col-12 -->
                             </div>
                         </div>
                         <div class="block-content block-content-full text-right border-top">
@@ -115,16 +156,37 @@
 <script>
 export default {
     mounted(){
+        this.getDocuments();
         this.getData();
+        this.getTypes();
     },
     data() {
 		return {
             // DATOS BASICOS
+            mini_img: '',
+            list_documents:[],
+            list_types:[],
             userData: {
-            	id: 0,
+                id: 0,
                 username: null,
                 email: null,
-                password:null
+                password:null,
+            },
+            personData:{
+            	id: 0,
+                firstname:null,
+                lastname:null,
+                nro_document:null,
+                document:{
+                    document_id:null,
+                    name:null,
+                },
+                img_document:null,
+                birthday:null,
+                direction:null,
+                local_phone:null,
+                movil_phone:null,
+                mail_contact:null
             },
 
             // DATOS DEL DATATABLE 
@@ -154,6 +216,42 @@ export default {
                 password:null
             }
 		},
+        personDataBlank(){
+            this.personData={
+                id: 0,
+                firstname:null,
+                lastname:null,
+                nro_document:null,
+                document:{
+                    document_id:null,
+                    name:null,
+                },
+                img_document:null,
+                birthday:null,
+                direction:null,
+                local_phone:null,
+                movil_phone:null,
+                mail_contact:null
+            }
+        },
+        getDocuments()
+        {
+            let url = "get-documents"
+            axios.get(url).then(response => {
+                this.list_documents = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        getTypes()
+        {
+            let url = "get-types"
+            axios.get(url).then(response => {
+                this.list_types = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
 		getData(page)
         {
         	this.$alertify.success('Usuarios Cargados')
@@ -252,6 +350,16 @@ export default {
         		}
         	}
             $("#"+modal_id).modal('show')
+        },
+        onFileChanged(event){
+            let file = event.target.files[0]
+            let fileReader = new FileReader()
+            fileReader.readAsDataURL(file)
+
+            fileReader.onload = (e) => {
+                this.mini_img = e.target.result
+                this.personData.img_document = e.target.result
+            }
         },
 	}
 }

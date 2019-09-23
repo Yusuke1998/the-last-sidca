@@ -35,10 +35,9 @@ class UsersController extends Controller
         ];
     }
 
-    /* PAGINACION Y FILTRO */    
     public function filterUserDataTable($request)
     {
-        $users = User::where('id','!=',0);
+        $users = User::where('id','!=',0)->with('person.document','person.types');
 
         if (!empty($request->search)) {
             $users
@@ -62,7 +61,6 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         $this->ValidateUser($request->userData);
-        /* CREO USUARIO */
         $user = User::create([
             'username'  => mb_strtolower($request->userData['username'],'UTF-8'),
             'email'     => $request->userData['email'], 
