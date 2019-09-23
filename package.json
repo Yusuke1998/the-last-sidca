@@ -30,6 +30,8 @@
         "vue-alertify": "^1.1.0",
         "vue-chartjs": "^3.4.2",
         "vue-multiselect": "^2.1.6",
+        "vue-picture-input": "^2.1.6",
+        "vue-select": "^3.2.0",
         "vue-toastr": "^2.1.2",
         "vuejs-datepicker": "^1.6.2"
     }

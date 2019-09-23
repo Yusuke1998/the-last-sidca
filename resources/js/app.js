@@ -9,6 +9,9 @@ Vue.component('user-component', require('./components/Users/UserComponent.vue').
 
 /* PLUGINS */
 import swal from 'sweetalert';
+
+import PictureInput from 'vue-picture-input';
+
 import VueAlertify from 'vue-alertify';
     Vue.use(VueAlertify,{
         notifier: {
@@ -17,8 +20,14 @@ import VueAlertify from 'vue-alertify';
             closeButton: true,
         }
     });
+
 import Multiselect from 'vue-multiselect';
     Vue.component('multiselect', Multiselect)
+
+import vSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
+    Vue.component('v-select', vSelect)
+
 import Datepicker from 'vuejs-datepicker';
     Vue.component('datepicker', Datepicker)
 /* FIN DE PLUGINS */

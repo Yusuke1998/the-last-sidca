@@ -9,7 +9,8 @@ class TypeController extends Controller
 {
     public function getall()
     {
-        return Type::all();
+        $tipos = Type::all();
+        return $tipos;
     }
 
     public function index()

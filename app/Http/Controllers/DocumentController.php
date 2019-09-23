@@ -9,7 +9,8 @@ class DocumentController extends Controller
 {
     public function getall()
     {
-        return Document::all();
+        $documentos = Document::all();
+        return $documentos;
     }
 
     public function index()

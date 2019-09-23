@@ -94,36 +94,33 @@
                                 </div>
                                 <div class="form-group col-6">
                                     <label for="example-email-input">Apellidos</label>
-                                    <input type="email" v-model="personData.lastname" class="form-control">
+                                    <input type="text" v-model="personData.lastname" class="form-control">
                                 </div>
+                                <!-- col-12 -->
                                 <div class="form-group col-4">
                                     <label>Tipo de Documento</label>
-                                    <multiselect 
-                                        class="border rounded border-primary"
-                                        v-model="personData.document"
-                                        :options="list_documents"
-                                        :searchable="false" 
-                                        :show-labels="false" 
-                                        track-by="id" 
-                                        label="name" 
-                                        placeholder="Seleccione un documento">
-                                    </multiselect>
+                                    <v-select label="name" v-model="personData.document" :options="list_documents"></v-select>
                                 </div>
                                 <div class="form-group col-4">
                                     <label>Nro de Documento</label>
-                                    <input type="password" v-model="personData.nro_document" class="form-control">
+                                    <input type="number" v-model="personData.nro_document" class="form-control">
                                 </div>
-                                <div class="col-4 form-group">
+                                <div class="form-group col-4">
                                     <label>Foto del Documento</label>
                                     <input type="file" :disabled="personData.img_document" @change="onFileChanged" class="form-control">
                                 </div>
-
-                                <!-- <div class="col-4 form-group">
-                                    <figure>
-                                        <img :src="miniatura" class="img" width="300" height="200" alt="Foto del Documento">
-                                    </figure>
+                                <!-- <div class="form-group col-4">
+                                    <label>Foto del Documento</label>
                                 </div> -->
-                                
+                                <!-- col-12 -->
+                                <div class="form-group col-4">
+                                    <label>Fecha de Nacimiento</label>
+                                    <datepicker v-model="personData.birthday" input-class="form-control"></datepicker>
+                                </div>
+                                <div class="form-group col-8">
+                                    <label>Direccion</label>
+                                    <textarea v-model="personData.direction" class="form-control"></textarea>
+                                </div>
                                 <!-- col-12 -->
                             	<div class="form-group col-4">
                                     <label for="example-text-input">Nombre de Usuario</label>
@@ -156,10 +153,9 @@
 <script>
 export default {
     mounted(){
-        this.$alertify.success('Solo funciona con internet');
         this.getDocuments();
-        this.getData();
         this.getTypes();
+        this.getData();
     },
     data() {
 		return {
@@ -179,7 +175,6 @@ export default {
                 lastname:null,
                 nro_document:null,
                 document:{
-                    document_id:null,
                     name:null,
                 },
                 img_document:null,
@@ -255,7 +250,7 @@ export default {
         },
 		getData(page)
         {
-        	// this.$alertify.success('Usuarios Cargados')
+        	this.$alertify.success('Usuarios Cargados')
             let url =  "/get-users" 
             axios.post(url,{
                 page   : page, 
@@ -279,13 +274,13 @@ export default {
                 $("#UserModal").modal('hide')
                 swal.close()
                 this.getData()
-        		// this.$alertify.success('El usuario se registro con exito')
+        		this.$alertify.success('El usuario se registro con exito')
             }).catch(errors => {
                 swal.close()
                 if (status = 204)
 				{
 					Object.values(errors.response.data.errors).forEach((element,indx) => {
-                        // this.$alertify.error(element.toString())
+                        this.$alertify.error(element.toString())
                     });
 				}
             })
@@ -300,13 +295,13 @@ export default {
                 $("#UserModal").modal('hide')
                 swal.close()
                 this.getData()
-        		// this.$alertify.success('El usuario fue actualizado con exito')
+        		this.$alertify.success('El usuario fue actualizado con exito')
             }).catch(errors => {
                 swal.close()
                 if (status = 204)
 				{
 					Object.values(errors.response.data.errors).forEach(element => {
-                        // this.$alertify.error(element.toString())
+                        this.$alertify.error(element.toString())
                     });
 				}
             })
@@ -327,7 +322,7 @@ export default {
 		            }).then(response => {
 		                swal.close()
 		                this.getData()
-		        		// this.$alertify.success('El usuario fue eliminado con exito')
+		        		this.$alertify.success('El usuario fue eliminado con exito')
 		            }).catch(errors => {
 		                swal.close()
 		            })
