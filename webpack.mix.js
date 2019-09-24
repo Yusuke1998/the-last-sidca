@@ -27,3 +27,5 @@ mix.js('resources/js/app.js', 'public/js')
         'public/assets/js/oneui.app.min.js',
         'public/assets/js/pages/be_pages_dashboard.min.js'
    	],'public/js/all.js');
+
+mix.browserSync('http://127.0.0.1:8000')

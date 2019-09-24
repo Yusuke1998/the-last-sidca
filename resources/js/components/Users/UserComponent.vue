@@ -39,7 +39,7 @@
 			                </tr>
 			            </thead>
 			            <tbody>
-			            	<tr v-if="table_data.length == 0">
+			            	<tr v-if="!table_data.length > 0">
 			                    <td colspan="5" class="bg-secondary text-center text-light">No se encontraron datos.</td>
 			                </tr>
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
@@ -74,7 +74,7 @@
 		</div>
 
         <div class="modal fade" id="UserModal" tabindex="-1" role="dialog" aria-labelledby="UserModal" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-popout modal-lg" role="document">
+            <div class="modal-dialog modal-dialog-popout modal-xl" role="document">
                 <div class="modal-content">
                     <div class="block block-themed block-transparent mb-0">
                         <div class="block-header bg-primary-dark">
@@ -86,7 +86,7 @@
                             </div>
                         </div>
                         <div class="block-content font-size-sm">
-                            <div class="row">
+                            <form class="row">
                                 <!-- col-12 -->
                                 <div class="form-group col-6">
                                     <label for="example-text-input">Nombres</label>
@@ -107,15 +107,15 @@
                                 </div>
                                 <div class="form-group col-4">
                                     <label>Foto del Documento</label>
-                                    <input type="file" :disabled="personData.img_document" @change="onFileChanged" class="form-control">
+                                    <input type="file" @change="onFileChanged" class="form-control">
+                                    <figure v-show="personData.img_document">
+                                        <img align="center" :src="miniatura" class="img" width="300" height="200" alt="Foto del Documento">
+                                    </figure>
                                 </div>
-                                <!-- <div class="form-group col-4">
-                                    <label>Foto del Documento</label>
-                                </div> -->
                                 <!-- col-12 -->
                                 <div class="form-group col-4">
                                     <label>Fecha de Nacimiento</label>
-                                    <datepicker v-model="personData.birthday" input-class="form-control"></datepicker>
+                                    <datepicker :disabled-dates="no_dates" v-model="personData.birthday" input-class="bg-white form-control"></datepicker>
                                 </div>
                                 <div class="form-group col-8">
                                     <label>Direccion</label>
@@ -135,7 +135,7 @@
                                     <input type="password" v-model="userData.password" class="form-control">
                                 </div>
                                 <!-- col-12 -->
-                            </div>
+                            </form>
                         </div>
                         <div class="block-content block-content-full text-right border-top">
                             <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
@@ -153,14 +153,16 @@
 <script>
 export default {
     mounted(){
+        this.getData();
         this.getDocuments();
         this.getTypes();
-        this.getData();
     },
     data() {
 		return {
-            // DATOS BASICOS
+            // AUXILIARES
+            no_dates:{to: new Date('1919-01-01')},
             mini_img: '',
+            // DATOS BASICOS
             list_documents:[],
             list_types:[],
             userData: {
@@ -178,7 +180,7 @@ export default {
                     name:null,
                 },
                 img_document:null,
-                birthday:null,
+                birthday:new Date(),
                 direction:null,
                 local_phone:null,
                 movil_phone:null,
@@ -250,7 +252,6 @@ export default {
         },
 		getData(page)
         {
-        	this.$alertify.success('Usuarios Cargados')
             let url =  "/get-users" 
             axios.post(url,{
                 page   : page, 
@@ -260,6 +261,7 @@ export default {
                 this.table_pagination	= response.data.pagination
                 this.table_data			= response.data.table.data
             	this.search_table		= ''
+                this.$alertify.success('Usuarios Cargados')
             }).catch(errors =>{
                 console.log(errors)
             })
@@ -269,12 +271,13 @@ export default {
             this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar el nuevo Usuario')
             let url = '/store-user'
             axios.post(url,{
-                userData:this.userData
+                userData:this.userData,
+                personData:this.personData
             }).then(response => {
-                $("#UserModal").modal('hide')
                 swal.close()
-                this.getData()
+                $("#UserModal").modal('hide')
         		this.$alertify.success('El usuario se registro con exito')
+                this.getData()
             }).catch(errors => {
                 swal.close()
                 if (status = 204)
@@ -292,10 +295,10 @@ export default {
             axios.post(url,{
                 userData:this.userData
             }).then(response => {
-                $("#UserModal").modal('hide')
                 swal.close()
-                this.getData()
+                $("#UserModal").modal('hide')
         		this.$alertify.success('El usuario fue actualizado con exito')
+                this.getData()
             }).catch(errors => {
                 swal.close()
                 if (status = 204)
@@ -335,7 +338,6 @@ export default {
             this.getData(page);
         },
         showModal(modal_id, model,option, type){
-        	this.userDataBlank()
         	this.modal_option	= option
         	this.modal_type		= type
         	if (type == 'edit' && model !== null) {
@@ -344,7 +346,26 @@ export default {
         			username:model.username,
         			email:model.email,
         		}
-        	}
+                this.personData = {
+                    id:model.person_id,
+                    firstname:model.person.firstname,
+                    lastname:model.person.lastname,
+                    nro_document:model.person.nro_document,
+                    document:{
+                        document_id:model.person.document.id,
+                        name:model.person.document.name,
+                    },
+                    img_document:model.person.img_document,
+                    birthday:model.person.birthday,
+                    direction:model.person.direction,
+                    local_phone:model.person.local_phone,
+                    movil_phone:model.person.movil_phone,
+                    mail_contact:model.person.mail_contact
+                }
+        	}else{
+                this.userDataBlank()
+                this.personDataBlank()
+            }
             $("#"+modal_id).modal('show')
         },
         onFileChanged(event){
@@ -357,6 +378,12 @@ export default {
                 this.personData.img_document = e.target.result
             }
         },
-	}
+	},
+    computed:{
+        miniatura()
+        {
+            return this.mini_img
+        }
+    }
 }
 </script>

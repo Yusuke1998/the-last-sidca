@@ -11,6 +11,7 @@ Vue.component('user-component', require('./components/Users/UserComponent.vue').
 import swal from 'sweetalert';
 
 import PictureInput from 'vue-picture-input';
+    Vue.component('picture-input', PictureInput)
 
 import VueAlertify from 'vue-alertify';
     Vue.use(VueAlertify,{

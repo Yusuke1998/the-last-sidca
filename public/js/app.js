@@ -5687,14 +5687,18 @@ __webpack_require__.r(__webpack_exports__);
 //
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
+    this.getData();
     this.getDocuments();
     this.getTypes();
-    this.getData();
   },
   data: function data() {
     return {
-      // DATOS BASICOS
+      // AUXILIARES
+      no_dates: {
+        to: new Date('1919-01-01')
+      },
       mini_img: '',
+      // DATOS BASICOS
       list_documents: [],
       list_types: [],
       userData: {
@@ -5712,7 +5716,7 @@ __webpack_require__.r(__webpack_exports__);
           name: null
         },
         img_document: null,
-        birthday: null,
+        birthday: new Date(),
         direction: null,
         local_phone: null,
         movil_phone: null,
@@ -5786,7 +5790,6 @@ __webpack_require__.r(__webpack_exports__);
     getData: function getData(page) {
       var _this3 = this;
 
-      this.$alertify.success('Usuarios Cargados');
       var url = "/get-users";
       axios.post(url, {
         page: page,
@@ -5796,6 +5799,8 @@ __webpack_require__.r(__webpack_exports__);
         _this3.table_pagination = response.data.pagination;
         _this3.table_data = response.data.table.data;
         _this3.search_table = '';
+
+        _this3.$alertify.success('Usuarios Cargados');
       })["catch"](function (errors) {
         console.log(errors);
       });
@@ -5806,14 +5811,15 @@ __webpack_require__.r(__webpack_exports__);
       this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar el nuevo Usuario');
       var url = '/store-user';
       axios.post(url, {
-        userData: this.userData
+        userData: this.userData,
+        personData: this.personData
       }).then(function (response) {
-        $("#UserModal").modal('hide');
         swal.close();
-
-        _this4.getData();
+        $("#UserModal").modal('hide');
 
         _this4.$alertify.success('El usuario se registro con exito');
+
+        _this4.getData();
       })["catch"](function (errors) {
         swal.close();
 
@@ -5832,12 +5838,12 @@ __webpack_require__.r(__webpack_exports__);
       axios.post(url, {
         userData: this.userData
       }).then(function (response) {
-        $("#UserModal").modal('hide');
         swal.close();
-
-        _this5.getData();
+        $("#UserModal").modal('hide');
 
         _this5.$alertify.success('El usuario fue actualizado con exito');
+
+        _this5.getData();
       })["catch"](function (errors) {
         swal.close();
 
@@ -5880,7 +5886,6 @@ __webpack_require__.r(__webpack_exports__);
       this.getData(page);
     },
     showModal: function showModal(modal_id, model, option, type) {
-      this.userDataBlank();
       this.modal_option = option;
       this.modal_type = type;
 
@@ -5890,6 +5895,25 @@ __webpack_require__.r(__webpack_exports__);
           username: model.username,
           email: model.email
         };
+        this.personData = {
+          id: model.person_id,
+          firstname: model.person.firstname,
+          lastname: model.person.lastname,
+          nro_document: model.person.nro_document,
+          document: {
+            document_id: model.person.document.id,
+            name: model.person.document.name
+          },
+          img_document: model.person.img_document,
+          birthday: model.person.birthday,
+          direction: model.person.direction,
+          local_phone: model.person.local_phone,
+          movil_phone: model.person.movil_phone,
+          mail_contact: model.person.mail_contact
+        };
+      } else {
+        this.userDataBlank();
+        this.personDataBlank();
       }
 
       $("#" + modal_id).modal('show');
@@ -5905,6 +5929,11 @@ __webpack_require__.r(__webpack_exports__);
         _this7.mini_img = e.target.result;
         _this7.personData.img_document = e.target.result;
       };
+    }
+  },
+  computed: {
+    miniatura: function miniatura() {
+      return this.mini_img;
     }
   }
 });
@@ -75403,7 +75432,7 @@ var render = function() {
               _c(
                 "tbody",
                 [
-                  _vm.table_data.length == 0
+                  !_vm.table_data.length > 0
                     ? _c("tr", [
                         _c(
                           "td",
@@ -75524,7 +75553,7 @@ var render = function() {
         _c(
           "div",
           {
-            staticClass: "modal-dialog modal-dialog-popout modal-lg",
+            staticClass: "modal-dialog modal-dialog-popout modal-xl",
             attrs: { role: "document" }
           },
           [
@@ -75543,7 +75572,7 @@ var render = function() {
                   ]),
                   _vm._v(" "),
                   _c("div", { staticClass: "block-content font-size-sm" }, [
-                    _c("div", { staticClass: "row" }, [
+                    _c("form", { staticClass: "row" }, [
                       _c("div", { staticClass: "form-group col-6" }, [
                         _c("label", { attrs: { for: "example-text-input" } }, [
                           _vm._v("Nombres")
@@ -75666,12 +75695,35 @@ var render = function() {
                         _vm._v(" "),
                         _c("input", {
                           staticClass: "form-control",
-                          attrs: {
-                            type: "file",
-                            disabled: _vm.personData.img_document
-                          },
+                          attrs: { type: "file" },
                           on: { change: _vm.onFileChanged }
-                        })
+                        }),
+                        _vm._v(" "),
+                        _c(
+                          "figure",
+                          {
+                            directives: [
+                              {
+                                name: "show",
+                                rawName: "v-show",
+                                value: _vm.personData.img_document,
+                                expression: "personData.img_document"
+                              }
+                            ]
+                          },
+                          [
+                            _c("img", {
+                              staticClass: "img",
+                              attrs: {
+                                align: "center",
+                                src: _vm.miniatura,
+                                width: "300",
+                                height: "200",
+                                alt: "Foto del Documento"
+                              }
+                            })
+                          ]
+                        )
                       ]),
                       _vm._v(" "),
                       _c(
@@ -75681,7 +75733,10 @@ var render = function() {
                           _c("label", [_vm._v("Fecha de Nacimiento")]),
                           _vm._v(" "),
                           _c("datepicker", {
-                            attrs: { "input-class": "form-control" },
+                            attrs: {
+                              "disabled-dates": _vm.no_dates,
+                              "input-class": "bg-white form-control"
+                            },
                             model: {
                               value: _vm.personData.birthday,
                               callback: function($$v) {
@@ -90855,6 +90910,7 @@ Vue.component('user-component', __webpack_require__(/*! ./components/Users/UserC
 
 
 
+Vue.component('picture-input', vue_picture_input__WEBPACK_IMPORTED_MODULE_1__["default"]);
 
 Vue.use(vue_alertify__WEBPACK_IMPORTED_MODULE_2__["default"], {
   notifier: {

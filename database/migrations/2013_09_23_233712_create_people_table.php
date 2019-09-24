@@ -14,7 +14,7 @@ class CreatePeopleTable extends Migration
             $table->string('lastname');
             $table->bigInteger('document_id')->unsigned();
             $table->string('nro_document')->unique();
-            $table->string('img_document')->default('document-default.jpg');
+            $table->string('img_document')->default('document-default.png');
             $table->date('birthday')->nullable();
             $table->string('direction')->nullable();
             $table->string('local_phone')->nullable();
