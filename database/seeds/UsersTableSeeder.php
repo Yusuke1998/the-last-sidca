@@ -9,12 +9,12 @@ class UsersTableSeeder extends Seeder
     	$document = App\Document::first();
 
     	$person = App\Person::create([
-            'firstname'		=>	'Jhonny Jose',
-            'lastname'		=>	'Pérez Martinez',
+            'firstname'		=>	'jhonny jose',
+            'lastname'		=>	'jérez martinez',
             'document_id'	=>	$document->id,
             'nro_document'	=>	'26039408',
             'birthday'		=>	'1998-02-27',
-            'direction'		=>	'Villa de Cura, Las Mercedes',
+            'direction'		=>	'villa de cura, las mercedes',
             'local_phone'	=>	'02443864361',
             'movil_phone'	=>	'04161428973',
             'mail_contact'	=>	'jhonnyjose1998@gmail.com'

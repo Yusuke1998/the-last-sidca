@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use Auth;
 use App\User;
-use App\Person;
 use Validator;
+use App\Person;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class UsersController extends Controller
@@ -38,16 +39,29 @@ class UsersController extends Controller
 
     public function filterUserDataTable($request)
     {
+        $search = mb_strtolower($request->search,'UTF-8');
         $users = User::with('person.document','person.types');
 
-        if (!empty($request->search)) {
+        if (!is_null($search) && !empty($search)) {
             $users
-            ->where('username','like','%'.$request->search.'%')
-            ->orWhere('email','like','%'.$request->search.'%')
-            ->orWhere('created_at','like','%'.$request->search.'%');
+            ->where('username','like','%'.$search.'%')
+            ->orWhere('email','like','%'.$search.'%')
+            ->orWhere('created_at','like','%'.$search.'%')
+            ->orWhereHas('person',function ($query) use ($search) {
+                $query
+                ->where('firstname','%'.$search.'%')
+                ->orWhere('lastname','%'.$search.'%')
+                ->orWhere('nro_document','%'.$search.'%')
+                ->orWhere('birthday','%'.$search.'%')
+                ->orWhere('local_phone','%'.$search.'%')
+                ->orWhere('movil_phone','%'.$search.'%')
+                ->orWhere('mail_contact','%'.$search.'%')
+                ->orWhereHas('document',function ($subQuery) use ($search) {
+                    $subQuery->where('name','%'.$search.'%');
+                });
+            });
         }
-
-        return $users->orderBy('updated_at','DESC')->paginate($request->sort);
+        return $users->orderBy('id','DESC')->paginate($request->sort);
     }
 
     public function ValidateUser($user,$person)
@@ -90,11 +104,15 @@ class UsersController extends Controller
                 'lastname'      => $request->personData['lastname'], 
                 'document_id'   => $request->personData['document']['id'],
                 'nro_document'  => $request->personData['nro_document'],
+                'local_phone'   => $request->personData['local_phone'],
+                'movil_phone'   => $request->personData['movil_phone'],
+                'direction'     => mb_strtolower($request->personData['direction'],'UTF-8'),
+                'mail_contact'  => mb_strtolower($request->personData['direction'],'UTF-8'),
+                'birthday'      => Carbon::parse($request->personData['birthday'])->toDateString(),
             ]);
         }else{
             $person = Person::findOrFail($request->personData['id']);
         }
-
         $user = User::create([
             'username'  => mb_strtolower($request->userData['username'],'UTF-8'),
             'email'     => mb_strtolower($request->userData['email'],'UTF-8'),
@@ -107,22 +125,26 @@ class UsersController extends Controller
     public function update(Request $request)
     {
         $user = User::findOrFail($request->userData['id']);
-        // if ($request->personData['id'] == 0) {
-        //     $person = Person::create([
-        //         'firstname'     => $request->personData['firstname'],
-        //         'lastname'      => $request->personData['lastname'], 
-        //         'document_id'   => $request->personData['document']['id'],
-        //         'nro_document'  => $request->personData['nro_document'],
-        //     ]);
-        // }
         $user->update([
             'username'  => mb_strtolower($request->userData['username'],'UTF-8'),
             'email'     => $request->userData['email'], 
         ]);
-
+        $person = Person::findOrFail($request->personData['id']);
+        $person->update([
+            'firstname'     => $request->personData['firstname'],
+            'lastname'      => $request->personData['lastname'], 
+            'document_id'   => $request->personData['document']['id'],
+            'nro_document'  => $request->personData['nro_document'],
+            'local_phone'   => $request->personData['local_phone'],
+            'movil_phone'   => $request->personData['movil_phone'],
+            'direction'     => mb_strtolower($request->personData['direction'],'UTF-8'),
+            'mail_contact'  => mb_strtolower($request->personData['direction'],'UTF-8'),
+            'birthday'      => Carbon::parse($request->personData['birthday'])->toDateString(),
+        ]);
         if (isset($request->userData['password'])) {
             $user->update(['password'  => bcrypt($request->userData['password'])]);
         }
+        return;
     }
 
     public function destroy(Request $request)

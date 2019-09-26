@@ -221,7 +221,7 @@ export default {
                 lastname:null,
                 nro_document:null,
                 document:{
-                    document_id:null,
+                    id:null,
                     name:null,
                 },
                 img_document:null,
@@ -293,7 +293,8 @@ export default {
         	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar Usuario')
             let url = '/update-user'
             axios.post(url,{
-                userData:this.userData
+                userData:this.userData,
+                personData:this.personData
             }).then(response => {
                 swal.close()
                 $("#UserModal").modal('hide')
@@ -352,7 +353,7 @@ export default {
                     lastname:model.person.lastname,
                     nro_document:model.person.nro_document,
                     document:{
-                        document_id:model.person.document.id,
+                        id:model.person.document.id,
                         name:model.person.document.name,
                     },
                     img_document:model.person.img_document,
