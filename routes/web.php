@@ -16,4 +16,5 @@ Route::post('/get-users','UsersController@userDataTable');
 Route::post('/store-user','UsersController@store');
 Route::post('/update-user','UsersController@update');
 Route::post('/delete-user','UsersController@destroy');
+Route::get('/profile-user/{username?}','UsersController@profile')->name('profile');
 // FIN USUARIOS

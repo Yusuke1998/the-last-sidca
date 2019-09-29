@@ -1,15 +1,15 @@
 <?php
-// Tipo
+// Sede
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Type extends Model
+class Headquarter extends Model
 {
     protected $fillable = ['name'];
 
-    public function people()
+    public function areas()
     {
-    	return $this->belongsToMany(Person::class);
+    	return $this->hasMany(Area::class);
     }
 }

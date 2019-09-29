@@ -1,5 +1,5 @@
 <?php
-
+// Usuario
 namespace App;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -25,5 +25,11 @@ class User extends Authenticatable
     public function person()
     {
         return $this->belongsTo(Person::class);
+    }
+
+    public function is_admin()
+    {
+        if (!is_null($this->person->types()->where('name', 'root')->first())) return true;
+        return false;
     }
 }

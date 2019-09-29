@@ -6,21 +6,22 @@ window.Vue = require('vue');
 Vue.component('pagination', require('./components/Utilities/PaginationComponent.vue').default);
 Vue.component('chart-component', require('./components/Charts/ChartComponent.vue').default);
 Vue.component('user-component', require('./components/Users/UserComponent.vue').default);
+Vue.component('profile-component', require('./components/Users/ProfileComponent.vue').default);
 
 /* PLUGINS */
 import swal from 'sweetalert';
 
-import PictureInput from 'vue-picture-input';
-    Vue.component('picture-input', PictureInput)
-
 import VueAlertify from 'vue-alertify';
     Vue.use(VueAlertify,{
         notifier: {
-            delay: 5,
+            delay: 7,
             position: 'top-right',
             closeButton: true,
         }
     });
+
+import PictureInput from 'vue-picture-input'
+    Vue.component('picture-input', PictureInput);
 
 import Multiselect from 'vue-multiselect';
     Vue.component('multiselect', Multiselect)

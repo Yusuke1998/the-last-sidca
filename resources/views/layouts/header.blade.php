@@ -12,7 +12,7 @@
             <div class="dropdown d-inline-block ml-2">
                 <button type="button" class="btn btn-sm btn-dual" id="page-header-user-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <img class="rounded" src="{{ asset('img/default.png') }}" alt="Header Avatar" style="width: 18px;">
-                    <span class="d-none d-sm-inline-block ml-1">Adam</span>
+                    <span class="d-none d-sm-inline-block ml-1 text-uppercase">{{ Auth::User()->username }}</span>
                     <i class="fa fa-fw fa-angle-down d-none d-sm-inline-block"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right p-0 border-0 font-size-sm" aria-labelledby="page-header-user-dropdown">
@@ -21,7 +21,7 @@
                     </div>
                     <div class="p-2">
                         <h5 class="dropdown-header text-uppercase">Usuario</h5>
-                        <a class="dropdown-item d-flex align-items-center justify-content-between" href="#">
+                        <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ route('profile',Auth::User()->id) }}">
                             <span>Perfil</span>
                             <span>
                                 <i class="si si-user ml-1"></i>

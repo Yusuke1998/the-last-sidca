@@ -45,7 +45,7 @@
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
 			                    <td class="font-w600 font-size-sm">
-			                        <a href="#" v-text="item_table.username"></a>
+			                        <a href="#" data-toggle="tooltip" title="Perfil de Usuario"  @click="profileHere(item_table.username)" v-text="item_table.username"></a>
 			                    </td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.email"></td>
 			                    <td class="d-none d-sm-table-cell">
@@ -97,20 +97,13 @@
                                     <input type="text" v-model="personData.lastname" class="form-control">
                                 </div>
                                 <!-- col-12 -->
-                                <div class="form-group col-4">
+                                <div class="form-group col-6">
                                     <label>Tipo de Documento</label>
                                     <v-select label="name" v-model="personData.document" :options="list_documents"></v-select>
                                 </div>
-                                <div class="form-group col-4">
+                                <div class="form-group col-6">
                                     <label>Nro de Documento</label>
                                     <input type="number" v-model="personData.nro_document" class="form-control">
-                                </div>
-                                <div class="form-group col-4">
-                                    <label>Foto del Documento</label>
-                                    <input type="file" @change="onFileChanged" class="form-control">
-                                    <figure v-show="personData.img_document">
-                                        <img align="center" :src="miniatura" class="img" width="300" height="200" alt="Foto del Documento">
-                                    </figure>
                                 </div>
                                 <!-- col-12 -->
                                 <div class="form-group col-4">
@@ -161,7 +154,6 @@ export default {
 		return {
             // AUXILIARES
             no_dates:{to: new Date('1919-01-01')},
-            mini_img: '',
             // DATOS BASICOS
             list_documents:[],
             list_types:[],
@@ -356,7 +348,6 @@ export default {
                         id:model.person.document.id,
                         name:model.person.document.name,
                     },
-                    img_document:model.person.img_document,
                     birthday:model.person.birthday,
                     direction:model.person.direction,
                     local_phone:model.person.local_phone,
@@ -369,22 +360,10 @@ export default {
             }
             $("#"+modal_id).modal('show')
         },
-        onFileChanged(event){
-            let file = event.target.files[0]
-            let fileReader = new FileReader()
-            fileReader.readAsDataURL(file)
-
-            fileReader.onload = (e) => {
-                this.mini_img = e.target.result
-                this.personData.img_document = e.target.result
-            }
-        },
-	},
-    computed:{
-        miniatura()
+        profileHere(username)
         {
-            return this.mini_img
+            window.open('/profile-user/'+username);
         }
-    }
+	}
 }
 </script>
