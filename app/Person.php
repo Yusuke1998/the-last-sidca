@@ -18,6 +18,10 @@ class Person extends Model
     {
         return $this->hasOne(User::class);
     }
+    public function teacher()
+    {
+        return $this->hasOne(Teacher::class);
+    }
     public function types(){
         return $this->belongsToMany(Type::class);
     }

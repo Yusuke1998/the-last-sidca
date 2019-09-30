@@ -77,7 +77,7 @@
                 </a>
                 <ul class="nav-main-submenu">
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
+                        <a class="nav-main-link" href="{{ route('teacher.index') }}">
                             <span class="nav-main-link-name">Todos</span>
                         </a>
                     </li>
@@ -103,13 +103,13 @@
                 </a>
                 <ul class="nav-main-submenu">
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Periodo</span>
+                        <a class="nav-main-link" href="{{ route('headquarter.index') }}">
+                            <span class="nav-main-link-name">Sede</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Programa</span>
+                            <span class="nav-main-link-name">Nucleo</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
@@ -119,12 +119,17 @@
                     </li>
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Sede</span>
+                            <span class="nav-main-link-name">Carrera</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Nucleo</span>
+                            <span class="nav-main-link-name">Periodo</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="#">
+                            <span class="nav-main-link-name">Programa</span>
                         </a>
                     </li>
                     <li class="nav-main-item">

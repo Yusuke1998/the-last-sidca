@@ -7,6 +7,8 @@ Vue.component('pagination', require('./components/Utilities/PaginationComponent.
 Vue.component('chart-component', require('./components/Charts/ChartComponent.vue').default);
 Vue.component('user-component', require('./components/Users/UserComponent.vue').default);
 Vue.component('profile-component', require('./components/Users/ProfileComponent.vue').default);
+Vue.component('teacher-component', require('./components/Teachers/TeacherComponent.vue').default);
+Vue.component('headquarter-component', require('./components/Preload/HeadquarterComponent.vue').default);
 
 /* PLUGINS */
 import swal from 'sweetalert';
@@ -14,7 +16,7 @@ import swal from 'sweetalert';
 import VueAlertify from 'vue-alertify';
     Vue.use(VueAlertify,{
         notifier: {
-            delay: 7,
+            delay: 5,
             position: 'top-right',
             closeButton: true,
         }

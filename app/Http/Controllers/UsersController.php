@@ -144,7 +144,7 @@ class UsersController extends Controller
                 'local_phone'   => $request->personData['local_phone'],
                 'movil_phone'   => $request->personData['movil_phone'],
                 'direction'     => mb_strtolower($request->personData['direction'],'UTF-8'),
-                'mail_contact'  => mb_strtolower($request->personData['direction'],'UTF-8'),
+                'mail_contact'  => mb_strtolower($request->personData['mail_contact'],'UTF-8'),
                 'birthday'      => Carbon::parse($request->personData['birthday'])->toDateString(),
                 'img_document' => (isset($filename))?$filename:'documents/default.png'
             ]);

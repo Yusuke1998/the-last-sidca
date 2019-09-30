@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Document;
+use App\Person;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
@@ -18,9 +19,13 @@ class DocumentController extends Controller
         //
     }
 
-    public function create()
+    public function check_document(Request $request)
     {
-        //
+        $person = Person::with('document','types','user')
+                    ->where('nro_document',$request->nro)
+                    ->first();
+        return (!is_null($person))?$person:0;
+
     }
 
     public function store(Request $request)

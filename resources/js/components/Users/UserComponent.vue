@@ -3,7 +3,7 @@
 		<div class="block">
 			<div class="block-header bg-primary-dark">
 				<h3 class="block-title text-white text-center">USUARIOS</h3>
-    			<button type="button" @click="showModal('UserModal',null,'Nuevo Usuario','store')" class="btn btn-success">
+    			<button type="button" data-toggle="tooltip" title="Nuevo Usuario" @click="showModal('UserModal',null,'Nuevo Usuario','store')" class="btn btn-success">
                     <i class="fa fa-plus"></i>
                 </button>
 			</div>
@@ -53,10 +53,10 @@
 			                    </td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
-			                            <button type="button" @click="showModal('UserModal',item_table,'Editar Usuario','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Edit Client">
+			                            <button type="button" @click="showModal('UserModal',item_table,'Editar Usuario','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar Usuario">
 			                                <i class="fa fa-fw fa-pencil-alt"></i>
 			                            </button>
-			                            <button type="button" @click="deleteData(item_table.id)" class="btn btn-sm btn-light" data-toggle="tooltip" title="Remove Client">
+			                            <button type="button" @click="deleteData(item_table.id)" class="btn btn-sm btn-light" data-toggle="tooltip" title="Eliminar Usuario">
 			                                <i class="fa fa-fw fa-times"></i>
 			                            </button>
 			                        </div>
@@ -88,44 +88,53 @@
                         <div class="block-content font-size-sm">
                             <form class="row">
                                 <!-- col-12 -->
-                                <div class="form-group col-6">
-                                    <label for="example-text-input">Nombres</label>
-                                    <input type="text" v-model="personData.firstname" class="form-control">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label>Nro de Documento</label>
+                                        <div class="input-group">
+                                            <div :hidden="exist_document" class="input-group-prepend">
+                                                <button @click="checkDocument" type="button" class="btn btn-primary">
+                                                    <i class="fa fa-search mr-1"></i>
+                                                </button>
+                                            </div>
+                                            <input type="number" @keyup.enter="checkDocument" v-model="personData.nro_document" class="form-control">
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="form-group col-6">
-                                    <label for="example-email-input">Apellidos</label>
-                                    <input type="text" v-model="personData.lastname" class="form-control">
+                                    <label>Tipo de Documento</label>
+                                    <v-select :disabled="!exist_document" label="name" v-model="personData.document" :options="list_documents"></v-select>
                                 </div>
                                 <!-- col-12 -->
                                 <div class="form-group col-6">
-                                    <label>Tipo de Documento</label>
-                                    <v-select label="name" v-model="personData.document" :options="list_documents"></v-select>
+                                    <label for="example-text-input">Nombres</label>
+                                    <input :disabled="!exist_document" type="text" v-model="personData.firstname" class="form-control">
                                 </div>
                                 <div class="form-group col-6">
-                                    <label>Nro de Documento</label>
-                                    <input type="number" v-model="personData.nro_document" class="form-control">
+                                    <label for="example-email-input">Apellidos</label>
+                                    <input :disabled="!exist_document" type="text" v-model="personData.lastname" class="form-control">
                                 </div>
                                 <!-- col-12 -->
                                 <div class="form-group col-4">
                                     <label>Fecha de Nacimiento</label>
-                                    <datepicker :disabled-dates="no_dates" v-model="personData.birthday" input-class="bg-white form-control"></datepicker>
+                                    <datepicker :disabled="!exist_document" :disabled-dates="no_dates" v-model="personData.birthday" input-class="bg-white form-control"></datepicker>
                                 </div>
                                 <div class="form-group col-8">
                                     <label>Direccion</label>
-                                    <textarea v-model="personData.direction" class="form-control"></textarea>
+                                    <textarea :disabled="!exist_document" v-model="personData.direction" class="form-control"></textarea>
                                 </div>
                                 <!-- col-12 -->
                             	<div class="form-group col-4">
                                     <label for="example-text-input">Nombre de Usuario</label>
-                                    <input type="text" v-model="userData.username" class="form-control">
+                                    <input :disabled="!exist_document" type="text" v-model="userData.username" class="form-control">
                                 </div>
                                 <div class="form-group col-4">
                                     <label for="example-email-input">Correo Electronico</label>
-                                    <input type="email" v-model="userData.email" class="form-control">
+                                    <input :disabled="!exist_document" type="email" v-model="userData.email" class="form-control">
                                 </div>
                                 <div class="form-group col-4">
                                     <label>Contraseña</label>
-                                    <input type="password" v-model="userData.password" class="form-control">
+                                    <input :disabled="!exist_document" type="password" v-model="userData.password" class="form-control">
                                 </div>
                                 <!-- col-12 -->
                             </form>
@@ -153,6 +162,11 @@ export default {
     data() {
 		return {
             // AUXILIARES
+            document:{
+                nro:null,
+                type:null
+            },
+            exist_document:false,
             no_dates:{to: new Date('1919-01-01')},
             // DATOS BASICOS
             list_documents:[],
@@ -169,6 +183,7 @@ export default {
                 lastname:null,
                 nro_document:null,
                 document:{
+                    id:0,
                     name:null,
                 },
                 img_document:null,
@@ -198,6 +213,56 @@ export default {
         }
 	},
 	methods:{
+        checkDocument()
+        {
+            if (this.personData.nro_document !== null) {
+                this.document.nro   = this.personData.nro_document
+                let url = '/check-document'
+                axios.post(url,
+                    this.document
+                ).then(response => {
+                    console.log(response.data)
+                    if (response.data !== 0) {
+                        if (response.data.user !== undefined && response.data.user !== null) {
+                            $("#UserModal").modal('hide')
+                            this.$alertify.warning('Esta persona ya tiene un usuario!')
+                            return;
+                        }else{
+                            this.exist_document = true
+                            this.$alertify.success('Datos de persona cargados!')
+                            this.personData = {
+                                id:response.data.id,
+                                firstname:response.data.firstname,
+                                lastname:response.data.lastname,
+                                nro_document:response.data.nro_document,
+                                document:{
+                                    id:response.data.document.id,
+                                    name:response.data.document.name,
+                                },
+                                birthday:response.data.birthday,
+                                direction:response.data.direction,
+                                local_phone:response.data.local_phone,
+                                movil_phone:response.data.movil_phone,
+                                mail_contact:response.data.mail_contact
+                            }
+                        }
+                    }else{
+                        this.exist_document = true
+                        this.$alertify.warning('No se encontraron coincidencias con el documento')
+                        this.$alertify.success('Puedes registrar todos los datos y guardarlos')
+                    }
+                }).catch(errors =>{
+                    if (status = 204)
+                    {
+                        Object.values(errors.response.data.errors).forEach((element,indx) => {
+                            this.$alertify.error(element.toString())
+                        });
+                    }
+                })
+            }else{
+                this.$alertify.error('El número de documento es requerido!')
+            }
+        },
 		userDataBlank(){
 			this.userData={
             	id: 0,
@@ -213,7 +278,7 @@ export default {
                 lastname:null,
                 nro_document:null,
                 document:{
-                    id:null,
+                    id:0,
                     name:null,
                 },
                 img_document:null,
@@ -334,6 +399,7 @@ export default {
         	this.modal_option	= option
         	this.modal_type		= type
         	if (type == 'edit' && model !== null) {
+                this.exist_document = true
         		this.userData = {
         			id:model.id,
         			username:model.username,
@@ -357,6 +423,7 @@ export default {
         	}else{
                 this.userDataBlank()
                 this.personDataBlank()
+                this.exist_document = false
             }
             $("#"+modal_id).modal('show')
         },

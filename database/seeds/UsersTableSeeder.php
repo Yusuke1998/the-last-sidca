@@ -8,9 +8,10 @@ class UsersTableSeeder extends Seeder
     {
     	$document = App\Document::first();
 
+        // Administrador
     	$person = App\Person::create([
-            'firstname'		=>	'jhonny jose',
-            'lastname'		=>	'jérez martinez',
+            'firstname'		=>	'Jhonny Jose',
+            'lastname'		=>	'Pérez Martinez',
             'document_id'	=>	$document->id,
             'nro_document'	=>	'26039408',
             'birthday'		=>	'1998-02-27',
@@ -19,15 +20,28 @@ class UsersTableSeeder extends Seeder
             'movil_phone'	=>	'04161428973',
             'mail_contact'	=>	'jhonnyjose1998@gmail.com'
         ]);
-
-        $type = App\Type::first();
+        $type = App\Type::where('name','root')->first();
         $person->types()->attach($type->id);
-
         $user = App\User::create([
             'username'		=> 'admin', 
             'email'         => 'admin@admin.com', 
             'password'      => bcrypt('admin'),
             'person_id'		=> $person->id,
         ]);
+        // Fin Administrador
+
+        // Profesor
+        $person = App\Person::create([
+            'firstname'     =>  'Edith',
+            'lastname'      =>  'Hernandez',
+            'document_id'   =>  $document->id,
+            'nro_document'  =>  '10101010',
+            'birthday'      =>  '1992-01-10',
+            'direction'     =>  'San Juan',
+        ]);
+        $teacher = App\teacher::create(['person_id'=>$person->id]);
+        $type = App\Type::where('name','teacher')->first();
+        $person->types()->attach($type->id);
+        // Fin Profesor
     }
 }

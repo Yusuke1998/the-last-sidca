@@ -21,7 +21,7 @@
                     </div>
                     <div class="p-2">
                         <h5 class="dropdown-header text-uppercase">Usuario</h5>
-                        <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ route('profile',Auth::User()->id) }}">
+                        <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ route('profile',Auth::User()->username) }}">
                             <span>Perfil</span>
                             <span>
                                 <i class="si si-user ml-1"></i>

@@ -7,79 +7,67 @@ use Illuminate\Http\Request;
 
 class HeadquarterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        //
+        return view('preload.headquarters');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function headquarterDataTable(Request $request)
     {
-        //
+        $headquarters = $this->filterHeadDataTable($request);
+        return [
+            'pagination' => [
+                'total'         => $headquarters->total(),
+                'current_page'  => $headquarters->currentPage(),
+                'per_page'      => $headquarters->perPage(),
+                'last_page'     => $headquarters->lastPage(),
+                'from'          => $headquarters->firstItem(),
+                'to'            => $headquarters->lastItem(),
+            ],
+            'table' => $headquarters
+        ];
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    public function filterHeadDataTable($request)
+    {
+        $search = mb_strtolower($request->search,'UTF-8');
+        $headquarters = Headquarter::with('areas');
+
+        if (!is_null($search) && !empty($search)) {
+            $headquarters
+            ->where('name','like','%'.$search.'%')
+            ->orWhereHas('areas',function ($query) use ($search) {
+                $query->where('name','like','%'.$search.'%');
+            });
+        }
+        return $headquarters->orderBy('updated_at','DESC')->paginate($request->sort);
+    }
+
     public function store(Request $request)
     {
-        //
+        $data = request()->validate(['name'=>'required|min:3|max:50|string']);
+        
+        if ($request->id == 0) {
+            Headquarter::create(['name'=>$request->name]);
+        }
+        return;
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Headquarter  $headquarter
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Headquarter $headquarter)
+    public function update(Request $request)
     {
-        //
+        $data = request()->validate(['name'=>'required|min:3|max:50|string']);
+
+        if ($request->id > 0) {
+            Headquarter::findOrFail($request->id)
+                ->update(['name'=>$request->name]);
+        }
+        return;
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Headquarter  $headquarter
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Headquarter $headquarter)
+    public function destroy(Request $request)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Headquarter  $headquarter
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Headquarter $headquarter)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Headquarter  $headquarter
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Headquarter $headquarter)
-    {
-        //
+        $headquarter = Headquarter::findOrFail($request->id);
+        $headquarter->delete();
+        return;
     }
 }
