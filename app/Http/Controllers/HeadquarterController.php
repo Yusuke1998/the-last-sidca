@@ -12,6 +12,12 @@ class HeadquarterController extends Controller
         return view('preload.headquarters');
     }
 
+    public function getAll()
+    {
+        $sedes = Headquarter::all();
+        return $sedes;
+    }
+
     public function headquarterDataTable(Request $request)
     {
         $headquarters = $this->filterHeadDataTable($request);
@@ -31,7 +37,7 @@ class HeadquarterController extends Controller
     public function filterHeadDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $headquarters = Headquarter::with('areas');
+        $headquarters = Headquarter::with('cores');
 
         if (!is_null($search) && !empty($search)) {
             $headquarters

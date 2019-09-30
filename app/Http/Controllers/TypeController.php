@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class TypeController extends Controller
 {
-    public function getall()
+    public function getAll()
     {
         $tipos = Type::all();
         return $tipos;
@@ -18,22 +18,7 @@ class TypeController extends Controller
         //
     }
 
-    public function create()
-    {
-        //
-    }
-
     public function store(Request $request)
-    {
-        //
-    }
-
-    public function show(Type $type)
-    {
-        //
-    }
-
-    public function edit(Type $type)
     {
         //
     }

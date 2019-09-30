@@ -12,13 +12,6 @@ class CreateProgramsTable extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->bigInteger('career_id')->unsigned();
-
-            $table->foreign('career_id')
-                ->references('id')
-                ->on('careers')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-
             $table->timestamps();
         });
     }

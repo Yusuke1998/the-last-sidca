@@ -7,79 +7,86 @@ use Illuminate\Http\Request;
 
 class AreaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        //
+        return view('preload.areas');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function getAll()
     {
-        //
+        $areas = Area::all();
+        return $areas;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    public function areaDataTable(Request $request)
+    {
+        $areas = $this->filterAreaDataTable($request);
+        return [
+            'pagination' => [
+                'total'         => $areas->total(),
+                'current_page'  => $areas->currentPage(),
+                'per_page'      => $areas->perPage(),
+                'last_page'     => $areas->lastPage(),
+                'from'          => $areas->firstItem(),
+                'to'            => $areas->lastItem(),
+            ],
+            'table' => $areas
+        ];
+    }
+
+    public function filterAreaDataTable($request)
+    {
+        $search = mb_strtolower($request->search,'UTF-8');
+        $areas = Area::with('cores');
+
+        if (!is_null($search) && !empty($search)) {
+            $areas
+            ->where('name','like','%'.$search.'%')
+            ->orWhereHas('cores',function ($query) use ($search) {
+                $query->where('name','like','%'.$search.'%');
+            });
+        }
+        return $areas->orderBy('updated_at','DESC')->paginate($request->sort);
+    }
+
     public function store(Request $request)
     {
-        //
+        $data = request()->validate([
+            'name'=>'required|min:3|max:50|string',
+            'cores'=>'required'
+        ]);
+        $cores = collect($request->cores);
+        $ids = $cores->pluck('id');
+        if ($request->id == 0) {
+            $area = Area::create([
+                'name'=>$request->name,
+            ]);
+            $area->cores()->sync($ids);
+        }
+        return;
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Area  $area
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Area $area)
+    public function update(Request $request)
     {
-        //
+        $data = request()->validate([
+            'name'=>'required|min:3|max:50|string',
+            'cores'=>'required'
+        ]);
+        $cores = collect($request->cores);
+        $ids = $cores->pluck('id');
+        if ($request->id > 0) {
+            $area = Area::findOrFail($request->id);
+            $area->update([
+                'name'=>$request->name
+            ]);
+            $area->cores()->sync($ids);
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Area  $area
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Area $area)
+    public function destroy(Request $request)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Area  $area
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Area $area)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Area  $area
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Area $area)
-    {
-        //
+        $area = Area::findOrFail($request->id);
+        $area->delete();
+        return;
     }
 }

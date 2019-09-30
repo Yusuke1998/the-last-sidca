@@ -2,8 +2,8 @@
 	<div class="container">
 		<div class="block">
 			<div class="block-header bg-primary-dark">
-				<h3 class="block-title text-white text-center">SEDES</h3>
-    			<button data-toggle="tooltip" title="Nueva" type="button" @click="showModal('HeadquarterModal',null,'Nueva Sede','store')" class="btn btn-success">
+				<h3 class="block-title text-white text-center">NUCLEOS</h3>
+    			<button data-toggle="tooltip" title="Crear" type="button" @click="showModal('CoreModal',null,'Nuevo Nucleo','store')" class="btn btn-success">
                     <i class="fa fa-plus"></i>
                 </button>
 			</div>
@@ -33,6 +33,7 @@
 			                <tr>
 			                    <th>#</th>
 			                    <th>Nombre</th>
+			                    <th>Sede</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
@@ -43,9 +44,10 @@
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
+			                    <td class="font-w600 font-size-sm" v-text="item_table.headquarter.name"></td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
-			                            <button type="button" @click="showModal('HeadquarterModal',item_table,'Editar Sede','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
+			                            <button type="button" @click="showModal('CoreModal',item_table,'Editar Nucleo','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
 			                                <i class="fa fa-fw fa-pencil-alt"></i>
 			                            </button>
 			                            <button type="button" @click="deleteData(item_table.id)" class="btn btn-sm btn-light" data-toggle="tooltip" title="Eliminar">
@@ -65,7 +67,7 @@
 			</div>
 		</div>
 
-        <div class="modal fade" id="HeadquarterModal" tabindex="-1" role="dialog" aria-labelledby="HeadquarterModal" aria-hidden="true">
+        <div class="modal fade" id="CoreModal" tabindex="-1" role="dialog" aria-labelledby="CoreModal" aria-hidden="true">
             <div class="modal-dialog modal-dialog-popout modal-xl" role="document">
                 <div class="modal-content">
                     <div class="block block-themed block-transparent mb-0">
@@ -80,10 +82,16 @@
                         <div class="block-content font-size-sm">
                             <form class="row">
                                 <!-- col-12 -->
-                                <div class="col-12">
+                                <div class="col-8">
                                 	<div class="form-group">
                                 		<label for="">Nombre</label>
-                                		<input type="text" class="form-control" v-model="headData.name">
+                                		<input type="text" class="form-control" v-model="CoreData.name">
+                                	</div>
+                                </div>
+                                <div class="col-4">
+                                	<div class="form-group">
+                                		<label>Sede</label>
+                                    	<v-select label="name" v-model="CoreData.headquarter" :options="list_headquarters"></v-select>
                                 	</div>
                                 </div>
                                 <!-- col-12 -->
@@ -106,13 +114,19 @@
 export default {
     mounted(){
     	this.getData();
+    	this.getHeadquarters();
     },
     data() {
 		return {
             // AUXILIARES
-            headData:{
+            list_headquarters:[],
+            CoreData:{
             	id: 0,
-                name: null
+                name: null,
+                headquarter:{
+                	id:0,
+                	name:null
+                }
             },
 
             // DATOS DEL DATATABLE 
@@ -134,15 +148,28 @@ export default {
         }
 	},
 	methods:{
-		HeadDataBlank(){
-			this.headData={
+		getHeadquarters()
+        {
+            let url = "/get-headquarters"
+            axios.get(url).then(response => {
+                this.list_headquarters = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+		CoreDataBlank(){
+			this.CoreData={
             	id: 0,
-                name: null
+                name: null,
+                headquarter:{
+                	id:0,
+                	name:null
+                }
             }
 		},
 		getData(page)
         {
-            let url =  "/precarga/get-headquarters" 
+            let url =  "/precarga/get-cores" 
             axios.post(url,{
                 page   : page, 
                 sort   : this.sort_selected, 
@@ -151,21 +178,21 @@ export default {
                 this.table_pagination	= response.data.pagination
                 this.table_data			= response.data.table.data
             	this.search_table		= ''
-                this.$alertify.success('Sedes Cargadas')
+                this.$alertify.success('Nucleos Cargados')
             }).catch(errors =>{
                 console.log(errors)
             })
         },
         storeData()
         {
-            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar la sede')
-            let url = '/precarga/store-headquarter'
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar el nucleo')
+            let url = '/precarga/store-core'
             axios.post(url,
-                this.headData
+                this.CoreData
             ).then(response => {
                 swal.close()
-                $("#HeadquarterModal").modal('hide')
-        		this.$alertify.success('La sede se registro con exito')
+                $("#CoreModal").modal('hide')
+        		this.$alertify.success('El nucleo se registro con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -179,14 +206,14 @@ export default {
         },
         updateData()
         {
-        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar la Sede')
-            let url = '/precarga/update-headquarter'
+        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar el nucleo')
+            let url = '/precarga/update-core'
             axios.post(url,
-                this.headData
+                this.CoreData
             ).then(response => {
                 swal.close()
-                $("#HeadquarterModal").modal('hide')
-        		this.$alertify.success('La sede fue actualizada con exito')
+                $("#CoreModal").modal('hide')
+        		this.$alertify.success('El nucleo fue actualizada con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -198,23 +225,23 @@ export default {
 				}
             })
         },
-        deleteData(idSede)
+        deleteData(idCore)
         {
         	swal({
-                text: "Esta seguro que quiere eliminar esta sede?",
+                text: "Esta seguro que quiere eliminar este nucleo?",
                 icon: "warning",
                 buttons: ['Cancelar','Eliminar'],
                 dangerMode: true,
             }).then((willDelete) => {
                 if (willDelete) {
-        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar esta sede')
-		            let url = '/precarga/delete-headquarter'
+        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar este nucleo')
+		            let url = '/precarga/delete-core'
 		            axios.post(url,{
-		                id:idSede
+		                id:idCore
 		            }).then(response => {
 		                swal.close()
 		                this.getData()
-		        		this.$alertify.success('La sede fue eliminada con exito')
+		        		this.$alertify.success('El nucleo fue eliminado con exito')
 		            }).catch(errors => {
 		                swal.close()
 		            })
@@ -230,12 +257,16 @@ export default {
         	this.modal_option	= option
         	this.modal_type		= type
         	if (type == 'edit' && model !== null) {
-        		this.headData = {
+        		this.CoreData = {
         			id:model.id,
-        			name:model.name
+        			name:model.name,
+        			headquarter:{
+	                	id:model.headquarter.id,
+	                	name:model.headquarter.name
+	                }
         		}
         	}else{
-                this.HeadDataBlank()
+                this.CoreDataBlank()
             }
             $("#"+modal_id).modal('show')
         }

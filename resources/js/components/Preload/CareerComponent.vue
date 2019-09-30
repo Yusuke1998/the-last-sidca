@@ -2,8 +2,8 @@
 	<div class="container">
 		<div class="block">
 			<div class="block-header bg-primary-dark">
-				<h3 class="block-title text-white text-center">SEDES</h3>
-    			<button data-toggle="tooltip" title="Nueva" type="button" @click="showModal('HeadquarterModal',null,'Nueva Sede','store')" class="btn btn-success">
+				<h3 class="block-title text-white text-center">CARRERAS</h3>
+    			<button data-toggle="tooltip" title="Crear" type="button" @click="showModal('CareerModal',null,'Nueva Carrera','store')" class="btn btn-success">
                     <i class="fa fa-plus"></i>
                 </button>
 			</div>
@@ -33,6 +33,7 @@
 			                <tr>
 			                    <th>#</th>
 			                    <th>Nombre</th>
+			                    <th>Areas(s)</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
@@ -43,9 +44,15 @@
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
+			                    <td v-if="item_table.areas.length > 0" class="font-w600 font-size-sm">
+                                    <ul>
+                                        <li v-for="item in item_table.areas" v-text="item.name"></li>
+                                    </ul>
+                                </td>
+                                <td v-else>No esta asignada a ningun area!</td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
-			                            <button type="button" @click="showModal('HeadquarterModal',item_table,'Editar Sede','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
+			                            <button type="button" @click="showModal('CareerModal',item_table,'Editar Carrera','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Edit Client">
 			                                <i class="fa fa-fw fa-pencil-alt"></i>
 			                            </button>
 			                            <button type="button" @click="deleteData(item_table.id)" class="btn btn-sm btn-light" data-toggle="tooltip" title="Eliminar">
@@ -65,7 +72,7 @@
 			</div>
 		</div>
 
-        <div class="modal fade" id="HeadquarterModal" tabindex="-1" role="dialog" aria-labelledby="HeadquarterModal" aria-hidden="true">
+        <div class="modal fade" id="CareerModal" tabindex="-1" role="dialog" aria-labelledby="CareerModal" aria-hidden="true">
             <div class="modal-dialog modal-dialog-popout modal-xl" role="document">
                 <div class="modal-content">
                     <div class="block block-themed block-transparent mb-0">
@@ -80,10 +87,16 @@
                         <div class="block-content font-size-sm">
                             <form class="row">
                                 <!-- col-12 -->
-                                <div class="col-12">
+                                <div class="col-8">
                                 	<div class="form-group">
                                 		<label for="">Nombre</label>
-                                		<input type="text" class="form-control" v-model="headData.name">
+                                		<input type="text" class="form-control" v-model="CareerData.name">
+                                	</div>
+                                </div>
+                                <div class="col-4">
+                                	<div class="form-group">
+                                		<label>Area(s)</label>
+                                    	<v-select multiple label="name" v-model="CareerData.areas" :options="list_cores"></v-select>
                                 	</div>
                                 </div>
                                 <!-- col-12 -->
@@ -106,13 +119,16 @@
 export default {
     mounted(){
     	this.getData();
+    	this.getCores();
     },
     data() {
 		return {
             // AUXILIARES
-            headData:{
+            list_areas:[],
+            CareerData:{
             	id: 0,
-                name: null
+                name: null,
+                areas:[]
             },
 
             // DATOS DEL DATATABLE 
@@ -134,15 +150,25 @@ export default {
         }
 	},
 	methods:{
-		HeadDataBlank(){
-			this.headData={
+		getCores()
+        {
+            let url = "/get-areas"
+            axios.get(url).then(response => {
+                this.list_cores = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+		CareerDataBlank(){
+			this.CareerData={
             	id: 0,
-                name: null
+                name: null,
+                areas:[]
             }
 		},
 		getData(page)
         {
-            let url =  "/precarga/get-headquarters" 
+            let url =  "/precarga/get-careers" 
             axios.post(url,{
                 page   : page, 
                 sort   : this.sort_selected, 
@@ -151,21 +177,21 @@ export default {
                 this.table_pagination	= response.data.pagination
                 this.table_data			= response.data.table.data
             	this.search_table		= ''
-                this.$alertify.success('Sedes Cargadas')
+                this.$alertify.success('Carreras Cargadas')
             }).catch(errors =>{
                 console.log(errors)
             })
         },
         storeData()
         {
-            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar la sede')
-            let url = '/precarga/store-headquarter'
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar La carrera')
+            let url = '/precarga/store-career'
             axios.post(url,
-                this.headData
+                this.CareerData
             ).then(response => {
                 swal.close()
-                $("#HeadquarterModal").modal('hide')
-        		this.$alertify.success('La sede se registro con exito')
+                $("#CareerModal").modal('hide')
+        		this.$alertify.success('La carrera se registro con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -179,14 +205,14 @@ export default {
         },
         updateData()
         {
-        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar la Sede')
-            let url = '/precarga/update-headquarter'
+        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar la carrera')
+            let url = '/precarga/update-career'
             axios.post(url,
-                this.headData
+                this.CareerData
             ).then(response => {
                 swal.close()
-                $("#HeadquarterModal").modal('hide')
-        		this.$alertify.success('La sede fue actualizada con exito')
+                $("#CareerModal").modal('hide')
+        		this.$alertify.success('La carrera fue actualizada con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -198,23 +224,23 @@ export default {
 				}
             })
         },
-        deleteData(idSede)
+        deleteData(idCore)
         {
         	swal({
-                text: "Esta seguro que quiere eliminar esta sede?",
+                text: "Esta seguro que quiere eliminar esta carrera?",
                 icon: "warning",
                 buttons: ['Cancelar','Eliminar'],
                 dangerMode: true,
             }).then((willDelete) => {
                 if (willDelete) {
-        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar esta sede')
-		            let url = '/precarga/delete-headquarter'
+        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar esta carrera')
+		            let url = '/precarga/delete-career'
 		            axios.post(url,{
-		                id:idSede
+		                id:idCore
 		            }).then(response => {
 		                swal.close()
 		                this.getData()
-		        		this.$alertify.success('La sede fue eliminada con exito')
+		        		this.$alertify.success('La carrera fue eliminada con exito')
 		            }).catch(errors => {
 		                swal.close()
 		            })
@@ -230,12 +256,13 @@ export default {
         	this.modal_option	= option
         	this.modal_type		= type
         	if (type == 'edit' && model !== null) {
-        		this.headData = {
+        		this.CareerData = {
         			id:model.id,
-        			name:model.name
+        			name:model.name,
+        			areas:model.areas
         		}
         	}else{
-                this.HeadDataBlank()
+                this.CareerDataBlank()
             }
             $("#"+modal_id).modal('show')
         }

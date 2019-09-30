@@ -8,8 +8,8 @@ class Headquarter extends Model
 {
     protected $fillable = ['name'];
 
-    public function areas()
+    public function cores()
     {
-    	return $this->hasMany(Area::class);
+    	return $this->hasMany(Core::class);
     }
 }

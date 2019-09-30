@@ -7,79 +7,90 @@ use Illuminate\Http\Request;
 
 class CareerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        //
+        return view('preload.careers');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function getAll()
     {
-        //
+        $carreras = Career::all();
+        return $carreras;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    public function careerDataTable(Request $request)
+    {
+        $carreras = $this->filterCareerDataTable($request);
+        return [
+            'pagination' => [
+                'total'         => $carreras->total(),
+                'current_page'  => $carreras->currentPage(),
+                'per_page'      => $carreras->perPage(),
+                'last_page'     => $carreras->lastPage(),
+                'from'          => $carreras->firstItem(),
+                'to'            => $carreras->lastItem(),
+            ],
+            'table' => $carreras
+        ];
+    }
+
+    public function filterCareerDataTable($request)
+    {
+        $search = mb_strtolower($request->search,'UTF-8');
+        $carreras = Career::with('areas');
+
+        if (!is_null($search) && !empty($search)) {
+            $carreras
+            ->where('name','like','%'.$search.'%')
+            ->orWhereHas('areas',function ($query) use ($search) {
+                $query
+                ->where('name','like','%'.$search.'%')
+                ->orWhereHas('cores',function ($sudQuery) use ($search) {
+                    $sudQuery->where('name','like','%'.$search.'%');
+                });
+            });
+        }
+        return $carreras->orderBy('updated_at','DESC')->paginate($request->sort);
+    }
+
     public function store(Request $request)
     {
-        //
+        $data = request()->validate([
+            'name'=>'required|min:3|max:50|string',
+            'areas'=>'required'
+        ]);
+        $areas = collect($request->areas);
+        $ids = $areas->pluck('id');
+        if ($request->id == 0) {
+            $carrera = Career::create([
+                'name'=>$request->name,
+            ]);
+            $carrera->areas()->sync($ids);
+        }
+        return;
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Career  $career
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Career $career)
+    public function update(Request $request)
     {
-        //
+        $data = request()->validate([
+            'name'=>'required|min:3|max:50|string',
+            'areas'=>'required'
+        ]);
+        $areas = collect($request->areas);
+        $ids = $areas->pluck('id');
+        if ($request->id > 0) {
+            $carrera = Career::findOrFail($request->id);
+            $carrera->update([
+                'name'=>$request->name
+            ]);
+            $carrera->areas()->sync($ids);
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Career  $career
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Career $career)
+    public function destroy(Request $request)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Career  $career
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Career $career)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Career  $career
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Career $career)
-    {
-        //
+        $carrera = Career::findOrFail($request->id);
+        $carrera->delete();
+        return;
     }
 }

@@ -11,14 +11,6 @@ class CreateCareersTable extends Migration
         Schema::create('careers', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->bigInteger('area_id')->unsigned();
-
-            $table->foreign('area_id')
-                ->references('id')
-                ->on('areas')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-
             $table->timestamps();
         });
     }

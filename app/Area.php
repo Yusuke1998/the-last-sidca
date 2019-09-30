@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Area extends Model
 {
-    protected $fillable = ['name','headquarter_id'];
+    protected $fillable = ['name'];
 
-    public function headquarters()
+    public function cores()
     {
-    	return $this->belongsTo(Headquarter::class);
+    	return $this->belongsToMany(Core::class);
     }
 
     public function careers()
     {
-    	return $this->hasMany(Career::class);
+    	return $this->belongsToMany(Career::class);
     }
 }

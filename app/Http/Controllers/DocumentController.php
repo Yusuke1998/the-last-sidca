@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class DocumentController extends Controller
 {
-    public function getall()
+    public function getAll()
     {
         $documentos = Document::all();
         return $documentos;
@@ -29,16 +29,6 @@ class DocumentController extends Controller
     }
 
     public function store(Request $request)
-    {
-        //
-    }
-
-    public function show(Document $document)
-    {
-        //
-    }
-
-    public function edit(Document $document)
     {
         //
     }

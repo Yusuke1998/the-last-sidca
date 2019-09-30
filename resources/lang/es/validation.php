@@ -146,7 +146,8 @@ return [
 
     'attributes' => [
         'username'              =>  'nombre de usuario',
-        'name'                  =>  'nombres',
+        'name'                  =>  'nombre',
+        'firstname'             =>  'nombres',
         'lastname'              =>  'apellidos',
         'document_id'           =>  'tipo de documento',
         'nro_document'          =>  'numero de documento',
@@ -160,8 +161,16 @@ return [
         'email'                 =>  'correo de acceso',
         'password'              =>  'contraseña',
         'people_id'             =>  'persona',  
-        'image'                 =>  'imagen de perfil'  
-
+        'image'                 =>  'imagen de perfil',  
+        'img_document'          =>  'foto de documento',  
+        'headquarter_id'        =>  'sede',  
+        'career_id'             =>  'carrera',
+        'cores'                 =>  'nucleos',
+        'careers'               =>  'carreras',  
+        'areas'                 =>  'areas',
+        'headquarter'           =>  'sede',
+        'people'                =>  'personas',  
+        'person'                =>  'persona',  
     ],
 
 ];

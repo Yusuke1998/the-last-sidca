@@ -76,7 +76,7 @@
                     <span class="nav-main-link-name">PROFESOR</span>
                 </a>
                 <ul class="nav-main-submenu">
-                    <li class="nav-main-item">
+                    <li class="nav-main-item {{ request()->is('profesores')?'active':'' }}">
                         <a class="nav-main-link" href="{{ route('teacher.index') }}">
                             <span class="nav-main-link-name">Todos</span>
                         </a>
@@ -89,7 +89,7 @@
                     <span class="nav-main-link-name">USUARIO</span>
                 </a>
                 <ul class="nav-main-submenu">
-                    <li class="nav-main-item">
+                    <li class="nav-main-item {{ request()->is('usuarios')?'active':'' }}">
                         <a class="nav-main-link" href="{{ route('users.index') }}">
                             <span class="nav-main-link-name">Todos</span>
                         </a>
@@ -103,37 +103,37 @@
                 </a>
                 <ul class="nav-main-submenu">
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{ route('headquarter.index') }}">
-                            <span class="nav-main-link-name">Sede</span>
+                        <a class="nav-main-link {{ request()->is('precarga/sedes')?'active':'' }}" href="{{ route('headquarter.index') }}">
+                            <span class="nav-main-link-name">Sedes</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Nucleo</span>
+                        <a class="nav-main-link {{ request()->is('precarga/nucleos')?'active':'' }}" href="{{ route('core.index') }}">
+                            <span class="nav-main-link-name">Nucleos</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Area</span>
+                        <a class="nav-main-link {{ request()->is('precarga/areas')?'active':'' }}" href="{{ route('area.index') }}">
+                            <span class="nav-main-link-name">Areas</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Carrera</span>
+                        <a class="nav-main-link {{ request()->is('precarga/carreras')?'active':'' }}" href="{{ route('career.index') }}">
+                            <span class="nav-main-link-name">Carreras</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Periodo</span>
+                        <a class="nav-main-link {{ request()->is('precarga/programas')?'active':'' }}" href="#">
+                            <span class="nav-main-link-name">Programas</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Programa</span>
+                        <a class="nav-main-link {{ request()->is('precarga/periodos')?'active':'' }}" href="#">
+                            <span class="nav-main-link-name">Periodos</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
+                        <a class="nav-main-link {{ request()->is('precarga/unidad-curricular')?'active':'' }}" href="#">
                             <span class="nav-main-link-name">Unidad Curricular</span>
                         </a>
                     </li>
