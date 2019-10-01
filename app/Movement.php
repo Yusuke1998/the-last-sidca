@@ -1,17 +1,12 @@
 <?php
-// Sede
+
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Headquarter extends Model
+class Movement extends Model
 {
     protected $fillable = ['name'];
-
-    public function cores()
-    {
-    	return $this->hasMany(Core::class);
-    }
 
     public function histories()
     {

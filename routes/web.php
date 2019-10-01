@@ -9,6 +9,10 @@ Route::get('/dashboard', 'HomeController@dashboard')->name('dashboard');
 Route::get('/get-documents', 'DocumentController@getAll');
 Route::get('/get-headquarters', 'HeadquarterController@getAll');
 Route::get('/get-cores', 'CoreController@getAll');
+Route::get('/get-titles', 'TitleController@getAll');
+Route::get('/get-universities', 'UniversityController@getAll');
+Route::get('/get-subjects', 'SubjectController@getAll');
+Route::get('/get-careers', 'CareerController@getAll');
 Route::get('/get-areas', 'AreaController@getAll');
 Route::get('/get-types', 'TypeController@getAll');
 Route::post('/check-document', 'DocumentController@check_document');
@@ -50,13 +54,37 @@ Route::group(['prefix'=>'precarga'],function(){
 	Route::post('/delete-area','AreaController@destroy');
 	// FIN AREAS
 
-	// AREAS
+	// CARRERAS
 	Route::get('/carreras','CareerController@index')->name('career.index');
 	Route::post('/get-careers','CareerController@careerDataTable');
 	Route::post('/store-career','CareerController@store');
 	Route::post('/update-career','CareerController@update');
 	Route::post('/delete-career','CareerController@destroy');
-	// FIN AREAS
+	// FIN CARRERAS
+
+	// ASIGNATURAS
+	Route::get('/asignaturas','SubjectController@index')->name('subject.index');
+	Route::post('/get-subjects','SubjectController@subjectDataTable');
+	Route::post('/store-subject','SubjectController@store');
+	Route::post('/update-subject','SubjectController@update');
+	Route::post('/delete-subject','SubjectController@destroy');
+	// FIN ASIGNATURAS
+
+	// TITULOS
+	Route::get('/titulos','TitleController@index')->name('title.index');
+	Route::post('/get-titles','TitleController@titlesDataTable');
+	Route::post('/store-title','TitleController@store');
+	Route::post('/update-title','TitleController@update');
+	Route::post('/delete-title','TitleController@destroy');
+	// FIN TITULOS
+
+	// UNIVERSIDADES
+	Route::get('/universidades','UniversityController@index')->name('universities.index');
+	Route::post('/get-universities','UniversityController@universitiesDataTable');
+	Route::post('/store-university','UniversityController@store');
+	Route::post('/update-university','UniversityController@update');
+	Route::post('/delete-university','UniversityController@destroy');
+	// FIN UNIVERSIDADES
 
 });
 // FIN PRECARGA

@@ -10,8 +10,8 @@ class CreateTeachersTable extends Migration
     {
         Schema::create('teachers', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('person_id')->unsigned();
             
+            $table->bigInteger('person_id')->unsigned(); #persona
             $table->foreign('person_id')
                 ->references('id')
                 ->on('people')

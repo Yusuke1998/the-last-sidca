@@ -12,6 +12,9 @@ Vue.component('headquarter-component', require('./components/Preload/Headquarter
 Vue.component('core-component', require('./components/Preload/CoreComponent.vue').default);
 Vue.component('area-component', require('./components/Preload/AreaComponent.vue').default);
 Vue.component('career-component', require('./components/Preload/CareerComponent.vue').default);
+Vue.component('subject-component', require('./components/Preload/SubjectComponent.vue').default);
+Vue.component('title-component', require('./components/Preload/TitleComponent.vue').default);
+Vue.component('university-component', require('./components/Preload/UniversityComponent.vue').default);
 
 /* PLUGINS */
 import swal from 'sweetalert';

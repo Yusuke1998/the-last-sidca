@@ -133,8 +133,18 @@
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/unidad-curricular')?'active':'' }}" href="#">
-                            <span class="nav-main-link-name">Unidad Curricular</span>
+                        <a class="nav-main-link {{ request()->is('precarga/asignaturas')?'active':'' }}" href="{{ route('subject.index') }}">
+                            <span class="nav-main-link-name">Asignaturas</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/titulos')?'active':'' }}" href="{{ route('title.index') }}">
+                            <span class="nav-main-link-name">Titulos</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/universidades')?'active':'' }}" href="{{ route('universities.index') }}">
+                            <span class="nav-main-link-name">Universidades</span>
                         </a>
                     </li>
                 </ul>

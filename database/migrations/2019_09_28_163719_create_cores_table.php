@@ -11,8 +11,8 @@ class CreateCoresTable extends Migration
         Schema::create('cores', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->bigInteger('headquarter_id')->unsigned();
 
+            $table->bigInteger('headquarter_id')->unsigned(); #sede
             $table->foreign('headquarter_id')
                 ->references('id')
                 ->on('headquarters')

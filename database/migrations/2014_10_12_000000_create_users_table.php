@@ -14,12 +14,14 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->bigInteger('person_id')->unsigned();
+            
+            $table->bigInteger('person_id')->unsigned(); #persona
             $table->foreign('person_id')
                 ->references('id')
                 ->on('people')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
+                
             $table->rememberToken();
             $table->timestamps();
         });

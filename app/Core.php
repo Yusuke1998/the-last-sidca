@@ -17,4 +17,9 @@ class Core extends Model
     {
     	return $this->belongsToMany(Area::class);
     }
+
+    public function histories()
+    {
+    	return $this->hasMany(Historic::class);
+    }
 }

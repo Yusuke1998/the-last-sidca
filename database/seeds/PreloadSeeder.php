@@ -5,6 +5,8 @@ use App\Headquarter;
 use App\Core;
 use App\Area;
 use App\Career;
+use App\University;
+use App\Title;
 
 class PreloadSeeder extends Seeder
 {
@@ -32,6 +34,42 @@ class PreloadSeeder extends Seeder
         $carreras = ['Ingenieria en Informatica','Ingenieria Agronomica','Ingenieria en Hidrocarburos'];
         foreach ($carreras as $key => $carrera) {
             Career::create(['name'=>$carrera]);
+        }
+
+        $universidades = 
+        [
+            [
+                'name'=>'Universidad Nacional Experimental de los Llanos Centraler',
+                'acronym'=>'UNERG'
+            ],
+            [
+                'name'=>'Universidad Nacional Experimental Simon Rodriguez',
+                'acronym'=>'UNESR'
+            ]
+        ];
+        foreach ($universidades as $key => $universidad) {
+            University::create([
+                'name'=>$universidad['name'],
+                'acronym'=>$universidad['acronym'],
+            ]);
+        }
+
+        $titulos = 
+        [
+            [
+                'title'=>'Ingenieria X',
+                'level'=>'Licenciado'
+            ],
+            [
+                'title'=>'Ingenieria Y',
+                'level'=>'Licenciado'
+            ]
+        ];
+        foreach ($titulos as $key => $titulo) {
+            Title::create([
+                'title'=>$titulo['title'],
+                'level'=>$titulo['level'],
+            ]);
         }
     }
 }

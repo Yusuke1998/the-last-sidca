@@ -12,4 +12,14 @@ class Career extends Model
     {
     	return $this->belongsToMany(Area::class);
     }
+
+    public function subjects()
+    {
+    	return $this->belongsToMany(Subject::class);
+    }
+
+    public function histories()
+    {
+    	return $this->hasMany(Historic::class);
+    }
 }

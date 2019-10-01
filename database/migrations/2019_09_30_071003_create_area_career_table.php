@@ -10,15 +10,15 @@ class CreateAreaCareerTable extends Migration
     {
         Schema::create('area_career', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('area_id')->unsigned();
-            $table->bigInteger('career_id')->unsigned();
 
+            $table->bigInteger('area_id')->unsigned(); #area
             $table->foreign('area_id')
                 ->references('id')
                 ->on('areas')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
                 
+            $table->bigInteger('career_id')->unsigned(); #carrera
             $table->foreign('career_id')
                 ->references('id')
                 ->on('careers')

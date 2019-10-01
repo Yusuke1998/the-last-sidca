@@ -1,17 +1,12 @@
 <?php
-// Area
+// Asignatura
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Area extends Model
+class Subject extends Model
 {
-    protected $fillable = ['name'];
-
-    public function cores()
-    {
-    	return $this->belongsToMany(Core::class);
-    }
+    protected $fillable = ['name','theoretical_hour','practical_hour'];
 
     public function careers()
     {

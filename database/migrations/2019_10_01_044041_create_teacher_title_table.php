@@ -4,23 +4,24 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePersonTypeTable extends Migration
+class CreateTeacherTitleTable extends Migration
 {
     public function up()
     {
-        Schema::create('person_type', function (Blueprint $table) {
+        Schema::create('teacher_title', function (Blueprint $table) {
+            $table->bigIncrements('id');
 
-            $table->bigInteger('person_id')->unsigned(); #persona
-            $table->foreign('person_id')
+            $table->bigInteger('teacher_id')->unsigned(); #profesor
+            $table->foreign('teacher_id')
                     ->references('id')
-                    ->on('people')
+                    ->on('teachers')
                     ->onDelete('cascade')
                     ->onUpdate('cascade');
 
-            $table->bigInteger('type_id')->unsigned(); #tipo
-            $table->foreign('type_id')
+            $table->bigInteger('title_id')->unsigned(); #titulo
+            $table->foreign('title_id')
                     ->references('id')
-                    ->on('types')
+                    ->on('titles')
                     ->onDelete('cascade')
                     ->onUpdate('cascade');
 
@@ -30,6 +31,6 @@ class CreatePersonTypeTable extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('person_type');
+        Schema::dropIfExists('teacher_title');
     }
 }

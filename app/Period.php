@@ -1,12 +1,12 @@
 <?php
-// Programa
+// Periodo
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Program extends Model
+class Period extends Model
 {
-    protected $fillable = ['name'];
+    protected $fillable = ['period'];
 
     public function histories()
     {
