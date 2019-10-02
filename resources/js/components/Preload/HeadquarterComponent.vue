@@ -78,7 +78,7 @@
                             </div>
                         </div>
                         <div class="block-content font-size-sm">
-                            <form class="row">
+                            <form class="row" @keydown.enter.prevent="storeData">
                                 <!-- col-12 -->
                                 <div class="col-12">
                                 	<div class="form-group">

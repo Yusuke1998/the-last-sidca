@@ -171,7 +171,9 @@ return [
         'headquarter'           =>  'sede',
         'people'                =>  'personas',  
         'person'                =>  'persona',  
-        'period'                =>  'periodo',  
+        'period'                =>  'periodo',
+        'area.name'             =>  'area',  
+        'area.id'               =>  'area'  
     ],
 
 ];

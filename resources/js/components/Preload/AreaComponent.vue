@@ -41,7 +41,7 @@
 			            </thead>
 			            <tbody>
 			            	<tr v-if="!table_data.length > 0">
-			                    <td colspan="5" class="bg-secondary text-center text-light">No se encontraron datos.</td>
+			                    <td colspan="6" class="bg-secondary text-center text-light">No se encontraron datos.</td>
 			                </tr>
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
@@ -94,7 +94,7 @@
                             </div>
                         </div>
                         <div class="block-content font-size-sm">
-                            <form class="row">
+                            <form class="row" @keydown.enter.prevent="storeData">
                                 <!-- col-12 -->
                                 <div class="col-8">
                                 	<div class="form-group">

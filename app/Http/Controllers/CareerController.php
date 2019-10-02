@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Validator;
 use App\Career;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CareerController extends Controller
 {
@@ -57,8 +58,10 @@ class CareerController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
-            'area'=>'required'
+            'area.id'=>'required',
+            'area.name'=>'required'
         ]);
+
         if ($request->id == 0) {
             $carrera = Career::create([
                 'name'=>$request->name,

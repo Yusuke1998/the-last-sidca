@@ -75,7 +75,7 @@
                             </div>
                         </div>
                         <div class="block-content font-size-sm">
-                            <form class="row">
+                            <form class="row" @keydown.enter.prevent="storeData">
                                 <div class="col-12">
                                 	<div class="form-group">
                                         <label>Periodo(s)</label>
