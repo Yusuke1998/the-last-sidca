@@ -70,7 +70,7 @@
                     </li>
                 </ul>
             </li>
-            <li class="nav-main-item">
+            <li class="nav-main-item {{ Sidebar::here(['profesores']) }}">
                 <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
                     <i class="nav-main-link-icon si si-energy"></i>
                     <span class="nav-main-link-name">PROFESOR</span>
@@ -83,7 +83,7 @@
                     </li>
                 </ul>
             </li>
-            <li class="nav-main-item">
+            <li class="nav-main-item {{ Sidebar::here(['usuarios']) }}">
                 <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
                     <i class="nav-main-link-icon si si-energy"></i>
                     <span class="nav-main-link-name">USUARIO</span>
@@ -96,7 +96,7 @@
                     </li>
                 </ul>
             </li>
-            <li class="nav-main-item">
+            <li class="nav-main-item {{ Sidebar::preload_here(['areas','carreras','nucleos','sedes','periodos','programas','asignaturas','titulos','universidades'])}}">
                 <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
                     <i class="nav-main-link-icon si si-energy"></i>
                     <span class="nav-main-link-name">PRECARGA DE DATOS</span>
