@@ -32,7 +32,8 @@
 			            <thead>
 			                <tr>
 			                    <th>#</th>
-			                    <th>Nombre</th>
+                                <th>Nombre</th>
+			                    <th>Siglas</th>
                                 <th>Carreras(s)</th>
 			                    <th>Nucleo(s)</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
@@ -44,7 +45,8 @@
 			                </tr>
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
-			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
+                                <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
+			                    <td class="font-w600 font-size-sm" v-text="item_table.acronym"></td>
 			                    <td v-if="item_table.careers.length > 0" class="font-w600 font-size-sm">
                                     <ul>
                                         <li v-for="item in item_table.careers" v-text="item.name"></li>
@@ -94,11 +96,17 @@
                         <div class="block-content font-size-sm">
                             <form class="row">
                                 <!-- col-12 -->
-                                <div class="col-12">
+                                <div class="col-8">
                                 	<div class="form-group">
                                 		<label for="">Nombre</label>
                                 		<input type="text" class="form-control" v-model="AreaData.name">
                                 	</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label for="">Siglas</label>
+                                        <input type="text" class="form-control" v-model="AreaData.acronym">
+                                    </div>
                                 </div>
                                 <!-- col-12 -->
                             </form>
@@ -128,7 +136,8 @@ export default {
             list_careers:[],
             AreaData:{
             	id: 0,
-                name: null
+                name: null,
+                acronym: null
             },
 
             // DATOS DEL DATATABLE 
@@ -162,7 +171,8 @@ export default {
 		AreaDataBlank(){
 			this.AreaData={
             	id: 0,
-                name: null
+                name: null,
+                acronym: null
             }
 		},
 		getData(page)
@@ -257,7 +267,8 @@ export default {
         	if (type == 'edit' && model !== null) {
         		this.AreaData = {
         			id:model.id,
-        			name:model.name
+                    name:model.name,
+        			acronym:model.acronym
         		}
         	}else{
                 this.AreaDataBlank()

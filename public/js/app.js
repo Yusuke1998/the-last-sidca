@@ -5651,6 +5651,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.getData();
@@ -5662,7 +5670,8 @@ __webpack_require__.r(__webpack_exports__);
       list_careers: [],
       AreaData: {
         id: 0,
-        name: null
+        name: null,
+        acronym: null
       },
       // DATOS DEL DATATABLE 
       table_data: [],
@@ -5696,7 +5705,8 @@ __webpack_require__.r(__webpack_exports__);
     AreaDataBlank: function AreaDataBlank() {
       this.AreaData = {
         id: 0,
-        name: null
+        name: null,
+        acronym: null
       };
     },
     getData: function getData(page) {
@@ -5799,7 +5809,8 @@ __webpack_require__.r(__webpack_exports__);
       if (type == 'edit' && model !== null) {
         this.AreaData = {
           id: model.id,
-          name: model.name
+          name: model.name,
+          acronym: model.acronym
         };
       } else {
         this.AreaDataBlank();
@@ -78794,6 +78805,13 @@ var render = function() {
                             domProps: { textContent: _vm._s(item_table.name) }
                           }),
                           _vm._v(" "),
+                          _c("td", {
+                            staticClass: "font-w600 font-size-sm",
+                            domProps: {
+                              textContent: _vm._s(item_table.acronym)
+                            }
+                          }),
+                          _vm._v(" "),
                           item_table.careers.length > 0
                             ? _c(
                                 "td",
@@ -78937,7 +78955,7 @@ var render = function() {
                   _vm._v(" "),
                   _c("div", { staticClass: "block-content font-size-sm" }, [
                     _c("form", { staticClass: "row" }, [
-                      _c("div", { staticClass: "col-12" }, [
+                      _c("div", { staticClass: "col-8" }, [
                         _c("div", { staticClass: "form-group" }, [
                           _c("label", { attrs: { for: "" } }, [
                             _vm._v("Nombre")
@@ -78963,6 +78981,40 @@ var render = function() {
                                 _vm.$set(
                                   _vm.AreaData,
                                   "name",
+                                  $event.target.value
+                                )
+                              }
+                            }
+                          })
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-4" }, [
+                        _c("div", { staticClass: "form-group" }, [
+                          _c("label", { attrs: { for: "" } }, [
+                            _vm._v("Siglas")
+                          ]),
+                          _vm._v(" "),
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.AreaData.acronym,
+                                expression: "AreaData.acronym"
+                              }
+                            ],
+                            staticClass: "form-control",
+                            attrs: { type: "text" },
+                            domProps: { value: _vm.AreaData.acronym },
+                            on: {
+                              input: function($event) {
+                                if ($event.target.composing) {
+                                  return
+                                }
+                                _vm.$set(
+                                  _vm.AreaData,
+                                  "acronym",
                                   $event.target.value
                                 )
                               }
@@ -79053,6 +79105,8 @@ var staticRenderFns = [
         _c("th", [_vm._v("#")]),
         _vm._v(" "),
         _c("th", [_vm._v("Nombre")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Siglas")]),
         _vm._v(" "),
         _c("th", [_vm._v("Carreras(s)")]),
         _vm._v(" "),

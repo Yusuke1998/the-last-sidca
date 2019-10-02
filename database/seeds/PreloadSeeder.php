@@ -39,11 +39,11 @@ class PreloadSeeder extends Seeder
         $universidades = 
         [
             [
-                'name'=>'Universidad Nacional Experimental de los Llanos Centraler',
+                'name'=>'Universidad Nacional Experimental de los Llanos Centrales Rómulo Gallegos',
                 'acronym'=>'UNERG'
             ],
             [
-                'name'=>'Universidad Nacional Experimental Simon Rodriguez',
+                'name'=>'Universidad Nacional Experimental Simón Rodríguez',
                 'acronym'=>'UNESR'
             ]
         ];

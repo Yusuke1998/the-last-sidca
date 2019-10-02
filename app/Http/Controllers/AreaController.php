@@ -42,6 +42,7 @@ class AreaController extends Controller
         if (!is_null($search) && !empty($search)) {
             $areas
             ->where('name','like','%'.$search.'%')
+            ->orWhere('acronym','like','%'.$search.'%')
             ->orWhereHas('careers',function ($query) use ($search) {
                 $query->where('name','like','%'.$search.'%');
             })
@@ -60,6 +61,7 @@ class AreaController extends Controller
         if ($request->id == 0) {
             $area = Area::create([
                 'name'=>$request->name,
+                'acronym'=>$request->acronym,
             ]);
         }
         return;
@@ -73,7 +75,8 @@ class AreaController extends Controller
         if ($request->id > 0) {
             $area = Area::findOrFail($request->id);
             $area->update([
-                'name'=>$request->name
+                'name'=>$request->name,
+                'acronym'=>$request->acronym,
             ]);
         }
     }

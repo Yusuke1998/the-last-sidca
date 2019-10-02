@@ -16,7 +16,8 @@ mix.js('resources/js/app.js', 'public/js')
    .styles([
         'public/assets/css/oneui.css',
         'public/assets/css/alertify.min.css',
-        'public/assets/css/default.min.css'
+        'public/assets/css/default.min.css',
+        'public/assets/css/custom.css'
     ],'public/css/all.css')
    .scripts([
         'public/assets/js/core/bootstrap.bundle.min.js',
