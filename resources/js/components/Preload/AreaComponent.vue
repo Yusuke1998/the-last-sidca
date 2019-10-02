@@ -33,6 +33,7 @@
 			                <tr>
 			                    <th>#</th>
 			                    <th>Nombre</th>
+                                <th>Carreras(s)</th>
 			                    <th>Nucleo(s)</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
@@ -44,12 +45,18 @@
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
-			                    <td v-if="item_table.cores.length > 0" class="font-w600 font-size-sm">
+			                    <td v-if="item_table.careers.length > 0" class="font-w600 font-size-sm">
+                                    <ul>
+                                        <li v-for="item in item_table.careers" v-text="item.name"></li>
+                                    </ul>
+                                </td>
+                                <td v-else>No tiene carreras!</td>
+                                <td v-if="item_table.cores.length > 0" class="font-w600 font-size-sm">
                                     <ul>
                                         <li v-for="item in item_table.cores" v-text="item.name"></li>
                                     </ul>
                                 </td>
-                                <td v-else>No esta asignada a ningun nucleo!</td>
+                                <td v-else>No tiene nucleos!</td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
 			                            <button type="button" @click="showModal('AreaModal',item_table,'Editar Area','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Eliminar">
@@ -73,7 +80,7 @@
 		</div>
 
         <div class="modal fade" id="AreaModal" tabindex="-1" role="dialog" aria-labelledby="AreaModal" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-popout modal-xl" role="document">
+            <div class="modal-dialog modal-dialog-popout modal-md" role="document">
                 <div class="modal-content">
                     <div class="block block-themed block-transparent mb-0">
                         <div class="block-header bg-primary-dark">
@@ -87,16 +94,10 @@
                         <div class="block-content font-size-sm">
                             <form class="row">
                                 <!-- col-12 -->
-                                <div class="col-8">
+                                <div class="col-12">
                                 	<div class="form-group">
                                 		<label for="">Nombre</label>
                                 		<input type="text" class="form-control" v-model="AreaData.name">
-                                	</div>
-                                </div>
-                                <div class="col-4">
-                                	<div class="form-group">
-                                		<label>Nucleo(s)</label>
-                                    	<v-select multiple label="name" v-model="AreaData.cores" :options="list_cores"></v-select>
                                 	</div>
                                 </div>
                                 <!-- col-12 -->
@@ -119,16 +120,15 @@
 export default {
     mounted(){
     	this.getData();
-    	this.getCores();
+    	this.getCareers();
     },
     data() {
 		return {
             // AUXILIARES
-            list_cores:[],
+            list_careers:[],
             AreaData:{
             	id: 0,
-                name: null,
-                cores:[]
+                name: null
             },
 
             // DATOS DEL DATATABLE 
@@ -150,11 +150,11 @@ export default {
         }
 	},
 	methods:{
-		getCores()
+		getCareers()
         {
-            let url = "/get-cores"
+            let url = "/get-careers"
             axios.get(url).then(response => {
-                this.list_cores = response.data
+                this.list_careers = response.data
             }).catch(errors =>{
                 console.log(errors.response)
             })
@@ -162,8 +162,7 @@ export default {
 		AreaDataBlank(){
 			this.AreaData={
             	id: 0,
-                name: null,
-                cores:[]
+                name: null
             }
 		},
 		getData(page)
@@ -177,7 +176,7 @@ export default {
                 this.table_pagination	= response.data.pagination
                 this.table_data			= response.data.table.data
             	this.search_table		= ''
-                this.$alertify.success('areas Cargados')
+                this.$alertify.success('Areas Cargadas')
             }).catch(errors =>{
                 console.log(errors)
             })
@@ -240,7 +239,7 @@ export default {
 		            }).then(response => {
 		                swal.close()
 		                this.getData()
-		        		this.$alertify.success('El area fue eliminado con exito')
+		        		this.$alertify.success('El area fue eliminada con exito')
 		            }).catch(errors => {
 		                swal.close()
 		            })
@@ -258,8 +257,7 @@ export default {
         	if (type == 'edit' && model !== null) {
         		this.AreaData = {
         			id:model.id,
-        			name:model.name,
-        			cores:model.cores
+        			name:model.name
         		}
         	}else{
                 this.AreaDataBlank()

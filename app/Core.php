@@ -6,16 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Core extends Model
 {
-    protected $fillable = ['name','headquarter_id'];
+    protected $fillable = ['name','area_id'];
 
-    public function headquarter()
+    public function area()
     {
-    	return $this->belongsTo(Headquarter::class);
-    }
-
-    public function areas()
-    {
-    	return $this->belongsToMany(Area::class);
+    	return $this->belongsTo(Area::class);
     }
 
     public function histories()

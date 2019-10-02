@@ -37,12 +37,12 @@ class CareerController extends Controller
     public function filterCareerDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $carreras = Career::with('areas');
+        $carreras = Career::with('area');
 
         if (!is_null($search) && !empty($search)) {
             $carreras
             ->where('name','like','%'.$search.'%')
-            ->orWhereHas('areas',function ($query) use ($search) {
+            ->orWhereHas('area',function ($query) use ($search) {
                 $query
                 ->where('name','like','%'.$search.'%')
                 ->orWhereHas('cores',function ($sudQuery) use ($search) {
@@ -57,15 +57,13 @@ class CareerController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
-            'areas'=>'required'
+            'area'=>'required'
         ]);
-        $areas = collect($request->areas);
-        $ids = $areas->pluck('id');
         if ($request->id == 0) {
             $carrera = Career::create([
                 'name'=>$request->name,
+                'area_id'=>$request->area['id'],
             ]);
-            $carrera->areas()->sync($ids);
         }
         return;
     }
@@ -74,16 +72,14 @@ class CareerController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
-            'areas'=>'required'
+            'area'=>'required'
         ]);
-        $areas = collect($request->areas);
-        $ids = $areas->pluck('id');
         if ($request->id > 0) {
             $carrera = Career::findOrFail($request->id);
             $carrera->update([
-                'name'=>$request->name
+                'name'=>$request->name,
+                'area_id'=>$request->area['id'],
             ]);
-            $carrera->areas()->sync($ids);
         }
     }
 

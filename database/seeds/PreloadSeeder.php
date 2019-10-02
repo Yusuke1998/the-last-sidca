@@ -19,21 +19,21 @@ class PreloadSeeder extends Seeder
         foreach ($sedes as $key => $sede) {
         	Headquarter::create(['name'=>$sede]);
         }
-        $sede = Headquarter::first();
-
-        $nucleos = ['Mellado','Calabozo','Ortiz'];
-        foreach ($nucleos as $key => $nucleo) {
-            Core::create(['name'=>$nucleo,'headquarter_id'=>$sede->id]);
-        }
 
         $areas = ['Sistemas','Agronomia','Medicina'];
         foreach ($areas as $key => $area) {
             Area::create(['name'=>$area]);
         }
+        
+        $area = Area::first();
+        $nucleos = ['Mellado','Calabozo','Ortiz'];
+        foreach ($nucleos as $key => $nucleo) {
+            Core::create(['name'=>$nucleo,'area_id'=>$area->id]);
+        }
 
         $carreras = ['Ingenieria en Informatica','Ingenieria Agronomica','Ingenieria en Hidrocarburos'];
         foreach ($carreras as $key => $carrera) {
-            Career::create(['name'=>$carrera]);
+            Career::create(['name'=>$carrera,'area_id'=>$area->id]);
         }
 
         $universidades = 

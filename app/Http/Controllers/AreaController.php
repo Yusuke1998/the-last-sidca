@@ -37,11 +37,14 @@ class AreaController extends Controller
     public function filterAreaDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $areas = Area::with('cores');
+        $areas = Area::with('careers','cores');
 
         if (!is_null($search) && !empty($search)) {
             $areas
             ->where('name','like','%'.$search.'%')
+            ->orWhereHas('careers',function ($query) use ($search) {
+                $query->where('name','like','%'.$search.'%');
+            })
             ->orWhereHas('cores',function ($query) use ($search) {
                 $query->where('name','like','%'.$search.'%');
             });
@@ -53,15 +56,11 @@ class AreaController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
-            'cores'=>'required'
         ]);
-        $cores = collect($request->cores);
-        $ids = $cores->pluck('id');
         if ($request->id == 0) {
             $area = Area::create([
                 'name'=>$request->name,
             ]);
-            $area->cores()->sync($ids);
         }
         return;
     }
@@ -70,16 +69,12 @@ class AreaController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
-            'cores'=>'required'
         ]);
-        $cores = collect($request->cores);
-        $ids = $cores->pluck('id');
         if ($request->id > 0) {
             $area = Area::findOrFail($request->id);
             $area->update([
                 'name'=>$request->name
             ]);
-            $area->cores()->sync($ids);
         }
     }
 

@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Career extends Model
 {
-    protected $fillable = ['name'];
+    protected $fillable = ['name','area_id'];
 
-    public function areas()
+    public function area()
     {
-    	return $this->belongsToMany(Area::class);
+    	return $this->belongsTo(Area::class);
     }
 
     public function subjects()

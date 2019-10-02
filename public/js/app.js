@@ -5650,19 +5650,19 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.getData();
-    this.getCores();
+    this.getCareers();
   },
   data: function data() {
     return {
       // AUXILIARES
-      list_cores: [],
+      list_careers: [],
       AreaData: {
         id: 0,
-        name: null,
-        cores: []
+        name: null
       },
       // DATOS DEL DATATABLE 
       table_data: [],
@@ -5683,12 +5683,12 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
-    getCores: function getCores() {
+    getCareers: function getCareers() {
       var _this = this;
 
-      var url = "/get-cores";
+      var url = "/get-careers";
       axios.get(url).then(function (response) {
-        _this.list_cores = response.data;
+        _this.list_careers = response.data;
       })["catch"](function (errors) {
         console.log(errors.response);
       });
@@ -5696,8 +5696,7 @@ __webpack_require__.r(__webpack_exports__);
     AreaDataBlank: function AreaDataBlank() {
       this.AreaData = {
         id: 0,
-        name: null,
-        cores: []
+        name: null
       };
     },
     getData: function getData(page) {
@@ -5713,7 +5712,7 @@ __webpack_require__.r(__webpack_exports__);
         _this2.table_data = response.data.table.data;
         _this2.search_table = '';
 
-        _this2.$alertify.success('areas Cargados');
+        _this2.$alertify.success('Areas Cargadas');
       })["catch"](function (errors) {
         console.log(errors);
       });
@@ -5782,7 +5781,7 @@ __webpack_require__.r(__webpack_exports__);
 
             _this5.getData();
 
-            _this5.$alertify.success('El area fue eliminado con exito');
+            _this5.$alertify.success('El area fue eliminada con exito');
           })["catch"](function (errors) {
             swal.close();
           });
@@ -5800,8 +5799,7 @@ __webpack_require__.r(__webpack_exports__);
       if (type == 'edit' && model !== null) {
         this.AreaData = {
           id: model.id,
-          name: model.name,
-          cores: model.cores
+          name: model.name
         };
       } else {
         this.AreaDataBlank();
@@ -5935,11 +5933,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.getData();
@@ -5952,7 +5945,10 @@ __webpack_require__.r(__webpack_exports__);
       CareerData: {
         id: 0,
         name: null,
-        areas: []
+        area: {
+          id: 0,
+          name: null
+        }
       },
       // DATOS DEL DATATABLE 
       table_data: [],
@@ -5978,7 +5974,7 @@ __webpack_require__.r(__webpack_exports__);
 
       var url = "/get-areas";
       axios.get(url).then(function (response) {
-        _this.list_cores = response.data;
+        _this.list_areas = response.data;
       })["catch"](function (errors) {
         console.log(errors.response);
       });
@@ -5987,7 +5983,10 @@ __webpack_require__.r(__webpack_exports__);
       this.CareerData = {
         id: 0,
         name: null,
-        areas: []
+        area: {
+          id: 0,
+          name: null
+        }
       };
     },
     getData: function getData(page) {
@@ -6084,6 +6083,7 @@ __webpack_require__.r(__webpack_exports__);
       this.getData(page);
     },
     showModal: function showModal(modal_id, model, option, type) {
+      console.log(model);
       this.modal_option = option;
       this.modal_type = type;
 
@@ -6091,7 +6091,10 @@ __webpack_require__.r(__webpack_exports__);
         this.CareerData = {
           id: model.id,
           name: model.name,
-          areas: model.areas
+          area: {
+            id: model.area.id,
+            name: model.area.name
+          }
         };
       } else {
         this.CareerDataBlank();
@@ -6228,16 +6231,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.getData();
-    this.getHeadquarters();
+    this.getAreas();
   },
   data: function data() {
     return {
       // AUXILIARES
-      list_headquarters: [],
+      list_areas: [],
       CoreData: {
         id: 0,
         name: null,
-        headquarter: {
+        area: {
           id: 0,
           name: null
         }
@@ -6261,12 +6264,12 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
-    getHeadquarters: function getHeadquarters() {
+    getAreas: function getAreas() {
       var _this = this;
 
-      var url = "/get-headquarters";
+      var url = "/get-areas";
       axios.get(url).then(function (response) {
-        _this.list_headquarters = response.data;
+        _this.list_areas = response.data;
       })["catch"](function (errors) {
         console.log(errors.response);
       });
@@ -6275,7 +6278,7 @@ __webpack_require__.r(__webpack_exports__);
       this.CoreData = {
         id: 0,
         name: null,
-        headquarter: {
+        area: {
           id: 0,
           name: null
         }
@@ -6382,9 +6385,9 @@ __webpack_require__.r(__webpack_exports__);
         this.CoreData = {
           id: model.id,
           name: model.name,
-          headquarter: {
-            id: model.headquarter.id,
-            name: model.headquarter.name
+          area: {
+            id: model.area.id,
+            name: model.area.name
           }
         };
       } else {
@@ -78791,6 +78794,26 @@ var render = function() {
                             domProps: { textContent: _vm._s(item_table.name) }
                           }),
                           _vm._v(" "),
+                          item_table.careers.length > 0
+                            ? _c(
+                                "td",
+                                { staticClass: "font-w600 font-size-sm" },
+                                [
+                                  _c(
+                                    "ul",
+                                    _vm._l(item_table.careers, function(item) {
+                                      return _c("li", {
+                                        domProps: {
+                                          textContent: _vm._s(item.name)
+                                        }
+                                      })
+                                    }),
+                                    0
+                                  )
+                                ]
+                              )
+                            : _c("td", [_vm._v("No tiene carreras!")]),
+                          _vm._v(" "),
                           item_table.cores.length > 0
                             ? _c(
                                 "td",
@@ -78809,9 +78832,7 @@ var render = function() {
                                   )
                                 ]
                               )
-                            : _c("td", [
-                                _vm._v("No esta asignada a ningun nucleo!")
-                              ]),
+                            : _c("td", [_vm._v("No tiene nucleos!")]),
                           _vm._v(" "),
                           _c("td", { staticClass: "text-center" }, [
                             _c("div", { staticClass: "btn-group" }, [
@@ -78896,7 +78917,7 @@ var render = function() {
         _c(
           "div",
           {
-            staticClass: "modal-dialog modal-dialog-popout modal-xl",
+            staticClass: "modal-dialog modal-dialog-popout modal-md",
             attrs: { role: "document" }
           },
           [
@@ -78916,7 +78937,7 @@ var render = function() {
                   _vm._v(" "),
                   _c("div", { staticClass: "block-content font-size-sm" }, [
                     _c("form", { staticClass: "row" }, [
-                      _c("div", { staticClass: "col-8" }, [
+                      _c("div", { staticClass: "col-12" }, [
                         _c("div", { staticClass: "form-group" }, [
                           _c("label", { attrs: { for: "" } }, [
                             _vm._v("Nombre")
@@ -78948,32 +78969,6 @@ var render = function() {
                             }
                           })
                         ])
-                      ]),
-                      _vm._v(" "),
-                      _c("div", { staticClass: "col-4" }, [
-                        _c(
-                          "div",
-                          { staticClass: "form-group" },
-                          [
-                            _c("label", [_vm._v("Nucleo(s)")]),
-                            _vm._v(" "),
-                            _c("v-select", {
-                              attrs: {
-                                multiple: "",
-                                label: "name",
-                                options: _vm.list_cores
-                              },
-                              model: {
-                                value: _vm.AreaData.cores,
-                                callback: function($$v) {
-                                  _vm.$set(_vm.AreaData, "cores", $$v)
-                                },
-                                expression: "AreaData.cores"
-                              }
-                            })
-                          ],
-                          1
-                        )
                       ])
                     ])
                   ]),
@@ -79058,6 +79053,8 @@ var staticRenderFns = [
         _c("th", [_vm._v("#")]),
         _vm._v(" "),
         _c("th", [_vm._v("Nombre")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Carreras(s)")]),
         _vm._v(" "),
         _c("th", [_vm._v("Nucleo(s)")]),
         _vm._v(" "),
@@ -79273,27 +79270,12 @@ var render = function() {
                             domProps: { textContent: _vm._s(item_table.name) }
                           }),
                           _vm._v(" "),
-                          item_table.areas.length > 0
-                            ? _c(
-                                "td",
-                                { staticClass: "font-w600 font-size-sm" },
-                                [
-                                  _c(
-                                    "ul",
-                                    _vm._l(item_table.areas, function(item) {
-                                      return _c("li", {
-                                        domProps: {
-                                          textContent: _vm._s(item.name)
-                                        }
-                                      })
-                                    }),
-                                    0
-                                  )
-                                ]
-                              )
-                            : _c("td", [
-                                _vm._v("No esta asignada a ningun area!")
-                              ]),
+                          _c("td", {
+                            staticClass: "font-w600 font-size-sm",
+                            domProps: {
+                              textContent: _vm._s(item_table.area.name)
+                            }
+                          }),
                           _vm._v(" "),
                           _c("td", { staticClass: "text-center" }, [
                             _c("div", { staticClass: "btn-group" }, [
@@ -79437,20 +79419,16 @@ var render = function() {
                           "div",
                           { staticClass: "form-group" },
                           [
-                            _c("label", [_vm._v("Area(s)")]),
+                            _c("label", [_vm._v("Areas")]),
                             _vm._v(" "),
                             _c("v-select", {
-                              attrs: {
-                                multiple: "",
-                                label: "name",
-                                options: _vm.list_cores
-                              },
+                              attrs: { label: "name", options: _vm.list_areas },
                               model: {
-                                value: _vm.CareerData.areas,
+                                value: _vm.CareerData.area,
                                 callback: function($$v) {
-                                  _vm.$set(_vm.CareerData, "areas", $$v)
+                                  _vm.$set(_vm.CareerData, "area", $$v)
                                 },
-                                expression: "CareerData.areas"
+                                expression: "CareerData.area"
                               }
                             })
                           ],
@@ -79541,7 +79519,7 @@ var staticRenderFns = [
         _vm._v(" "),
         _c("th", [_vm._v("Nombre")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Areas(s)")]),
+        _c("th", [_vm._v("Area")]),
         _vm._v(" "),
         _c(
           "th",
@@ -79753,7 +79731,7 @@ var render = function() {
                           _c("td", {
                             staticClass: "font-w600 font-size-sm",
                             domProps: {
-                              textContent: _vm._s(item_table.headquarter.name)
+                              textContent: _vm._s(item_table.area.name)
                             }
                           }),
                           _vm._v(" "),
@@ -79899,19 +79877,16 @@ var render = function() {
                           "div",
                           { staticClass: "form-group" },
                           [
-                            _c("label", [_vm._v("Sede")]),
+                            _c("label", [_vm._v("Area")]),
                             _vm._v(" "),
                             _c("v-select", {
-                              attrs: {
-                                label: "name",
-                                options: _vm.list_headquarters
-                              },
+                              attrs: { label: "name", options: _vm.list_areas },
                               model: {
-                                value: _vm.CoreData.headquarter,
+                                value: _vm.CoreData.area,
                                 callback: function($$v) {
-                                  _vm.$set(_vm.CoreData, "headquarter", $$v)
+                                  _vm.$set(_vm.CoreData, "area", $$v)
                                 },
-                                expression: "CoreData.headquarter"
+                                expression: "CoreData.area"
                               }
                             })
                           ],
@@ -80002,7 +79977,7 @@ var staticRenderFns = [
         _vm._v(" "),
         _c("th", [_vm._v("Nombre")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Sede")]),
+        _c("th", [_vm._v("Area")]),
         _vm._v(" "),
         _c(
           "th",

@@ -33,7 +33,7 @@
 			                <tr>
 			                    <th>#</th>
 			                    <th>Nombre</th>
-			                    <th>Areas(s)</th>
+			                    <th>Area</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
@@ -43,13 +43,8 @@
 			                </tr>
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
-			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
-			                    <td v-if="item_table.areas.length > 0" class="font-w600 font-size-sm">
-                                    <ul>
-                                        <li v-for="item in item_table.areas" v-text="item.name"></li>
-                                    </ul>
-                                </td>
-                                <td v-else>No esta asignada a ningun area!</td>
+                                <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
+			                    <td class="font-w600 font-size-sm" v-text="item_table.area.name"></td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
 			                            <button type="button" @click="showModal('CareerModal',item_table,'Editar Carrera','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Edit Client">
@@ -95,8 +90,8 @@
                                 </div>
                                 <div class="col-4">
                                 	<div class="form-group">
-                                		<label>Area(s)</label>
-                                    	<v-select multiple label="name" v-model="CareerData.areas" :options="list_cores"></v-select>
+                                		<label>Areas</label>
+                                    	<v-select label="name" v-model="CareerData.area" :options="list_areas"></v-select>
                                 	</div>
                                 </div>
                                 <!-- col-12 -->
@@ -128,7 +123,10 @@ export default {
             CareerData:{
             	id: 0,
                 name: null,
-                areas:[]
+                area:{
+                    id:0,
+                    name:null
+                }
             },
 
             // DATOS DEL DATATABLE 
@@ -154,7 +152,7 @@ export default {
         {
             let url = "/get-areas"
             axios.get(url).then(response => {
-                this.list_cores = response.data
+                this.list_areas = response.data
             }).catch(errors =>{
                 console.log(errors.response)
             })
@@ -163,7 +161,10 @@ export default {
 			this.CareerData={
             	id: 0,
                 name: null,
-                areas:[]
+                area:{
+                    id:0,
+                    name:null
+                }
             }
 		},
 		getData(page)
@@ -253,13 +254,17 @@ export default {
             this.getData(page);
         },
         showModal(modal_id, model,option, type){
+            console.log(model)
         	this.modal_option	= option
         	this.modal_type		= type
         	if (type == 'edit' && model !== null) {
         		this.CareerData = {
         			id:model.id,
         			name:model.name,
-        			areas:model.areas
+        			area:{
+                        id:model.area.id,
+                        name:model.area.name
+                    }
         		}
         	}else{
                 this.CareerDataBlank()

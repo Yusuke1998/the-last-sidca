@@ -37,12 +37,12 @@ class CoreController extends Controller
     public function filterCoreDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $cores = Core::with('headquarter');
+        $cores = Core::with('area');
 
         if (!is_null($search) && !empty($search)) {
             $cores
             ->where('name','like','%'.$search.'%')
-            ->orWhereHas('headquarter',function ($query) use ($search) {
+            ->orWhereHas('area',function ($query) use ($search) {
                 $query->where('name','like','%'.$search.'%');
             });
         }
@@ -53,13 +53,13 @@ class CoreController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
-            'headquarter'=>'required'
+            'area'=>'required'
         ]);
         
         if ($request->id == 0) {
             Core::create([
                 'name'=>$request->name,
-                'headquarter_id'=>$request->headquarter['id']
+                'area_id'=>$request->area['id']
             ]);
         }
         return;
@@ -69,14 +69,14 @@ class CoreController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
-            'headquarter'=>'required'
+            'area'=>'required'
         ]);
 
         if ($request->id > 0) {
             Core::findOrFail($request->id)
                 ->update([
                     'name'=>$request->name,
-                    'headquarter_id'=>$request->headquarter['id']
+                    'area_id'=>$request->area['id']
                 ]);
         }
         return;

@@ -33,7 +33,7 @@
 			                <tr>
 			                    <th>#</th>
 			                    <th>Nombre</th>
-			                    <th>Sede</th>
+			                    <th>Area</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
@@ -44,7 +44,7 @@
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
-			                    <td class="font-w600 font-size-sm" v-text="item_table.headquarter.name"></td>
+			                    <td class="font-w600 font-size-sm" v-text="item_table.area.name"></td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
 			                            <button type="button" @click="showModal('CoreModal',item_table,'Editar Nucleo','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
@@ -90,8 +90,8 @@
                                 </div>
                                 <div class="col-4">
                                 	<div class="form-group">
-                                		<label>Sede</label>
-                                    	<v-select label="name" v-model="CoreData.headquarter" :options="list_headquarters"></v-select>
+                                		<label>Area</label>
+                                    	<v-select label="name" v-model="CoreData.area" :options="list_areas"></v-select>
                                 	</div>
                                 </div>
                                 <!-- col-12 -->
@@ -114,16 +114,16 @@
 export default {
     mounted(){
     	this.getData();
-    	this.getHeadquarters();
+    	this.getAreas();
     },
     data() {
 		return {
             // AUXILIARES
-            list_headquarters:[],
+            list_areas:[],
             CoreData:{
             	id: 0,
                 name: null,
-                headquarter:{
+                area:{
                 	id:0,
                 	name:null
                 }
@@ -148,11 +148,11 @@ export default {
         }
 	},
 	methods:{
-		getHeadquarters()
+		getAreas()
         {
-            let url = "/get-headquarters"
+            let url = "/get-areas"
             axios.get(url).then(response => {
-                this.list_headquarters = response.data
+                this.list_areas = response.data
             }).catch(errors =>{
                 console.log(errors.response)
             })
@@ -161,7 +161,7 @@ export default {
 			this.CoreData={
             	id: 0,
                 name: null,
-                headquarter:{
+                area:{
                 	id:0,
                 	name:null
                 }
@@ -260,9 +260,9 @@ export default {
         		this.CoreData = {
         			id:model.id,
         			name:model.name,
-        			headquarter:{
-	                	id:model.headquarter.id,
-	                	name:model.headquarter.name
+        			area:{
+	                	id:model.area.id,
+	                	name:model.area.name
 	                }
         		}
         	}else{

@@ -10,12 +10,12 @@ class Area extends Model
 
     public function cores()
     {
-    	return $this->belongsToMany(Core::class);
+    	return $this->hasMany(Core::class);
     }
 
     public function careers()
     {
-    	return $this->belongsToMany(Career::class);
+    	return $this->hasMany(Career::class);
     }
 
     public function histories()
