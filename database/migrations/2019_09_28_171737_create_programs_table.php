@@ -11,14 +11,6 @@ class CreateProgramsTable extends Migration
         Schema::create('programs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            
-            $table->bigInteger('career_id')->unsigned(); #carrera
-            $table->foreign('career_id')
-                ->references('id')
-                ->on('careers')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-
             $table->timestamps();
         });
     }

@@ -12,4 +12,9 @@ class Program extends Model
     {
     	return $this->hasMany(Historic::class);
     }
+
+    public function careers()
+    {
+    	return $this->belongsToMany(Career::class);
+    }
 }

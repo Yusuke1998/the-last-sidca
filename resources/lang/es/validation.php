@@ -171,6 +171,7 @@ return [
         'headquarter'           =>  'sede',
         'people'                =>  'personas',  
         'person'                =>  'persona',  
+        'period'                =>  'periodo',  
     ],
 
 ];

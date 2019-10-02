@@ -8,13 +8,17 @@ Vue.component('chart-component', require('./components/Charts/ChartComponent.vue
 Vue.component('user-component', require('./components/Users/UserComponent.vue').default);
 Vue.component('profile-component', require('./components/Users/ProfileComponent.vue').default);
 Vue.component('teacher-component', require('./components/Teachers/TeacherComponent.vue').default);
-Vue.component('headquarter-component', require('./components/Preload/HeadquarterComponent.vue').default);
-Vue.component('core-component', require('./components/Preload/CoreComponent.vue').default);
-Vue.component('area-component', require('./components/Preload/AreaComponent.vue').default);
-Vue.component('career-component', require('./components/Preload/CareerComponent.vue').default);
-Vue.component('subject-component', require('./components/Preload/SubjectComponent.vue').default);
-Vue.component('title-component', require('./components/Preload/TitleComponent.vue').default);
+
+// PRECARGA
 Vue.component('university-component', require('./components/Preload/UniversityComponent.vue').default);
+Vue.component('title-component', require('./components/Preload/TitleComponent.vue').default);
+Vue.component('period-component', require('./components/Preload/PeriodComponent.vue').default);
+Vue.component('headquarter-component', require('./components/Preload/HeadquarterComponent.vue').default);
+Vue.component('area-component', require('./components/Preload/AreaComponent.vue').default);
+Vue.component('core-component', require('./components/Preload/CoreComponent.vue').default);
+Vue.component('career-component', require('./components/Preload/CareerComponent.vue').default);
+Vue.component('program-component', require('./components/Preload/ProgramComponent.vue').default);
+Vue.component('subject-component', require('./components/Preload/SubjectComponent.vue').default);
 
 /* PLUGINS */
 import swal from 'sweetalert';

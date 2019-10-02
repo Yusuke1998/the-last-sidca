@@ -103,38 +103,8 @@
                 </a>
                 <ul class="nav-main-submenu">
                     <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/sedes')?'active':'' }}" href="{{ route('headquarter.index') }}">
-                            <span class="nav-main-link-name">Sedes</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/nucleos')?'active':'' }}" href="{{ route('core.index') }}">
-                            <span class="nav-main-link-name">Nucleos</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/areas')?'active':'' }}" href="{{ route('area.index') }}">
-                            <span class="nav-main-link-name">Areas</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/carreras')?'active':'' }}" href="{{ route('career.index') }}">
-                            <span class="nav-main-link-name">Carreras</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/programas')?'active':'' }}" href="#">
-                            <span class="nav-main-link-name">Programas</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/periodos')?'active':'' }}" href="#">
-                            <span class="nav-main-link-name">Periodos</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/asignaturas')?'active':'' }}" href="{{ route('subject.index') }}">
-                            <span class="nav-main-link-name">Asignaturas</span>
+                        <a class="nav-main-link {{ request()->is('precarga/universidades')?'active':'' }}" href="{{ route('university.index') }}">
+                            <span class="nav-main-link-name">Universidades</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
@@ -143,8 +113,38 @@
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/universidades')?'active':'' }}" href="{{ route('universities.index') }}">
-                            <span class="nav-main-link-name">Universidades</span>
+                        <a class="nav-main-link {{ request()->is('precarga/periodos')?'active':'' }}" href="{{ route('period.index') }}">
+                            <span class="nav-main-link-name">Periodos</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/sedes')?'active':'' }}" href="{{ route('headquarter.index') }}">
+                            <span class="nav-main-link-name">Sedes</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/areas')?'active':'' }}" href="{{ route('area.index') }}">
+                            <span class="nav-main-link-name">Areas</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/nucleos')?'active':'' }}" href="{{ route('core.index') }}">
+                            <span class="nav-main-link-name">Nucleos</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/carreras')?'active':'' }}" href="{{ route('career.index') }}">
+                            <span class="nav-main-link-name">Carreras</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/programas')?'active':'' }}" href="{{ route('program.index') }}">
+                            <span class="nav-main-link-name">Programas</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/asignaturas')?'active':'' }}" href="{{ route('subject.index') }}">
+                            <span class="nav-main-link-name">Asignaturas</span>
                         </a>
                     </li>
                 </ul>
