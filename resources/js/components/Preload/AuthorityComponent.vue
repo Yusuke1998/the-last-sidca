@@ -154,7 +154,9 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label>Tipo de Autoridad / Cargo</label>
-                                        <v-select :disabled="!exist_document" label="type" v-model="authorityData.type" :options="type_authorities"></v-select>
+                                        <v-select :disabled="!exist_document" label="type" v-model="authorityData.type" :options="type_authorities">
+                                            <div slot="no-options">No hay coincidencias!</div>
+                                        </v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
@@ -277,9 +279,9 @@ export default {
 	        		if (response.data !== 0) {
 	        			if (response.data.types.length > 0) {
 	        				response.data.types.forEach(data=>{
-	        					if (data.name == 'teacher') {
+	        					if (data.name == 'authority') {
                 					$("#AuthorityModal").modal('hide')
-	        						this.$alertify.warning('Esta persona ya esta registrada como profesor!')
+	        						this.$alertify.warning('Esta persona ya esta registrada como autoridad!')
 	        						return;
 	        					}else{
 					        		this.exist_document = true

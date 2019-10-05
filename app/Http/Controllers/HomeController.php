@@ -20,4 +20,9 @@ class HomeController extends Controller
     {
         return view('dashboard');
     }
+
+    public function notifications()
+    {
+        return view('notifications.index');
+    }
 }

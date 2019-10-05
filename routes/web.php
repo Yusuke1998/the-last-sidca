@@ -20,17 +20,8 @@ Route::get('/get-types', 'TypeController@getAll');
 Route::post('/check-document', 'DocumentController@check_document');
 // FIN DATA
 
-// USUARIOS
-Route::get('/usuarios', 'UsersController@index')->name('users.index');
-Route::post('/get-users','UsersController@userDataTable');
-Route::post('/store-user','UsersController@store');
-Route::post('/update-user','UsersController@update');
-Route::post('/delete-user','UsersController@destroy');
-Route::get('/profile-user/{username?}','UsersController@profile')->name('profile');
-// FIN USUARIOS
-
 // PRECARGA DE DATOS
-Route::group(['prefix'=>'precarga'],function(){
+Route::group(['prefix'=>'precarga','middleware'=>'auth'],function(){
 	
 	// UNIVERSIDADES
 	Route::get('/universidades','UniversityController@index')->name('university.index');
@@ -115,10 +106,29 @@ Route::group(['prefix'=>'precarga'],function(){
 });
 // FIN PRECARGA
 
+// USUARIOS
+Route::get('/usuarios', 'UsersController@index')
+	->name('users.index')
+	->middleware('auth');
+Route::post('/get-users','UsersController@userDataTable');
+Route::post('/store-user','UsersController@store');
+Route::post('/update-user','UsersController@update');
+Route::post('/delete-user','UsersController@destroy');
+Route::get('/profile-user/{username?}','UsersController@profile')->name('profile');
+// FIN USUARIOS
+
 // PROFESORES
-Route::get('/profesores','TeacherController@index')->name('teacher.index');
+Route::get('/profesores','TeacherController@index')
+	->name('teacher.index')
+	->middleware('auth');
 Route::post('/get-teachers','TeacherController@teacherDataTable');
 Route::post('/store-teacher','TeacherController@store');
 Route::post('/update-teacher','TeacherController@update');
 Route::post('/delete-teacher','TeacherController@destroy');
 // FIN PROFESORES
+
+// NOTIFICACIONES
+Route::get('/notificaciones','HomeController@notifications')
+	->name('notifications.index')
+	->middleware('auth');
+// FIN NOTIFICACIONES

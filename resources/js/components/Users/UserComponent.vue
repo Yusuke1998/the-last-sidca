@@ -34,7 +34,7 @@
 			                    <th>#</th>
 			                    <th>Nombre</th>
 			                    <th>Correo Electronico</th>
-			                    <th>Tipo</th>
+			                    <th>Tipo(s)</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
@@ -48,9 +48,12 @@
 			                        <a href="#" data-toggle="tooltip" title="Perfil de Usuario"  @click="profileHere(item_table.username)" v-text="item_table.username"></a>
 			                    </td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.email"></td>
-			                    <td class="d-none d-sm-table-cell">
-			                        <span class="badge badge-info">Business</span>
-			                    </td>
+			                    <td v-if="item_table.person.types.length > 0" class="font-w600 font-size-sm">
+                                    <ul>
+                                        <li v-for="item in item_table.person.types" v-text="item.name"></li>
+                                    </ul>
+                                </td>
+                                <td v-else>No está definido!</td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
 			                            <button type="button" @click="showModal('UserModal',item_table,'Editar Usuario','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar Usuario">
@@ -182,6 +185,7 @@ export default {
                 firstname:null,
                 lastname:null,
                 nro_document:null,
+                types:[],
                 document:{
                     id:0,
                     name:null,
@@ -277,6 +281,7 @@ export default {
                 firstname:null,
                 lastname:null,
                 nro_document:null,
+                types:[],
                 document:{
                     id:0,
                     name:null,
@@ -410,6 +415,7 @@ export default {
                     firstname:model.person.firstname,
                     lastname:model.person.lastname,
                     nro_document:model.person.nro_document,
+                    types:model.person.types,
                     document:{
                         id:model.person.document.id,
                         name:model.person.document.name,

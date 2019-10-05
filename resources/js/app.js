@@ -8,6 +8,7 @@ Vue.component('chart-component', require('./components/Charts/ChartComponent.vue
 Vue.component('user-component', require('./components/Users/UserComponent.vue').default);
 Vue.component('profile-component', require('./components/Users/ProfileComponent.vue').default);
 Vue.component('teacher-component', require('./components/Teachers/TeacherComponent.vue').default);
+Vue.component('notification-component', require('./components/Notifications/NotificationComponent.vue').default);
 
 // PRECARGA
 Vue.component('university-component', require('./components/Preload/UniversityComponent.vue').default);
