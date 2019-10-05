@@ -19,6 +19,7 @@ Vue.component('core-component', require('./components/Preload/CoreComponent.vue'
 Vue.component('career-component', require('./components/Preload/CareerComponent.vue').default);
 Vue.component('program-component', require('./components/Preload/ProgramComponent.vue').default);
 Vue.component('subject-component', require('./components/Preload/SubjectComponent.vue').default);
+Vue.component('authority-component', require('./components/Preload/AuthorityComponent.vue').default);
 
 /* PLUGINS */
 import swal from 'sweetalert';

@@ -8,9 +8,9 @@ class Headquarter extends Model
 {
     protected $fillable = ['name'];
 
-    public function cores()
+    public function areas()
     {
-    	return $this->hasMany(Core::class);
+    	return $this->hasMany(Area::class);
     }
 
     public function histories()

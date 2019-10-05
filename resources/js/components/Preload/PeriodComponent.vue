@@ -79,7 +79,7 @@
                                 <div class="col-12">
                                 	<div class="form-group">
                                         <label>Periodo(s)</label>
-                                        <v-select label="name" v-model="PeriodData.period" :options="list_periods"></v-select>
+                                        <v-select label="name" v-model="PeriodData.period" :options="list_periods.sort()"></v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->

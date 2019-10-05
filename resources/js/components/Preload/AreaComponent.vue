@@ -82,7 +82,7 @@
 		</div>
 
         <div class="modal fade" id="AreaModal" tabindex="-1" role="dialog" aria-labelledby="AreaModal" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-popout modal-md" role="document">
+            <div class="modal-dialog modal-dialog-popout modal-lg" role="document">
                 <div class="modal-content">
                     <div class="block block-themed block-transparent mb-0">
                         <div class="block-header bg-primary-dark">
@@ -96,7 +96,7 @@
                         <div class="block-content font-size-sm">
                             <form class="row" @keydown.enter.prevent="storeData">
                                 <!-- col-12 -->
-                                <div class="col-8">
+                                <div class="col-4">
                                 	<div class="form-group">
                                 		<label for="">Nombre</label>
                                 		<input type="text" class="form-control" v-model="AreaData.name">
@@ -106,6 +106,12 @@
                                     <div class="form-group">
                                         <label for="">Siglas</label>
                                         <input type="text" class="form-control" v-model="AreaData.acronym">
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label>Sedes</label>
+                                        <v-select label="name" v-model="AreaData.headquarter" :options="list_headquarters"></v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
@@ -128,16 +134,17 @@
 export default {
     mounted(){
     	this.getData();
-    	this.getCareers();
+    	this.getHeadquarters();
     },
     data() {
 		return {
             // AUXILIARES
-            list_careers:[],
+            list_headquarters:[],
             AreaData:{
             	id: 0,
                 name: null,
-                acronym: null
+                acronym: null,
+                headquarter:null
             },
 
             // DATOS DEL DATATABLE 
@@ -159,11 +166,11 @@ export default {
         }
 	},
 	methods:{
-		getCareers()
+		getHeadquarters()
         {
-            let url = "/get-careers"
+            let url = "/get-headquarters"
             axios.get(url).then(response => {
-                this.list_careers = response.data
+                this.list_headquarters = response.data
             }).catch(errors =>{
                 console.log(errors.response)
             })
@@ -172,7 +179,8 @@ export default {
 			this.AreaData={
             	id: 0,
                 name: null,
-                acronym: null
+                acronym: null,
+                headquarter:null
             }
 		},
 		getData(page)
@@ -268,7 +276,8 @@ export default {
         		this.AreaData = {
         			id:model.id,
                     name:model.name,
-        			acronym:model.acronym
+        			acronym:model.acronym,
+                    headquarter:model.headquarter
         		}
         	}else{
                 this.AreaDataBlank()

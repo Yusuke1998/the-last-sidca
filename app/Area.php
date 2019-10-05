@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Area extends Model
 {
-    protected $fillable = ['name','acronym'];
+    protected $fillable = ['name','acronym','headquarter_id'];
+
+    public function headquarter()
+    {
+        return $this->belongsTo(Headquarter::class);
+    }
 
     public function cores()
     {

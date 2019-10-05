@@ -37,7 +37,7 @@ class AreaController extends Controller
     public function filterAreaDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $areas = Area::with('careers','cores');
+        $areas = Area::with('careers','cores','headquarter');
 
         if (!is_null($search) && !empty($search)) {
             $areas
@@ -55,13 +55,17 @@ class AreaController extends Controller
 
     public function store(Request $request)
     {
+
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
+            'headquarter'=>'required',
+            'acronym'=>'required'
         ]);
         if ($request->id == 0) {
             $area = Area::create([
                 'name'=>$request->name,
                 'acronym'=>$request->acronym,
+                'headquarter_id'=>$request->headquarter['id']
             ]);
         }
         return;
@@ -71,12 +75,15 @@ class AreaController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
+            'headquarter'=>'required',
+            'acronym'=>'required'
         ]);
         if ($request->id > 0) {
             $area = Area::findOrFail($request->id);
             $area->update([
                 'name'=>$request->name,
                 'acronym'=>$request->acronym,
+                'headquarter_id'=>$request->headquarter['id']
             ]);
         }
     }

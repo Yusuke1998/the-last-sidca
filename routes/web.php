@@ -104,6 +104,14 @@ Route::group(['prefix'=>'precarga'],function(){
 	Route::post('/delete-subject','SubjectController@destroy');
 	// FIN ASIGNATURAS
 
+	// AUTORIDADES
+	Route::get('/autoridades','AuthorityController@index')->name('authority.index');
+	Route::post('/get-authorities','AuthorityController@authorityDataTable');
+	Route::post('/store-authority','AuthorityController@store');
+	Route::post('/update-authority','AuthorityController@update');
+	Route::post('/delete-authority','AuthorityController@destroy');
+	// FIN AUTORIDADES
+
 });
 // FIN PRECARGA
 

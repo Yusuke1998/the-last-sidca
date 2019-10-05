@@ -20,9 +20,10 @@ class PreloadSeeder extends Seeder
         	Headquarter::create(['name'=>$sede]);
         }
 
+        $sede = Headquarter::first();
         $areas = ['Sistemas','Agronomia','Medicina'];
         foreach ($areas as $key => $area) {
-            Area::create(['name'=>$area]);
+            Area::create(['name'=>$area,'headquarter_id'=>$sede->id]);
         }
         
         $area = Area::first();

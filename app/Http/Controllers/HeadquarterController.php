@@ -37,7 +37,7 @@ class HeadquarterController extends Controller
     public function filterHeadDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $headquarters = Headquarter::with('cores');
+        $headquarters = Headquarter::with('areas');
 
         if (!is_null($search) && !empty($search)) {
             $headquarters

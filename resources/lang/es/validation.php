@@ -173,7 +173,8 @@ return [
         'person'                =>  'persona',  
         'period'                =>  'periodo',
         'area.name'             =>  'area',  
-        'area.id'               =>  'area'  
+        'area.id'               =>  'area',
+        'acronym'               =>  'siglas'  
     ],
 
 ];

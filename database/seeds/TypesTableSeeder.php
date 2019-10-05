@@ -6,7 +6,7 @@ class TypesTableSeeder extends Seeder
 {
     public function run()
     {
-    	$types = ['root','teacher'];
+    	$types = ['root','teacher','authority'];
 
     	foreach ($types as $type) {
 	        App\Type::create([

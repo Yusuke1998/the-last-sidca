@@ -12,6 +12,14 @@ class CreateAreasTable extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('acronym')->nullable();#siglas
+
+            $table->bigInteger('headquarter_id')->unsigned(); #area
+            $table->foreign('headquarter_id')
+                ->references('id')
+                ->on('headquarters')
+                ->ondDelete('cascade')
+                ->onUpdate('cascade');
+
             $table->timestamps();
         });
     }
