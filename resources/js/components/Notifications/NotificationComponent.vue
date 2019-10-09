@@ -121,8 +121,8 @@
                                     <tr>
                                         <td class="text-center" style="width: 60px;">
                                             <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="inbox-msg15" name="inbox-msg15">
-                                                <label class="custom-control-label font-w400" for="inbox-msg15"></label>
+                                                <input type="checkbox" class="custom-control-input" id="inbox-msg16" name="inbox-msg16">
+                                                <label class="custom-control-label font-w400" for="inbox-msg16"></label>
                                             </div>
                                         </td>
                                         <td class="d-none d-sm-table-cell font-w600" style="width: 140px;">John Smith</td>

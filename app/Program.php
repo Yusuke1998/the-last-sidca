@@ -6,15 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Program extends Model
 {
-    protected $fillable = ['name'];
+    protected $fillable = ['name','area_id'];
+
+    public function area()
+    {
+    	return $this->belongsTo(Area::class);
+    }
+
+    public function subjects()
+    {
+    	return $this->belongsToMany(Subject::class);
+    }
 
     public function histories()
     {
     	return $this->hasMany(Historic::class);
-    }
-
-    public function careers()
-    {
-    	return $this->belongsToMany(Career::class);
     }
 }

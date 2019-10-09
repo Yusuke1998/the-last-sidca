@@ -2,8 +2,8 @@
 	<div class="container">
 		<div class="block">
 			<div class="block-header bg-primary-dark">
-				<h3 class="block-title text-white text-center">NUCLEOS</h3>
-    			<button data-toggle="tooltip" title="Crear" type="button" @click="showModal('CoreModal',null,'Nuevo Nucleo','store')" class="btn btn-success">
+				<h3 class="block-title text-white text-center">EXTENSIONES</h3>
+    			<button data-toggle="tooltip" title="Crear" type="button" @click="showModal('ExtensionModal',null,'Nueva Extension','store')" class="btn btn-success">
                     <i class="fa fa-plus"></i>
                 </button>
 			</div>
@@ -45,11 +45,11 @@
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
-			                    <td class="font-w600 font-size-sm" v-text="item_table.area.name"></td>
-                                <td class="font-w600 font-size-sm" v-text="item_table.program.name"></td>
+                                <td class="font-w600 font-size-sm" v-text="item_table.area.name"></td>
+			                    <td class="font-w600 font-size-sm" v-text="item_table.program.name"></td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
-			                            <button type="button" @click="showModal('CoreModal',item_table,'Editar Nucleo','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
+			                            <button type="button" @click="showModal('ExtensionModal',item_table,'Editar Nucleo','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
 			                                <i class="fa fa-fw fa-pencil-alt"></i>
 			                            </button>
 			                            <button type="button" @click="deleteData(item_table.id)" class="btn btn-sm btn-light" data-toggle="tooltip" title="Eliminar">
@@ -69,7 +69,7 @@
 			</div>
 		</div>
 
-        <div class="modal fade" id="CoreModal" tabindex="-1" role="dialog" aria-labelledby="CoreModal" aria-hidden="true">
+        <div class="modal fade" id="ExtensionModal" tabindex="-1" role="dialog" aria-labelledby="ExtensionModal" aria-hidden="true">
             <div class="modal-dialog modal-dialog-popout modal-xl" role="document">
                 <div class="modal-content">
                     <div class="block block-themed block-transparent mb-0">
@@ -87,19 +87,19 @@
                                 <div class="col-4">
                                 	<div class="form-group">
                                 		<label for="">Nombre</label>
-                                		<input type="text" class="form-control" v-model="CoreData.name">
+                                		<input type="text" class="form-control" v-model="ExtensionData.name">
                                 	</div>
                                 </div>
                                 <div class="col-4">
                                 	<div class="form-group">
                                 		<label>Area</label>
-                                    	<v-select label="name" v-model="CoreData.area" :options="list_areas"></v-select>
+                                    	<v-select label="name" v-model="ExtensionData.area" :options="list_areas"></v-select>
                                 	</div>
                                 </div>
                                 <div class="col-4">
                                     <div class="form-group">
                                         <label>Programa</label>
-                                        <v-select label="name" v-model="CoreData.program" :options="list_programs"></v-select>
+                                        <v-select label="name" v-model="ExtensionData.program" :options="list_programs"></v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
@@ -122,15 +122,15 @@
 export default {
     mounted(){
     	this.getData();
-    	this.getAreas();
-        this.getPrograms();
+        this.getAreas();
+    	this.getPrograms();
     },
     data() {
 		return {
             // AUXILIARES
             list_areas:[],
             list_programs:[],
-            CoreData:{
+            ExtensionData:{
             	id: 0,
                 name: null,
                 area:{
@@ -180,8 +180,8 @@ export default {
                 console.log(errors.response)
             })
         },
-		CoreDataBlank(){
-			this.CoreData={
+		ExtensionDataBlank(){
+			this.ExtensionData={
             	id: 0,
                 name: null,
                 area:{
@@ -196,7 +196,7 @@ export default {
 		},
 		getData(page)
         {
-            let url =  "/precarga/get-cores" 
+            let url =  "/precarga/get-extensions" 
             axios.post(url,{
                 page   : page, 
                 sort   : this.sort_selected, 
@@ -205,21 +205,21 @@ export default {
                 this.table_pagination	= response.data.pagination
                 this.table_data			= response.data.table.data
             	this.search_table		= ''
-                this.$alertify.success('Nucleos Cargados')
+                this.$alertify.success('Extensiones Cargadas')
             }).catch(errors =>{
                 console.log(errors)
             })
         },
         storeData()
         {
-            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar el nucleo')
-            let url = '/precarga/store-core'
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar la extension')
+            let url = '/precarga/store-extension'
             axios.post(url,
-                this.CoreData
+                this.ExtensionData
             ).then(response => {
                 swal.close()
-                $("#CoreModal").modal('hide')
-        		this.$alertify.success('El nucleo se registro con exito')
+                $("#ExtensionModal").modal('hide')
+        		this.$alertify.success('La extension se registro con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -233,14 +233,14 @@ export default {
         },
         updateData()
         {
-        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar el nucleo')
-            let url = '/precarga/update-core'
+        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar la extension')
+            let url = '/precarga/update-extension'
             axios.post(url,
-                this.CoreData
+                this.ExtensionData
             ).then(response => {
                 swal.close()
-                $("#CoreModal").modal('hide')
-        		this.$alertify.success('El nucleo fue actualizada con exito')
+                $("#ExtensionModal").modal('hide')
+        		this.$alertify.success('La extension fue actualizada con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -255,20 +255,20 @@ export default {
         deleteData(idCore)
         {
         	swal({
-                text: "Esta seguro que quiere eliminar este nucleo?",
+                text: "Esta seguro que quiere eliminar esta extension?",
                 icon: "warning",
                 buttons: ['Cancelar','Eliminar'],
                 dangerMode: true,
             }).then((willDelete) => {
                 if (willDelete) {
-        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar este nucleo')
-		            let url = '/precarga/delete-core'
+        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar esta extension')
+		            let url = '/precarga/delete-extension'
 		            axios.post(url,{
 		                id:idCore
 		            }).then(response => {
 		                swal.close()
 		                this.getData()
-		        		this.$alertify.success('El nucleo fue eliminado con exito')
+		        		this.$alertify.success('La extension fue eliminada con exito')
 		            }).catch(errors => {
 		                swal.close()
 		            })
@@ -284,7 +284,7 @@ export default {
         	this.modal_option	= option
         	this.modal_type		= type
         	if (type == 'edit' && model !== null) {
-        		this.CoreData = {
+        		this.ExtensionData = {
         			id:model.id,
         			name:model.name,
         			area:{
@@ -294,10 +294,10 @@ export default {
                     program:{
                         id:model.program.id,
                         name:model.program.name
-                    }
+                    },
         		}
         	}else{
-                this.CoreDataBlank()
+                this.ExtensionDataBlank()
             }
             $("#"+modal_id).modal('show')
         }

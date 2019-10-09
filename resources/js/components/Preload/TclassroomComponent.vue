@@ -2,8 +2,8 @@
 	<div class="container">
 		<div class="block">
 			<div class="block-header bg-primary-dark">
-				<h3 class="block-title text-white text-center">CARRERAS</h3>
-    			<button data-toggle="tooltip" title="Crear" type="button" @click="showModal('CareerModal',null,'Nueva Carrera','store')" class="btn btn-success">
+				<h3 class="block-title text-white text-center">AULAS TERRITORIALES</h3>
+    			<button data-toggle="tooltip" title="Crear" type="button" @click="showModal('TclassroomModal',null,'Nueva Aula Territorial','store')" class="btn btn-success">
                     <i class="fa fa-plus"></i>
                 </button>
 			</div>
@@ -33,7 +33,8 @@
 			                <tr>
 			                    <th>#</th>
 			                    <th>Nombre</th>
-			                    <th>Area</th>
+                                <th>Area</th>
+			                    <th>Programa</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
@@ -43,11 +44,12 @@
 			                </tr>
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
-                                <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
-			                    <td class="font-w600 font-size-sm" v-text="item_table.area.name"></td>
+			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
+                                <td class="font-w600 font-size-sm" v-text="item_table.area.name"></td>
+			                    <td class="font-w600 font-size-sm" v-text="item_table.program.name"></td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
-			                            <button type="button" @click="showModal('CareerModal',item_table,'Editar Carrera','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Edit Client">
+			                            <button type="button" @click="showModal('TclassroomModal',item_table,'Editar Nucleo','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
 			                                <i class="fa fa-fw fa-pencil-alt"></i>
 			                            </button>
 			                            <button type="button" @click="deleteData(item_table.id)" class="btn btn-sm btn-light" data-toggle="tooltip" title="Eliminar">
@@ -67,7 +69,7 @@
 			</div>
 		</div>
 
-        <div class="modal fade" id="CareerModal" tabindex="-1" role="dialog" aria-labelledby="CareerModal" aria-hidden="true">
+        <div class="modal fade" id="TclassroomModal" tabindex="-1" role="dialog" aria-labelledby="TclassroomModal" aria-hidden="true">
             <div class="modal-dialog modal-dialog-popout modal-xl" role="document">
                 <div class="modal-content">
                     <div class="block block-themed block-transparent mb-0">
@@ -82,17 +84,23 @@
                         <div class="block-content font-size-sm">
                             <form class="row" @keydown.enter.prevent="storeData">
                                 <!-- col-12 -->
-                                <div class="col-8">
+                                <div class="col-4">
                                 	<div class="form-group">
                                 		<label for="">Nombre</label>
-                                		<input type="text" class="form-control" v-model="CareerData.name">
+                                		<input type="text" class="form-control" v-model="TclassroomData.name">
                                 	</div>
                                 </div>
                                 <div class="col-4">
                                 	<div class="form-group">
-                                		<label>Areas</label>
-                                    	<v-select label="name" v-model="CareerData.area" :options="list_areas"></v-select>
+                                		<label>Area</label>
+                                    	<v-select label="name" v-model="TclassroomData.area" :options="list_areas"></v-select>
                                 	</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label>Programa</label>
+                                        <v-select label="name" v-model="TclassroomData.program" :options="list_programs"></v-select>
+                                    </div>
                                 </div>
                                 <!-- col-12 -->
                             </form>
@@ -114,16 +122,22 @@
 export default {
     mounted(){
     	this.getData();
-    	this.getCores();
+        this.getAreas();
+    	this.getPrograms();
     },
     data() {
 		return {
             // AUXILIARES
             list_areas:[],
-            CareerData:{
+            list_programs:[],
+            TclassroomData:{
             	id: 0,
                 name: null,
                 area:{
+                	id:0,
+                	name:null
+                },
+                program:{
                     id:0,
                     name:null
                 }
@@ -148,7 +162,7 @@ export default {
         }
 	},
 	methods:{
-		getCores()
+		getAreas()
         {
             let url = "/get-areas"
             axios.get(url).then(response => {
@@ -157,11 +171,24 @@ export default {
                 console.log(errors.response)
             })
         },
-		CareerDataBlank(){
-			this.CareerData={
+        getPrograms()
+        {
+            let url = "/get-programs"
+            axios.get(url).then(response => {
+                this.list_programs = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+		TclassroomDataBlank(){
+			this.TclassroomData={
             	id: 0,
                 name: null,
                 area:{
+                	id:0,
+                	name:null
+                },
+                program:{
                     id:0,
                     name:null
                 }
@@ -169,7 +196,7 @@ export default {
 		},
 		getData(page)
         {
-            let url =  "/precarga/get-careers" 
+            let url =  "/precarga/get-tclassrooms" 
             axios.post(url,{
                 page   : page, 
                 sort   : this.sort_selected, 
@@ -178,21 +205,21 @@ export default {
                 this.table_pagination	= response.data.pagination
                 this.table_data			= response.data.table.data
             	this.search_table		= ''
-                this.$alertify.success('Carreras Cargadas')
+                this.$alertify.success('Aulas Territoriales Cargadas')
             }).catch(errors =>{
                 console.log(errors)
             })
         },
         storeData()
         {
-            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar La carrera')
-            let url = '/precarga/store-career'
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar el aula territorial')
+            let url = '/precarga/store-tclassroom'
             axios.post(url,
-                this.CareerData
+                this.TclassroomData
             ).then(response => {
                 swal.close()
-                $("#CareerModal").modal('hide')
-        		this.$alertify.success('La carrera se registro con exito')
+                $("#TclassroomModal").modal('hide')
+        		this.$alertify.success('El aula territorial se registro con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -206,14 +233,14 @@ export default {
         },
         updateData()
         {
-        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar la carrera')
-            let url = '/precarga/update-career'
+        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar el aula territorial')
+            let url = '/precarga/update-tclassroom'
             axios.post(url,
-                this.CareerData
+                this.TclassroomData
             ).then(response => {
                 swal.close()
-                $("#CareerModal").modal('hide')
-        		this.$alertify.success('La carrera fue actualizada con exito')
+                $("#TclassroomModal").modal('hide')
+        		this.$alertify.success('El aula territorial fue actualizada con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -228,20 +255,20 @@ export default {
         deleteData(idCore)
         {
         	swal({
-                text: "Esta seguro que quiere eliminar esta carrera?",
+                text: "Esta seguro que quiere eliminar esta aula territorial?",
                 icon: "warning",
                 buttons: ['Cancelar','Eliminar'],
                 dangerMode: true,
             }).then((willDelete) => {
                 if (willDelete) {
-        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar esta carrera')
-		            let url = '/precarga/delete-career'
+        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar esta aula territorial')
+		            let url = '/precarga/delete-tclassroom'
 		            axios.post(url,{
 		                id:idCore
 		            }).then(response => {
 		                swal.close()
 		                this.getData()
-		        		this.$alertify.success('La carrera fue eliminada con exito')
+		        		this.$alertify.success('El aula territorial fue eliminada con exito')
 		            }).catch(errors => {
 		                swal.close()
 		            })
@@ -254,20 +281,23 @@ export default {
             this.getData(page);
         },
         showModal(modal_id, model,option, type){
-            console.log(model)
         	this.modal_option	= option
         	this.modal_type		= type
         	if (type == 'edit' && model !== null) {
-        		this.CareerData = {
+        		this.TclassroomData = {
         			id:model.id,
         			name:model.name,
         			area:{
-                        id:model.area.id,
-                        name:model.area.name
-                    }
+	                	id:model.area.id,
+	                	name:model.area.name
+	                },
+                    program:{
+                        id:model.program.id,
+                        name:model.program.name
+                    },
         		}
         	}else{
-                this.CareerDataBlank()
+                this.TclassroomDataBlank()
             }
             $("#"+modal_id).modal('show')
         }

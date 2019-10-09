@@ -34,7 +34,7 @@
 			                    <th>#</th>
                                 <th>Nombre</th>
 			                    <th>Siglas</th>
-                                <th>Carreras(s)</th>
+                                <th>Programa(s)</th>
 			                    <th>Nucleo(s)</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
@@ -47,12 +47,12 @@
 			                    <td v-text="index_for_table + 1"></td>
                                 <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.acronym"></td>
-			                    <td v-if="item_table.careers.length > 0" class="font-w600 font-size-sm">
+			                    <td v-if="item_table.programs.length > 0" class="font-w600 font-size-sm">
                                     <ul>
-                                        <li v-for="item in item_table.careers" v-text="item.name"></li>
+                                        <li v-for="item in item_table.programs" v-text="item.name"></li>
                                     </ul>
                                 </td>
-                                <td v-else>No tiene carreras!</td>
+                                <td v-else>No tiene programas!</td>
                                 <td v-if="item_table.cores.length > 0" class="font-w600 font-size-sm">
                                     <ul>
                                         <li v-for="item in item_table.cores" v-text="item.name"></li>

@@ -4,11 +4,11 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCareersTable extends Migration
+class CreateExtensionsTable extends Migration
 {
     public function up()
     {
-        Schema::create('careers', function (Blueprint $table) {
+        Schema::create('extensions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
 
@@ -16,15 +16,22 @@ class CreateCareersTable extends Migration
             $table->foreign('area_id')
                 ->references('id')
                 ->on('areas')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
+            $table->bigInteger('program_id')->unsigned(); #programa
+            $table->foreign('program_id')
+                ->references('id')
+                ->on('programs')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+                
             $table->timestamps();
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('careers');
+        Schema::dropIfExists('extensions');
     }
 }

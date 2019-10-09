@@ -2,45 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use App\Core;
+use App\Territorial_Classroom;
 use Illuminate\Http\Request;
 
-class CoreController extends Controller
+class TerritorialClassroomController extends Controller
 {
     public function index()
     {
-        return view('preload.cores');
+        return view('preload.tclassroom');
     }
 
     public function getAll()
     {
-        $nucleos = Core::all();
-        return $nucleos;
+        $tclassroom = Territorial_Classroom::all();
+        return $tclassroom;
     }
 
-    public function coreDataTable(Request $request)
+    public function tclassroomDataTable(Request $request)
     {
-        $cores = $this->filterCoreDataTable($request);
+        $tClassroom = $this->filterTclassroomDataTable($request);
         return [
             'pagination' => [
-                'total'         => $cores->total(),
-                'current_page'  => $cores->currentPage(),
-                'per_page'      => $cores->perPage(),
-                'last_page'     => $cores->lastPage(),
-                'from'          => $cores->firstItem(),
-                'to'            => $cores->lastItem(),
+                'total'         => $tClassroom->total(),
+                'current_page'  => $tClassroom->currentPage(),
+                'per_page'      => $tClassroom->perPage(),
+                'last_page'     => $tClassroom->lastPage(),
+                'from'          => $tClassroom->firstItem(),
+                'to'            => $tClassroom->lastItem(),
             ],
-            'table' => $cores
+            'table' => $tClassroom
         ];
     }
 
-    public function filterCoreDataTable($request)
+    public function filterTclassroomDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $cores = Core::with('area','program');
+        $tClassroom = Territorial_Classroom::with('area','program');
 
         if (!is_null($search) && !empty($search)) {
-            $cores
+            $tClassroom
             ->where('name','like','%'.$search.'%')
             ->orWhereHas('area',function ($query) use ($search) {
                 $query->where('name','like','%'.$search.'%');
@@ -49,7 +49,7 @@ class CoreController extends Controller
                 $query->where('name','like','%'.$search.'%');
             });
         }
-        return $cores->orderBy('updated_at','DESC')->paginate($request->sort);
+        return $tClassroom->orderBy('updated_at','DESC')->paginate($request->sort);
     }
 
     public function store(Request $request)
@@ -61,7 +61,7 @@ class CoreController extends Controller
         ]);
         
         if ($request->id == 0) {
-            Core::create([
+            Territorial_Classroom::create([
                 'name'=>$request->name,
                 'area_id'=>$request->area['id'],
                 'program_id'=>$request->program['id']
@@ -79,20 +79,20 @@ class CoreController extends Controller
         ]);
 
         if ($request->id > 0) {
-            Core::findOrFail($request->id)
-            ->update([
-                'name'=>$request->name,
-                'area_id'=>$request->area['id'],
-                'program_id'=>$request->program['id']
-            ]);
+            Territorial_Classroom::findOrFail($request->id)
+                ->update([
+                    'name'=>$request->name,
+                    'area_id'=>$request->area['id'],
+                    'program_id'=>$request->program['id']
+                ]);
         }
         return;
     }
 
     public function destroy(Request $request)
     {
-        $core = Core::findOrFail($request->id);
-        $core->delete();
+        $extension = Territorial_Classroom::findOrFail($request->id);
+        $extension->delete();
         return;
     }
 }

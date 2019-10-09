@@ -37,13 +37,13 @@ class AreaController extends Controller
     public function filterAreaDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $areas = Area::with('careers','cores','headquarter');
+        $areas = Area::with('programs','cores','headquarter');
 
         if (!is_null($search) && !empty($search)) {
             $areas
             ->where('name','like','%'.$search.'%')
             ->orWhere('acronym','like','%'.$search.'%')
-            ->orWhereHas('careers',function ($query) use ($search) {
+            ->orWhereHas('programs',function ($query) use ($search) {
                 $query->where('name','like','%'.$search.'%');
             })
             ->orWhereHas('cores',function ($query) use ($search) {

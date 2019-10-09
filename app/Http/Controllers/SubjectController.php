@@ -37,14 +37,14 @@ class SubjectController extends Controller
     public function filterSubjectDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $subjects = Subject::with('careers');
+        $subjects = Subject::with('programs');
 
         if (!is_null($search) && !empty($search)) {
             $subjects
             ->where('name','like','%'.$search.'%')
             ->orWhere('practical_hour','like','%'.$search.'%')
             ->orWhere('theoretical_hour','like','%'.$search.'%')
-            ->orWhereHas('careers',function ($query) use ($search) {
+            ->orWhereHas('programs',function ($query) use ($search) {
                 $query
                 ->where('name','like','%'.$search.'%');
             });
@@ -58,17 +58,17 @@ class SubjectController extends Controller
             'name'=>'required|min:3|max:100|string',
             'theoretical_hour'=>'required',
             'practical_hour'=>'required',
-            'careers'=>'required'
+            'programs'=>'required'
         ]);
-        $careers = collect($request->careers);
-        $ids = $careers->pluck('id');
+        $programs = collect($request->programs);
+        $ids = $programs->pluck('id');
         if ($request->id == 0) {
             $subject = Subject::create([
                 'name'=>$request->name,
                 'theoretical_hour'=>$request->theoretical_hour,
                 'practical_hour'=>$request->practical_hour,
             ]);
-            $subject->careers()->sync($ids);
+            $subject->programs()->sync($ids);
         }
         return;
     }
@@ -79,10 +79,10 @@ class SubjectController extends Controller
             'name'=>'required|min:3|max:100|string',
             'theoretical_hour'=>'required',
             'practical_hour'=>'required',
-            'careers'=>'required'
+            'programs'=>'required'
         ]);
-        $careers = collect($request->careers);
-        $ids = $careers->pluck('id');
+        $programs = collect($request->programs);
+        $ids = $programs->pluck('id');
         if ($request->id > 0) {
             $subject = Subject::findOrFail($request->id);
             $subject->update([
@@ -90,7 +90,7 @@ class SubjectController extends Controller
                 'theoretical_hour'=>$request->theoretical_hour,
                 'practical_hour'=>$request->practical_hour,
             ]);
-            $subject->careers()->sync($ids);
+            $subject->programs()->sync($ids);
         }
     }
 

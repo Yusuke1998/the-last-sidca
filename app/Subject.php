@@ -8,9 +8,9 @@ class Subject extends Model
 {
     protected $fillable = ['name','theoretical_hour','practical_hour'];
 
-    public function careers()
+    public function programs()
     {
-    	return $this->belongsToMany(Career::class);
+    	return $this->belongsToMany(Program::class);
     }
 
     public function histories()

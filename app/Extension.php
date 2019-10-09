@@ -1,10 +1,10 @@
 <?php
-// Nucleo
+
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Core extends Model
+class Extension extends Model
 {
     protected $fillable = ['name','area_id','program_id'];
 

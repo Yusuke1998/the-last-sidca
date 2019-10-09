@@ -12,7 +12,6 @@ Route::get('/get-cores', 'CoreController@getAll');
 Route::get('/get-titles', 'TitleController@getAll');
 Route::get('/get-universities', 'UniversityController@getAll');
 Route::get('/get-subjects', 'SubjectController@getAll');
-Route::get('/get-careers', 'CareerController@getAll');
 Route::get('/get-areas', 'AreaController@getAll');
 Route::get('/get-periods', 'PeriodController@getAll');
 Route::get('/get-programs', 'ProgramController@getAll');
@@ -71,13 +70,21 @@ Route::group(['prefix'=>'precarga','middleware'=>'auth'],function(){
 	Route::post('/delete-core','CoreController@destroy');
 	// FIN NUCLEOS
 
-	// CARRERAS
-	Route::get('/carreras','CareerController@index')->name('career.index');
-	Route::post('/get-careers','CareerController@careerDataTable');
-	Route::post('/store-career','CareerController@store');
-	Route::post('/update-career','CareerController@update');
-	Route::post('/delete-career','CareerController@destroy');
-	// FIN CARRERAS
+	// EXTENSIONES
+	Route::get('/extensiones','ExtensionController@index')->name('extension.index');
+	Route::post('/get-extensions','ExtensionController@extensionDataTable');
+	Route::post('/store-extension','ExtensionController@store');
+	Route::post('/update-extension','ExtensionController@update');
+	Route::post('/delete-extension','ExtensionController@destroy');
+	// FIN EXTENSIONES
+
+	// AULAS TERRITORIALES
+	Route::get('/aulas-territoriales','TerritorialClassroomController@index')->name('tclassroom.index');
+	Route::post('/get-tclassrooms','TerritorialClassroomController@tclassroomDataTable');
+	Route::post('/store-tclassroom','TerritorialClassroomController@store');
+	Route::post('/update-tclassroom','TerritorialClassroomController@update');
+	Route::post('/delete-tclassroom','TerritorialClassroomController@destroy');
+	// FIN AULAS TERRITORIALES
 
 	// PROGRAMAS
 	Route::get('/programas','ProgramController@index')->name('program.index');

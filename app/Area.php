@@ -18,9 +18,19 @@ class Area extends Model
     	return $this->hasMany(Core::class);
     }
 
-    public function careers()
+    public function programs()
     {
-    	return $this->hasMany(Career::class);
+        return $this->hasMany(Program::class);
+    }
+
+    public function extensions()
+    {
+        return $this->hasMany(Extension::class);
+    }
+
+    public function territorial_Classrooms()
+    {
+    	return $this->hasMany(Territorial_Classroom::class);
     }
 
     public function histories()

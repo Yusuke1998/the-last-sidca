@@ -57,13 +57,6 @@ class CreateHistoricsTable extends Migration
                 ->ondDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->bigInteger('career_id')->unsigned(); #carrera
-            $table->foreign('career_id')
-                ->references('id')
-                ->on('careers')
-                ->ondDelete('cascade')
-                ->onUpdate('cascade');
-
             $table->bigInteger('program_id')->unsigned(); #programa
             $table->foreign('program_id')
                 ->references('id')

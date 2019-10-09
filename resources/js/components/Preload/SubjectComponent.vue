@@ -35,7 +35,7 @@
 			                    <th>Nombre</th>
 			                    <th>Horas Teoricas</th>
                                 <th>Horas Practicas</th>
-			                    <th>Carrera(s)</th>
+			                    <th>Programa(s)</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
@@ -48,12 +48,12 @@
 			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
                                 <td class="font-w600 font-size-sm" v-text="item_table.theoretical_hour"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.practical_hour"></td>
-			                    <td v-if="item_table.careers.length > 0" class="font-w600 font-size-sm">
+			                    <td v-if="item_table.programs.length > 0" class="font-w600 font-size-sm">
                                     <ul>
-                                        <li v-for="item in item_table.careers" v-text="item.name"></li>
+                                        <li v-for="item in item_table.programs" v-text="item.name"></li>
                                     </ul>
                                 </td>
-                                <td v-else>No esta asignada a ninguna carrera!</td>
+                                <td v-else>No esta asignada a ningun programa!</td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
 			                            <button type="button" @click="showModal('SubjectModal',item_table,'Editar Asignatura','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
@@ -112,7 +112,7 @@
                                 <div class="col-3">
                                 	<div class="form-group">
                                 		<label>Carrera(s)</label>
-                                    	<v-select multiple label="name" v-model="SubjectData.careers" :options="list_careers"></v-select>
+                                    	<v-select multiple label="name" v-model="SubjectData.programs" :options="list_programs"></v-select>
                                 	</div>
                                 </div>
                                 <!-- col-12 -->
@@ -135,18 +135,18 @@
 export default {
     mounted(){
     	this.getData();
-    	this.getCareers();
+    	this.getprograms();
     },
     data() {
 		return {
             // AUXILIARES
-            list_careers:[],
+            list_programs:[],
             SubjectData:{
             	id: 0,
                 name: null,
                 theoretical_hour: null,
                 practical_hour: null,
-                careers:[]
+                programs:[]
             },
 
             // DATOS DEL DATATABLE 
@@ -168,11 +168,11 @@ export default {
         }
 	},
 	methods:{
-		getCareers()
+		getprograms()
         {
-            let url = "/get-careers"
+            let url = "/get-programs"
             axios.get(url).then(response => {
-                this.list_careers = response.data
+                this.list_programs = response.data
             }).catch(errors =>{
                 console.log(errors.response)
             })
@@ -183,7 +183,7 @@ export default {
                 name: null,
                 theoretical_hour: null,
                 practical_hour: null,
-                careers:[]
+                programs:[]
             }
 		},
 		getData(page)
@@ -281,7 +281,7 @@ export default {
         			name: model.name,
                     theoretical_hour: model.theoretical_hour,
                     practical_hour: model.practical_hour,
-        			careers:model.careers
+        			programs:model.programs
         		}
         	}else{
                 this.SubjectDataBlank()

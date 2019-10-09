@@ -128,16 +128,6 @@
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/nucleos')?'active':'' }}" href="{{ route('core.index') }}">
-                            <span class="nav-main-link-name">Nucleos</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link {{ request()->is('precarga/carreras')?'active':'' }}" href="{{ route('career.index') }}">
-                            <span class="nav-main-link-name">Carreras</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
                         <a class="nav-main-link {{ request()->is('precarga/programas')?'active':'' }}" href="{{ route('program.index') }}">
                             <span class="nav-main-link-name">Programas</span>
                         </a>
@@ -145,6 +135,21 @@
                     <li class="nav-main-item">
                         <a class="nav-main-link {{ request()->is('precarga/asignaturas')?'active':'' }}" href="{{ route('subject.index') }}">
                             <span class="nav-main-link-name">Asignaturas</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/nucleos')?'active':'' }}" href="{{ route('core.index') }}">
+                            <span class="nav-main-link-name">Nucleos</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/extensiones')?'active':'' }}" href="{{ route('extension.index') }}">
+                            <span class="nav-main-link-name">Extensiones</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/aulas-territoriales')?'active':'' }}" href="{{ route('tclassroom.index') }}">
+                            <span class="nav-main-link-name">Aulas Territoriales</span>
                         </a>
                     </li>
                 </ul>

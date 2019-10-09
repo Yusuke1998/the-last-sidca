@@ -17,7 +17,8 @@ Vue.component('period-component', require('./components/Preload/PeriodComponent.
 Vue.component('headquarter-component', require('./components/Preload/HeadquarterComponent.vue').default);
 Vue.component('area-component', require('./components/Preload/AreaComponent.vue').default);
 Vue.component('core-component', require('./components/Preload/CoreComponent.vue').default);
-Vue.component('career-component', require('./components/Preload/CareerComponent.vue').default);
+Vue.component('extension-component', require('./components/Preload/ExtensionComponent.vue').default);
+Vue.component('tclassroom-component', require('./components/Preload/TclassroomComponent.vue').default);
 Vue.component('program-component', require('./components/Preload/ProgramComponent.vue').default);
 Vue.component('subject-component', require('./components/Preload/SubjectComponent.vue').default);
 Vue.component('authority-component', require('./components/Preload/AuthorityComponent.vue').default);

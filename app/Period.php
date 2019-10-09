@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Period extends Model
 {
-    protected $fillable = ['period'];
+    protected $fillable = ['period','title','start','end'];
 
     public function histories()
     {

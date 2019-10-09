@@ -174,7 +174,9 @@ return [
         'period'                =>  'periodo',
         'area.name'             =>  'area',  
         'area.id'               =>  'area',
-        'acronym'               =>  'siglas'  
+        'acronym'               =>  'siglas',  
+        'programs'              =>  'programas',
+        'program'               =>  'programa',
     ],
 
 ];

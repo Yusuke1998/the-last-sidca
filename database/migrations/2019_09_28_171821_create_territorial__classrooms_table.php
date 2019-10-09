@@ -4,11 +4,11 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCoresTable extends Migration
+class CreateTerritorialClassroomsTable extends Migration
 {
     public function up()
     {
-        Schema::create('cores', function (Blueprint $table) {
+        Schema::create('territorial__classrooms', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
 
@@ -25,13 +25,13 @@ class CreateCoresTable extends Migration
                 ->on('programs')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            
+
             $table->timestamps();
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('cores');
+        Schema::dropIfExists('territorial__classrooms');
     }
 }
