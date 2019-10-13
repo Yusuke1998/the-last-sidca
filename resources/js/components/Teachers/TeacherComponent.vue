@@ -2,7 +2,7 @@
 	<div class="container">
 		<div class="block">
 			<div class="block-header bg-primary-dark">
-				<h3 class="block-title text-white text-center">PERSONAL DOCENTE <span v-show="type_contract" v-text="type_contract"></span></h3>
+				<h3 class="block-title text-white text-center">PERSONAL DOCENTE <span v-show="type_contract.type" v-text="type_contract.type"></span></h3>
     			<button type="button" data-toggle="tooltip" title="Nuevo" @click="showModal('TeacherModal',null,'Nuevo','store')" class="btn btn-success">
                     <i class="fa fa-plus"></i>
                 </button>
@@ -88,6 +88,11 @@
                         </div>
                         <div class="block-content font-size-sm">
                             <form class="row">
+
+                                <div class="col-12 text-center">
+                                    <h4>Informacion Personal</h4>
+                                </div>
+
                                 <!-- col-12 -->
                                 <div class="col-6">
                                 	<div class="form-group">
@@ -130,7 +135,8 @@
                                         :language="es" 
                                         :disabled="!exist_document" 
                                         :disabled-dates="no_dates" 
-                                        v-model="teacherData.person.birthday" input-class="bg-white form-control"></datepicker>
+                                        v-model="teacherData.person.birthday"
+                                        :input-class="(exist_document)?'bg-white form-control':'form-control'"></datepicker>
 	                                </div>
                                 </div>
                                 <div class="col-8">
@@ -158,6 +164,11 @@
 	                                    <input :disabled="!exist_document" v-model="teacherData.person.mail_contact" class="form-control"></input>
 	                                </div>
                                 </div>
+
+                                <div class="col-12 text-center">
+                                    <h4>Lugar donde está Adscrito</h4>
+                                </div>
+
                                 <!-- col-12 -->
                                 <div class="col-4">
                                     <div class="form-group">
@@ -226,6 +237,35 @@
                                     </div>
                                 </template>
                                 <!-- col-12 -->
+
+                                <div class="col-12 text-center">
+                                    <h4>Otros</h4>
+                                </div>
+
+                                <!-- col-12 -->
+                                <div class="col-12" v-if="type_contract.type=='contratado'">
+                                    <div class="form-group">
+                                        <label>Condicion</label>
+                                        <v-select 
+                                        :disabled="!exist_document" 
+                                        @input="getAreas" 
+                                        v-model="type_contract.condition" 
+                                        :options="['contratado','honorario profesional','auxiliar docente']"></v-select>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label>Asignatura</label>
+                                        <v-select 
+                                        :disabled="teacherData.headquarter.id == 0" 
+                                        @input="getPrograms" 
+                                        label="name" 
+                                        v-model="teacherData.area" 
+                                        :options="list_areas"></v-select>
+                                    </div>
+                                </div>
+                                <!-- col-12 -->
+
                             </form>
                         </div>
                         <div class="block-content block-content-full text-right border-top">
@@ -293,7 +333,7 @@
                                                     placeholder="Año" 
                                                     :disabled-dates="no_dates" 
                                                     v-model="preGData.date" 
-                                                    input-class="bg-white form-control"></datepicker>
+                                                    :input-class="(preGData.title.id == !0)?'bg-white form-control':'form-control'"></datepicker>
                                                 </div>
                                             </div>
                                             <div class="col-1">
@@ -365,7 +405,7 @@
                                                     placeholder="Año" 
                                                     :disabled-dates="no_dates" 
                                                     v-model="postGData.date" 
-                                                    input-class="bg-white form-control"></datepicker>
+                                                    :input-class="(postGData.title.id == !0)?'bg-white form-control':'form-control'"></datepicker>
                                                 </div>
                                             </div>
                                             <div class="col-1">
@@ -477,7 +517,10 @@ export default {
             en: en,
             es: es,
             // AUXILIARES
-            type_contract:'',
+            type_contract:{
+                type:null,
+                condition:null
+            },
             document:{
             	nro:null,
             	type:null
@@ -821,12 +864,12 @@ export default {
             switch (location.pathname){
                 case "/profesores/ordinarios":
                 {
-                    this.type_contract = 'ordinario';
+                    this.type_contract.type = 'ordinario';
                     break;  
                 }
                 case "/profesores/contratados":
                 {
-                    this.type_contract = 'contratado';
+                    this.type_contract.type = 'contratado';
                     break;  
                 }
             }
@@ -935,7 +978,8 @@ export default {
         	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar este docente')
             let url = '/update-teacher'
             axios.post(url,{
-                teacherData :this.teacherData
+                teacherData :this.teacherData,
+                type : this.type_contract
             }).then(response => {
                 swal.close()
                 $("#TeacherModal").modal('hide')
@@ -1027,6 +1071,10 @@ export default {
 		                mail_contact:model.person.mail_contact
 		            }
 	            }
+                if (model.condition !== undefined && model.condition !== null) {
+                    this.type_contract.condition = model.condition.name
+                    this.type_contract.type = model.contract
+                }
                 if (model.core !== undefined && model.core !== null) {
                     this.teacherData.core={
                         id:model.core.id,

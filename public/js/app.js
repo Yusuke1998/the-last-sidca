@@ -9545,6 +9545,46 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
@@ -9558,7 +9598,10 @@ __webpack_require__.r(__webpack_exports__);
       en: vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__["en"],
       es: vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__["es"],
       // AUXILIARES
-      type_contract: '',
+      type_contract: {
+        type: null,
+        condition: null
+      },
       document: {
         nro: null,
         type: null
@@ -9927,13 +9970,13 @@ __webpack_require__.r(__webpack_exports__);
       switch (location.pathname) {
         case "/profesores/ordinarios":
           {
-            this.type_contract = 'ordinario';
+            this.type_contract.type = 'ordinario';
             break;
           }
 
         case "/profesores/contratados":
           {
-            this.type_contract = 'contratado';
+            this.type_contract.type = 'contratado';
             break;
           }
       }
@@ -10050,7 +10093,8 @@ __webpack_require__.r(__webpack_exports__);
       this.$root.loading('Verificando y actualizando', 'Espere mientras se verifican los datos para actualizar este docente');
       var url = '/update-teacher';
       axios.post(url, {
-        teacherData: this.teacherData
+        teacherData: this.teacherData,
+        type: this.type_contract
       }).then(function (response) {
         swal.close();
         $("#TeacherModal").modal('hide');
@@ -10148,6 +10192,11 @@ __webpack_require__.r(__webpack_exports__);
             mail_contact: model.person.mail_contact
           }
         };
+
+        if (model.condition !== undefined && model.condition !== null) {
+          this.type_contract.condition = model.condition.name;
+          this.type_contract.type = model.contract;
+        }
 
         if (model.core !== undefined && model.core !== null) {
           this.teacherData.core = {
@@ -86769,11 +86818,11 @@ var render = function() {
               {
                 name: "show",
                 rawName: "v-show",
-                value: _vm.type_contract,
-                expression: "type_contract"
+                value: _vm.type_contract.type,
+                expression: "type_contract.type"
               }
             ],
-            domProps: { textContent: _vm._s(_vm.type_contract) }
+            domProps: { textContent: _vm._s(_vm.type_contract.type) }
           })
         ]),
         _vm._v(" "),
@@ -87093,6 +87142,8 @@ var render = function() {
                       "form",
                       { staticClass: "row" },
                       [
+                        _vm._m(2),
+                        _vm._v(" "),
                         _c("div", { staticClass: "col-6" }, [
                           _c("div", { staticClass: "form-group" }, [
                             _c("label", [_vm._v("Nro de Documento")]),
@@ -87293,7 +87344,9 @@ var render = function() {
                                   language: _vm.es,
                                   disabled: !_vm.exist_document,
                                   "disabled-dates": _vm.no_dates,
-                                  "input-class": "bg-white form-control"
+                                  "input-class": _vm.exist_document
+                                    ? "bg-white form-control"
+                                    : "form-control"
                                 },
                                 model: {
                                   value: _vm.teacherData.person.birthday,
@@ -87447,6 +87500,8 @@ var render = function() {
                             })
                           ])
                         ]),
+                        _vm._v(" "),
+                        _vm._m(3),
                         _vm._v(" "),
                         _c("div", { staticClass: "col-4" }, [
                           _c(
@@ -87646,7 +87701,72 @@ var render = function() {
                                   ])
                                 : _vm._e()
                             ]
-                          : _vm._e()
+                          : _vm._e(),
+                        _vm._v(" "),
+                        _vm._m(4),
+                        _vm._v(" "),
+                        _vm.type_contract.type == "contratado"
+                          ? _c("div", { staticClass: "col-12" }, [
+                              _c(
+                                "div",
+                                { staticClass: "form-group" },
+                                [
+                                  _c("label", [_vm._v("Condicion")]),
+                                  _vm._v(" "),
+                                  _c("v-select", {
+                                    attrs: {
+                                      disabled: !_vm.exist_document,
+                                      options: [
+                                        "contratado",
+                                        "honorario profesional",
+                                        "auxiliar docente"
+                                      ]
+                                    },
+                                    on: { input: _vm.getAreas },
+                                    model: {
+                                      value: _vm.type_contract.condition,
+                                      callback: function($$v) {
+                                        _vm.$set(
+                                          _vm.type_contract,
+                                          "condition",
+                                          $$v
+                                        )
+                                      },
+                                      expression: "type_contract.condition"
+                                    }
+                                  })
+                                ],
+                                1
+                              )
+                            ])
+                          : _vm._e(),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-12" }, [
+                          _c(
+                            "div",
+                            { staticClass: "form-group" },
+                            [
+                              _c("label", [_vm._v("Asignatura")]),
+                              _vm._v(" "),
+                              _c("v-select", {
+                                attrs: {
+                                  disabled: _vm.teacherData.headquarter.id == 0,
+                                  label: "name",
+                                  options: _vm.list_areas
+                                },
+                                on: { input: _vm.getPrograms },
+                                model: {
+                                  value: _vm.teacherData.area,
+                                  callback: function($$v) {
+                                    _vm.$set(_vm.teacherData, "area", $$v)
+                                  },
+                                  expression: "teacherData.area"
+                                }
+                              })
+                            ],
+                            1
+                          )
+                        ])
                       ],
                       2
                     )
@@ -87749,7 +87869,7 @@ var render = function() {
                       domProps: { textContent: _vm._s(_vm.modal_option) }
                     }),
                     _vm._v(" "),
-                    _vm._m(2)
+                    _vm._m(5)
                   ]),
                   _vm._v(" "),
                   _c("div", { staticClass: "block-content font-size-sm" }, [
@@ -87841,7 +87961,10 @@ var render = function() {
                                       disabled: _vm.preGData.title.id == 0,
                                       placeholder: "Año",
                                       "disabled-dates": _vm.no_dates,
-                                      "input-class": "bg-white form-control"
+                                      "input-class":
+                                        _vm.preGData.title.id == !0
+                                          ? "bg-white form-control"
+                                          : "form-control"
                                     },
                                     model: {
                                       value: _vm.preGData.date,
@@ -87877,7 +88000,7 @@ var render = function() {
                                 "table",
                                 { staticClass: "table table-bordered" },
                                 [
-                                  _vm._m(3),
+                                  _vm._m(6),
                                   _vm._v(" "),
                                   _c(
                                     "tbody",
@@ -88021,7 +88144,10 @@ var render = function() {
                                       disabled: _vm.postGData.title.id == 0,
                                       placeholder: "Año",
                                       "disabled-dates": _vm.no_dates,
-                                      "input-class": "bg-white form-control"
+                                      "input-class":
+                                        _vm.postGData.title.id == !0
+                                          ? "bg-white form-control"
+                                          : "form-control"
                                     },
                                     model: {
                                       value: _vm.postGData.date,
@@ -88057,7 +88183,7 @@ var render = function() {
                                 "table",
                                 { staticClass: "table table-bordered" },
                                 [
-                                  _vm._m(4),
+                                  _vm._m(7),
                                   _vm._v(" "),
                                   _c(
                                     "tbody",
@@ -88215,7 +88341,7 @@ var render = function() {
                       domProps: { textContent: _vm._s(_vm.modal_option) }
                     }),
                     _vm._v(" "),
-                    _vm._m(5)
+                    _vm._m(8)
                   ]),
                   _vm._v(" "),
                   _c("div", { staticClass: "block-content font-size-sm" }),
@@ -88295,7 +88421,7 @@ var render = function() {
                       domProps: { textContent: _vm._s(_vm.modal_option) }
                     }),
                     _vm._v(" "),
-                    _vm._m(6)
+                    _vm._m(9)
                   ]),
                   _vm._v(" "),
                   _c("div", { staticClass: "block-content font-size-sm" }),
@@ -88390,6 +88516,30 @@ var staticRenderFns = [
         },
         [_c("i", { staticClass: "fa fa-fw fa-times" })]
       )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12 text-center" }, [
+      _c("h4", [_vm._v("Informacion Personal")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12 text-center" }, [
+      _c("h4", [_vm._v("Lugar donde está Adscrito")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12 text-center" }, [
+      _c("h4", [_vm._v("Otros")])
     ])
   },
   function() {

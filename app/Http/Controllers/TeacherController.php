@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Type;
 use App\Person;
 use App\Teacher;
+use App\Condition;
 use App\Postgraduate;
 use App\Undergraduate;
 use Illuminate\Http\Request;
@@ -41,7 +42,7 @@ class TeacherController extends Controller
     public function filterTeacherDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $type = mb_strtolower($request->type,'UTF-8');
+        $type = mb_strtolower($request->type['type'],'UTF-8');
         $teachers = Teacher::with('person.user','person.document','headquarter','area','core','program','extension','TerritorialClassroom','condition');
 
         if (!is_null($type) && !empty($type)) {
@@ -69,6 +70,16 @@ class TeacherController extends Controller
             });
         }
         return $teachers->orderBy('updated_at','DESC')->paginate($request->sort);
+    }
+
+    public function setCondition($request)
+    {
+        if ($request->type['type'] == 'ordinario' && is_null($request->type['condition'])) {
+            return $condicion = Condition::where('contract','ordinario')->first();
+        }elseif ($request->type['type'] == 'contratado' && !is_null($request->type['condition'])) {
+            return $condicion = Condition::where('name','like','%'.$request->type['condition'].'%')
+                ->where('contract','contratado')->first();
+        }
     }
 
     public function store(Request $request)
@@ -99,13 +110,16 @@ class TeacherController extends Controller
                 $type = Type::where('name','teacher')->first();
                 $persona->types()->attach($type->id);
             }
+            $condicion = $this->setCondition($request);
             $profesor = Teacher::create([
-                'person_id'         =>$persona->id, 
-                'contract'          =>$request->type,
+                'person_id'         => $persona->id, 
+                'contract'          => $request->type['type'],
+                'condition_id'      => $condicion->id,
                 'headquarter_id'    => $request->teacherData['headquarter']['id'],
                 'area_id'           => $request->teacherData['area']['id'],
                 'program_id'        => $request->teacherData['program']['id']
             ]);
+
 
             if ($request->teacherData['core']['id'] > 0) {
                 $profesor->update(['core_id' => $request->teacherData['core']['id']]);
@@ -123,12 +137,14 @@ class TeacherController extends Controller
                 $type = Type::where('name','teacher')->first();
                 $persona->types()->attach($type->id);
             }
+            $condicion = $this->setCondition($request);
             $profesor = Teacher::create([
-                'person_id'         =>$persona->id, 
-                'contract'          =>$request->type,
+                'person_id'         => $persona->id, 
+                'contract'          => $request->type['type'],
+                'condition_id'      => $condicion->id,
                 'headquarter_id'    => $request->teacherData['headquarter']['id'],
                 'area_id'           => $request->teacherData['area']['id'],
-                'program_id'        => $request->teacherData['program']['id']
+                'program_id'        => $request->teacherData['program']['id'],
             ]);
 
             if ($request->teacherData['core']['id'] > 0) {
@@ -168,7 +184,9 @@ class TeacherController extends Controller
             'mail_contact'      => mb_strtolower($request->teacherData['person']['mail_contact'],'UTF-8'),
             'birthday'          => Carbon::parse($request->teacherData['person']['birthday'])->toDateString(),
         ]);
+        $condicion = $this->setCondition($request);
         $teacher->update([
+            'condition_id'   => $condicion->id,
             'headquarter_id' => $request->teacherData['headquarter']['id'],
             'area_id'        => $request->teacherData['area']['id'],
             'program_id'     => $request->teacherData['program']['id'],
@@ -188,10 +206,10 @@ class TeacherController extends Controller
 
     public function savePreG(Request $request){
         $data = request()->validate([
-            'preGData.title'      =>  'required',
-            'preGData.university' =>  'required',
-            'preGData.date'       =>  'required',
-            'preGData.teacher_id' =>  'required'
+            'preGData.title.title'      =>  'required',
+            'preGData.university.name'  =>  'required',
+            'preGData.date'             =>  'required',
+            'preGData.teacher_id'       =>  'required'
         ]);
         if ($request->preGData['id']==0) {
             $date = Carbon::parse($request->preGData['date'])->format('Y');
@@ -207,10 +225,10 @@ class TeacherController extends Controller
 
     public function savePostG(Request $request){
         $data = request()->validate([
-            'postGData.title'     =>  'required',
-            'postGData.university'=>  'required',
-            'postGData.date'      =>  'required',
-            'postGData.teacher_id'=>  'required'
+            'postGData.title.title'     =>  'required',
+            'postGData.university.name' =>  'required',
+            'postGData.date'            =>  'required',
+            'postGData.teacher_id'      =>  'required'
         ]);
         if ($request->postGData['id']==0) {
             $date = Carbon::parse($request->postGData['date'])->format('Y');

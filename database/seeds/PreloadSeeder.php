@@ -20,19 +20,19 @@ class PreloadSeeder extends Seeder
     {
         $condiciones = [
             [
-                'name' => 'Fijo',
+                'name' => 'fijo',
                 'contract'  => 'ordinario'
             ],
             [
-                'name' => 'Contratado',
+                'name' => 'contratado',
                 'contract'  => 'contratado'
             ],
             [
-                'name' => 'Honorario Profesional',
+                'name' => 'honorario profesional',
                 'contract'  => 'contratado'
             ],
             [
-                'name' => 'Auxiliar Docente',
+                'name' => 'auxiliar docente',
                 'contract'  => 'contratado'
             ]
         ];
