@@ -10,7 +10,7 @@ class CreateUndergraduatesTable extends Migration
     {
         Schema::create('undergraduates', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->date('date');
+            $table->year('date');
             
             $table->bigInteger('teacher_id')->unsigned(); #profesor
             $table->foreign('teacher_id')

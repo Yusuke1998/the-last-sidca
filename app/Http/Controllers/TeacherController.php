@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Type;
 use App\Person;
 use App\Teacher;
+use App\Postgraduate;
+use App\Undergraduate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -180,6 +182,44 @@ class TeacherController extends Controller
         }
         if ($request->teacherData['t_classroom']['id'] > 0) {
             $teacher->update(['territorial_classroom_id' => $request->teacherData['t_classroom']['id']]);
+        }
+        return;
+    }
+
+    public function savePreG(Request $request){
+        $data = request()->validate([
+            'preGData.title'      =>  'required',
+            'preGData.university' =>  'required',
+            'preGData.date'       =>  'required',
+            'preGData.teacher_id' =>  'required'
+        ]);
+        if ($request->preGData['id']==0) {
+            $date = Carbon::parse($request->preGData['date'])->format('Y');
+            Undergraduate::create([
+                'title_id'      =>  $request->preGData['title']['id'],
+                'university_id' =>  $request->preGData['university']['id'],
+                'teacher_id'    =>  $request->preGData['teacher_id'],
+                'date'          =>  $date
+            ]);
+        }
+        return;
+    }
+
+    public function savePostG(Request $request){
+        $data = request()->validate([
+            'postGData.title'     =>  'required',
+            'postGData.university'=>  'required',
+            'postGData.date'      =>  'required',
+            'postGData.teacher_id'=>  'required'
+        ]);
+        if ($request->postGData['id']==0) {
+            $date = Carbon::parse($request->postGData['date'])->format('Y');
+            Postgraduate::create([
+                'title_id'      =>  $request->postGData['title']['id'],
+                'university_id' =>  $request->postGData['university']['id'],
+                'teacher_id'    =>  $request->postGData['teacher_id'],
+                'date'          =>  $date
+            ]);
         }
         return;
     }

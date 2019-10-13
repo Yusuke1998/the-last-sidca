@@ -125,7 +125,12 @@
                                 <div class="col-4">
 	                                <div class="form-group">
 	                                    <label>Fecha de Nacimiento</label>
-	                                    <datepicker :disabled="!exist_document" :disabled-dates="no_dates" v-model="teacherData.person.birthday" input-class="bg-white form-control"></datepicker>
+	                                    <datepicker
+                                        :full-month-name="true"
+                                        :language="es" 
+                                        :disabled="!exist_document" 
+                                        :disabled-dates="no_dates" 
+                                        v-model="teacherData.person.birthday" input-class="bg-white form-control"></datepicker>
 	                                </div>
                                 </div>
                                 <div class="col-8">
@@ -258,8 +263,8 @@
                                             <!-- col-12 -->
                                             <div class="col-4">
                                                 <div class="form-group">
+                                                    <label>Universidad</label>
                                                     <v-select 
-                                                    placeholder="Universidad" 
                                                     @input="getTitles(preGData.university)" 
                                                     label="name"
                                                     v-model="preGData.university" 
@@ -268,6 +273,7 @@
                                             </div>
                                             <div class="col-4">
                                                 <div class="form-group">
+                                                    <label>Titulo Obtenido</label>
                                                     <v-select 
                                                     :disabled="preGData.university.id == 0"
                                                     placeholder="Titulo" 
@@ -278,7 +284,11 @@
                                             </div>
                                             <div class="col-3">
                                                 <div class="form-group">
-                                                    <datepicker 
+                                                    <label>Año de Obtención</label>
+                                                    <datepicker
+                                                    :language="es"
+                                                    :minimum-view="'year'"
+                                                    :format="'yyyy'" 
                                                     :disabled="preGData.title.id == 0"
                                                     placeholder="Año" 
                                                     :disabled-dates="no_dates" 
@@ -325,8 +335,8 @@
                                             <!-- col-12 -->
                                             <div class="col-4">
                                                 <div class="form-group">
+                                                    <label>Universidad</label>
                                                     <v-select 
-                                                    placeholder="Universidad" 
                                                     @input="getTitles(postGData.university)" 
                                                     label="name"
                                                     v-model="postGData.university" 
@@ -335,6 +345,7 @@
                                             </div>
                                             <div class="col-4">
                                                 <div class="form-group">
+                                                    <label>Titulo Obtenido</label>
                                                     <v-select
                                                     :disabled="postGData.university.id == 0" 
                                                     placeholder="Titulo" 
@@ -345,7 +356,11 @@
                                             </div>
                                             <div class="col-3">
                                                 <div class="form-group">
-                                                    <datepicker 
+                                                    <label>Año de Obtención</label>
+                                                    <datepicker
+                                                    :language="es"
+                                                    :minimum-view="'year'"
+                                                    :format="'yyyy'" 
                                                     :disabled="postGData.title.id == 0"
                                                     placeholder="Año" 
                                                     :disabled-dates="no_dates" 
@@ -393,7 +408,6 @@
                                 <i class="fa fa-fw fa-newspaper"></i>
                             </button>
                             <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
-                            <button @click="alert('Hola Mundo')" type="button" class="btn btn-sm btn-success" data-dismiss="modal"><i class="fa fa-check mr-1"></i>Guardar</button>
                         </div>
                     </div>
                 </div>
@@ -450,6 +464,7 @@
 	</div>
 </template>
 <script>
+import {en, es} from 'vuejs-datepicker/dist/locale'
 export default {
     mounted(){
         this.getDocuments();
@@ -459,6 +474,8 @@ export default {
     },
     data() {
 		return {
+            en: en,
+            es: es,
             // AUXILIARES
             type_contract:'',
             document:{
@@ -467,6 +484,7 @@ export default {
             },
             postGData:{
                 id:0,
+                teacher_id:0,
                 title:{
                     id:0,
                     title:null
@@ -479,6 +497,7 @@ export default {
             },
             preGData:{
                 id:0,
+                teacher_id:0,
                 title:{
                     id:0,
                     title:null
@@ -618,8 +637,40 @@ export default {
                 console.log(errors.response)
             })
         },
+        blankPreG(){
+            preGData={
+                id:0,
+                teacher_id:0,
+                title:{
+                    id:0,
+                    title:null
+                },
+                university:{
+                    id:0,
+                    name:null
+                },
+                date:null
+            }
+        },
         preGDataSave(){
-            alert('aaaaaaaaa')
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este pregrado')
+            let url = '/save-preG-title'
+            axios.post(url,{
+                preGData : this.preGData,
+            }).then(response => {
+                swal.close()
+                this.$alertify.success('Registro exitoso')
+                this.blankPreG()
+                this.getPreG()
+            }).catch(errors => {
+                swal.close()
+                if (status = 204)
+                {
+                    Object.values(errors.response.data.errors).forEach((element,indx) => {
+                        this.$alertify.error(element.toString())
+                    });
+                }
+            })
         },
         getPostG(){
             let url = location.origin+"/get-post-teacher/"+this.teacherData.id_teacher
@@ -629,8 +680,40 @@ export default {
                 console.log(errors.response)
             })
         },
+        blankPostG(){
+            postGData={
+                id:0,
+                teacher_id:0,
+                title:{
+                    id:0,
+                    title:null
+                },
+                university:{
+                    id:0,
+                    name:null
+                },
+                date:null
+            }
+        },
         postGDataSave(){
-            alert('aaaaaaaaa')
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este posgrado')
+            let url = '/save-postG-title'
+            axios.post(url,{
+                postGData : this.postGData,
+            }).then(response => {
+                swal.close()
+                this.$alertify.success('Registro exitoso')
+                this.blankPostG()
+                this.getPostG()
+            }).catch(errors => {
+                swal.close()
+                if (status = 204)
+                {
+                    Object.values(errors.response.data.errors).forEach((element,indx) => {
+                        this.$alertify.error(element.toString())
+                    });
+                }
+            })
         },
         getUniversities(){
             let url = location.origin+"/get-universities"
@@ -969,6 +1052,8 @@ export default {
 
             if (this.modal_type == 'sintCu') {
                 this.teacherData.id_teacher=model.id
+                this.postGData.teacher_id=model.id
+                this.preGData.teacher_id=model.id
                 this.getPreG();
                 this.getPostG();
                 this.getUniversities();
@@ -976,9 +1061,6 @@ export default {
 
             $("#"+modal_id).modal('show')
         }
-	},
-    computed:{
-
-    }
+	}
 }
 </script>

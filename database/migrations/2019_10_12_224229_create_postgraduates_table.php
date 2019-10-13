@@ -10,7 +10,7 @@ class CreatePostgraduatesTable extends Migration
     {
         Schema::create('postgraduates', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->date('date');
+            $table->year('date');
             
             $table->bigInteger('teacher_id')->unsigned(); #profesor
             $table->foreign('teacher_id')

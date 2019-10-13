@@ -143,6 +143,9 @@ Route::post('/get-teachers','TeacherController@teacherDataTable');
 Route::post('/store-teacher','TeacherController@store');
 Route::post('/update-teacher','TeacherController@update');
 Route::post('/delete-teacher','TeacherController@destroy');
+
+Route::post('/save-preG-title','TeacherController@savePreG');
+Route::post('/save-postG-title','TeacherController@savePostG');
 // FIN PROFESORES
 
 // NOTIFICACIONES

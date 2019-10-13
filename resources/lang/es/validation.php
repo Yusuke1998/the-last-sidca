@@ -186,7 +186,13 @@ return [
         'teacherData.person.lastname'     => 'apellidos', 
         'teacherData.person.document.id'  => 'documento',
         'teacherData.person.nro_document' => 'numero de documento',
-        'teacherData.person.birthday'     => 'fecha de nacimiento'
+        'teacherData.person.birthday'     => 'fecha de nacimiento',
+        'preGData.title'                  => 'titulo obtenido',
+        'preGData.university'             => 'universidad',
+        'preGData.date'                   => 'fecha de obtencion',
+        'postGData.title'                 => 'titulo obtenido',
+        'postGData.university'            => 'universidad',
+        'postGData.date'                  => 'fecha de obtencion',
     ],
 
 ];
