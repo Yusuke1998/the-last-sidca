@@ -98,7 +98,7 @@
                                 <div class="col-3">
                                 	<div class="form-group">
                                 		<label for="">Nivel</label>
-                                		<v-select label="level" v-model="TitleData.level" :options="['Licenciado','Maestria']"></v-select>
+                                		<v-select label="level" v-model="TitleData.level" :options="['doctorado','maestria','especializacion']"></v-select>
                                 	</div>
                                 </div>
                                 <div class="col-4">

@@ -42,61 +42,111 @@
                     <span class="nav-main-link-name">ADMINISTRACION</span>
                 </a>
             </li>
+            <li class="nav-main-item {{ Sidebar::here(['profesores','profesores/ordinarios','profesores/contratados']) }}">
+                <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
+                    <i class="nav-main-link-icon si si-energy"></i>
+                    <span class="nav-main-link-name">PERSONAL DOCENTE</span>
+                </a>
+                <ul class="nav-main-submenu">
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('profesores/ordinarios')?'active':'' }}" href="{{ route('ordinary.index') }}">
+                            <span class="nav-main-link-name">Ordinario</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('profesores/contratados')?'active':'' }}" href="{{ route('hired.index') }}">
+                            <span class="nav-main-link-name">Contratado</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
             <li class="nav-main-item">
                 <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
                     <i class="nav-main-link-icon si si-energy"></i>
-                    <span class="nav-main-link-name">NOMINA</span>
+                    <span class="nav-main-link-name">MOVIMIENTOS DOCENTE</span>
                 </a>
                 <ul class="nav-main-submenu">
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Nueva</span>
+                        <a class="nav-main-link" href="">
+                            <span class="nav-main-link-name">Concurso de Oposicion</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Seguimiento</span>
+                        <a class="nav-main-link" href="">
+                            <span class="nav-main-link-name">Convalidacion de Ascensos</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Relación</span>
+                        <a class="nav-main-link" href="">
+                            <span class="nav-main-link-name">Comision de Servicios</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">Devolución</span>
+                        <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
+                            <span class="nav-main-link-name">Permisos</span>
+                        </a>
+                        <ul class="nav-main-submenu">
+                            <li class="nav-main-item">
+                                <a class="nav-main-link" href="">
+                                    <span class="nav-main-link-name">Remunerados</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item">
+                                <a class="nav-main-link" href="">
+                                    <span class="nav-main-link-name">No Remunerados</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="">
+                            <span class="nav-main-link-name">Traslados</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="">
+                            <span class="nav-main-link-name">Disfrute de año Sabatico</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="">
+                            <span class="nav-main-link-name">Reincorporaciones</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="">
+                            <span class="nav-main-link-name">Jubilaciones</span>
                         </a>
                     </li>
                 </ul>
             </li>
-            <li class="nav-main-item {{ Sidebar::here(['profesores']) }}">
+            <li class="nav-main-item">
                 <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
                     <i class="nav-main-link-icon si si-energy"></i>
-                    <span class="nav-main-link-name">PROFESOR</span>
+                    <span class="nav-main-link-name">NOMINAS DOCENTE</span>
                 </a>
                 <ul class="nav-main-submenu">
-                    <li class="nav-main-item {{ request()->is('profesores')?'active':'' }}">
-                        <a class="nav-main-link" href="{{ route('teacher.index') }}">
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="">
+                            <span class="nav-main-link-name">Carga Horaria</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="nav-main-item">
+                <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
+                    <i class="nav-main-link-icon si si-energy"></i>
+                    <span class="nav-main-link-name">PROCEDIMIENTO ADMINISTRATIVO</span>
+                </a>
+                <ul class="nav-main-submenu">
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="">
                             <span class="nav-main-link-name">Todos</span>
                         </a>
                     </li>
                 </ul>
             </li>
-            <li class="nav-main-item {{ Sidebar::here(['usuarios']) }}">
-                <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
-                    <i class="nav-main-link-icon si si-energy"></i>
-                    <span class="nav-main-link-name">USUARIO</span>
-                </a>
-                <ul class="nav-main-submenu">
-                    <li class="nav-main-item {{ request()->is('usuarios')?'active':'' }}">
-                        <a class="nav-main-link" href="{{ route('users.index') }}">
-                            <span class="nav-main-link-name">Todos</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li class="nav-main-item {{ Sidebar::preload_here(['areas','carreras','nucleos','sedes','periodos','programas','asignaturas','titulos','universidades'])}}">
+            <li class="nav-main-item {{ Sidebar::preload_here(['areas','carreras','nucleos','sedes','periodos','programas','asignaturas','titulos','universidades','extensiones'])}}">
                 <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
                     <i class="nav-main-link-icon si si-energy"></i>
                     <span class="nav-main-link-name">PRECARGA DE DATOS</span>
@@ -154,32 +204,21 @@
                     </li>
                 </ul>
             </li>
-            <li class="nav-main-item">
-                <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
-                    <i class="nav-main-link-icon si si-energy"></i>
-                    <span class="nav-main-link-name">REPORTES</span>
-                </a>
-                <ul class="nav-main-submenu">
-                    <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">PDF</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link" href="#">
-                            <span class="nav-main-link-name">EXCEL</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li class="nav-main-item">
+            <li class="nav-main-item {{ Sidebar::preload_here(['autoridades']) }} {{ Sidebar::here(['usuarios']) }}">
                 <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
                     <i class="nav-main-link-icon si si-energy"></i>
                     <span class="nav-main-link-name">CONFIGURACIÓN</span>
                 </a>
                 <ul class="nav-main-submenu">
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{ route('authority.index') }}">
+                        <a class="nav-main-link {{ request()->is('usuarios')?'active':'' }}" href="{{ route('users.index') }}">
+                            <span class="nav-main-link-name">USUARIOS</span>
+                        </a>
+                    </li>
+                </ul>
+                <ul class="nav-main-submenu">
+                    <li class="nav-main-item">
+                        <a class="nav-main-link {{ request()->is('precarga/autoridades')?'active':'' }}" href="{{ route('authority.index') }}">
                             <span class="nav-main-link-name">AUTORIDADES</span>
                         </a>
                     </li>

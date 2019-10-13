@@ -177,6 +177,16 @@ return [
         'acronym'               =>  'siglas',  
         'programs'              =>  'programas',
         'program'               =>  'programa',
+
+        // Profesor
+        'teacherData.headquarter.name'    => 'sede',
+        'teacherData.area.name'           => 'area',
+        'teacherData.program.name'        => 'programa',
+        'teacherData.person.firstname'    => 'nombres',
+        'teacherData.person.lastname'     => 'apellidos', 
+        'teacherData.person.document.id'  => 'documento',
+        'teacherData.person.nro_document' => 'numero de documento',
+        'teacherData.person.birthday'     => 'fecha de nacimiento'
     ],
 
 ];

@@ -10,9 +10,14 @@ use Illuminate\Support\Carbon;
 
 class TeacherController extends Controller
 {
-    public function index()
+    public function hired()
     {
-        return view('teachers.index');
+        return view('teachers.hired');
+    }
+
+    public function ordinary()
+    {
+        return view('teachers.ordinary');
     }
 
     public function teacherDataTable(Request $request)
@@ -34,7 +39,12 @@ class TeacherController extends Controller
     public function filterTeacherDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $teachers = Teacher::with('person.user','person.document');
+        $type = mb_strtolower($request->type,'UTF-8');
+        $teachers = Teacher::with('person.user','person.document','headquarter','area','core','program','extension','TerritorialClassroom','condition');
+
+        if (!is_null($type) && !empty($type)) {
+            $teachers->where('contract',$type);
+        }
 
         if (!is_null($search) && !empty($search)) {
             $teachers
@@ -61,6 +71,16 @@ class TeacherController extends Controller
 
     public function store(Request $request)
     {
+        request()->validate([
+            'teacherData.headquarter.name'    => 'required',
+            'teacherData.area.name'           => 'required',
+            'teacherData.program.name'        => 'required',
+            'teacherData.person.firstname'    => 'required',
+            'teacherData.person.lastname'     => 'required', 
+            'teacherData.person.document.id'  => 'required',
+            'teacherData.person.birthday'     => 'required|date'
+        ]);
+
         if ($request->teacherData['id_teacher'] == 0 && $request->teacherData['person']['id'] == 0) {
             $persona = Person::create([
                 'firstname'     => $request->teacherData['person']['firstname'],
@@ -77,7 +97,23 @@ class TeacherController extends Controller
                 $type = Type::where('name','teacher')->first();
                 $persona->types()->attach($type->id);
             }
-            $profesor = Teacher::create(['person_id'=>$persona->id]);
+            $profesor = Teacher::create([
+                'person_id'         =>$persona->id, 
+                'contract'          =>$request->type,
+                'headquarter_id'    => $request->teacherData['headquarter']['id'],
+                'area_id'           => $request->teacherData['area']['id'],
+                'program_id'        => $request->teacherData['program']['id']
+            ]);
+
+            if ($request->teacherData['core']['id'] > 0) {
+                $profesor->update(['core_id' => $request->teacherData['core']['id']]);
+            }
+            if ($request->teacherData['extension']['id'] > 0) {
+                $profesor->update(['extension_id' => $request->teacherData['extension']['id']]);
+            }
+            if ($request->teacherData['t_classroom']['id'] > 0) {
+                $profesor->update(['territorial_classroom_id' => $request->teacherData['t_classroom']['id']]);
+            }
 
         }elseif ($request->teacherData['id_teacher'] == 0 && $request->teacherData['person']['id'] > 0) {
             $persona = Person::findOrFail($request->teacherData['person']['id']);
@@ -85,24 +121,66 @@ class TeacherController extends Controller
                 $type = Type::where('name','teacher')->first();
                 $persona->types()->attach($type->id);
             }
-            $profesor = Teacher::create(['person_id'=>$persona->id]);
+            $profesor = Teacher::create([
+                'person_id'         =>$persona->id, 
+                'contract'          =>$request->type,
+                'headquarter_id'    => $request->teacherData['headquarter']['id'],
+                'area_id'           => $request->teacherData['area']['id'],
+                'program_id'        => $request->teacherData['program']['id']
+            ]);
+
+            if ($request->teacherData['core']['id'] > 0) {
+                $profesor->update(['core_id' => $request->teacherData['core']['id']]);
+            }
+            if ($request->teacherData['extension']['id'] > 0) {
+                $profesor->update(['extension_id' => $request->teacherData['extension']['id']]);
+            }
+            if ($request->teacherData['t_classroom']['id'] > 0) {
+                $profesor->update(['territorial_classroom_id' => $request->teacherData['t_classroom']['id']]);
+            }
         }
     }
 
     public function update(Request $request)
     {
+        request()->validate([
+            'teacherData.headquarter.name'    => 'required',
+            'teacherData.area.name'           => 'required',
+            'teacherData.program.name'        => 'required',
+            'teacherData.person.firstname'    => 'required',
+            'teacherData.person.lastname'     => 'required', 
+            'teacherData.person.document.id'  => 'required',
+            'teacherData.person.nro_document' => 'required',
+            'teacherData.person.birthday'     => 'required|date'
+        ]);
+
         $teacher = Teacher::findOrFail($request->teacherData['id_teacher']);
         $teacher->person->update([
-            'firstname'     => $request->teacherData['person']['firstname'],
-            'lastname'      => $request->teacherData['person']['lastname'], 
-            'document_id'   => $request->teacherData['person']['document']['id'],
-            'nro_document'  => $request->teacherData['person']['nro_document'],
-            'local_phone'   => $request->teacherData['person']['local_phone'],
-            'movil_phone'   => $request->teacherData['person']['movil_phone'],
-            'direction'     => mb_strtolower($request->teacherData['person']['direction'],'UTF-8'),
-            'mail_contact'  => mb_strtolower($request->teacherData['person']['mail_contact'],'UTF-8'),
-            'birthday'      => Carbon::parse($request->teacherData['person']['birthday'])->toDateString(),
+            'firstname'         => $request->teacherData['person']['firstname'],
+            'lastname'          => $request->teacherData['person']['lastname'], 
+            'document_id'       => $request->teacherData['person']['document']['id'],
+            'nro_document'      => $request->teacherData['person']['nro_document'],
+            'local_phone'       => $request->teacherData['person']['local_phone'],
+            'movil_phone'       => $request->teacherData['person']['movil_phone'],
+            'direction'         => mb_strtolower($request->teacherData['person']['direction'],'UTF-8'),
+            'mail_contact'      => mb_strtolower($request->teacherData['person']['mail_contact'],'UTF-8'),
+            'birthday'          => Carbon::parse($request->teacherData['person']['birthday'])->toDateString(),
         ]);
+        $teacher->update([
+            'headquarter_id' => $request->teacherData['headquarter']['id'],
+            'area_id'        => $request->teacherData['area']['id'],
+            'program_id'     => $request->teacherData['program']['id'],
+        ]);
+
+        if ($request->teacherData['core']['id'] > 0) {
+            $teacher->update(['core_id' => $request->teacherData['core']['id']]);
+        }
+        if ($request->teacherData['extension']['id'] > 0) {
+            $teacher->update(['extension_id' => $request->teacherData['extension']['id']]);
+        }
+        if ($request->teacherData['t_classroom']['id'] > 0) {
+            $teacher->update(['territorial_classroom_id' => $request->teacherData['t_classroom']['id']]);
+        }
         return;
     }
 

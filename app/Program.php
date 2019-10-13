@@ -6,11 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Program extends Model
 {
-    protected $fillable = ['name','area_id'];
+    protected $fillable = ['name','headquarter_id','area_id'];
+
+    public function headquarter()
+    {
+    	return $this->belongsTo(Headquarter::class);
+    }
 
     public function area()
     {
-    	return $this->belongsTo(Area::class);
+        return $this->belongsTo(Area::class);
     }
 
     public function subjects()

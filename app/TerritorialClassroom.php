@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Territorial_Classroom extends Model
+class TerritorialClassroom extends Model
 {
     protected $fillable = ['name','area_id','program_id'];
 

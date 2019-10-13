@@ -12,9 +12,9 @@ class AreaController extends Controller
         return view('preload.areas');
     }
 
-    public function getAll()
+    public function getAll($id)
     {
-        $areas = Area::all();
+        $areas = Area::where('headquarter_id',$id)->get();
         return $areas;
     }
 

@@ -13,7 +13,13 @@ class ProgramController extends Controller
         return view('preload.programs');
     }
 
-    public function getAll()
+    public function getAll($id)
+    {
+        $programas = Program::where('area_id',$id)->get();
+        return $programas;
+    }
+
+    public function getMany()
     {
         $programas = Program::all();
         return $programas;
@@ -38,7 +44,7 @@ class ProgramController extends Controller
     public function filterProgramDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $programas = Program::with('area');
+        $programas = Program::with('area','headquarter');
 
         if (!is_null($search) && !empty($search)) {
             $programas
@@ -57,15 +63,18 @@ class ProgramController extends Controller
     public function store(Request $request)
     {
         $data = request()->validate([
-            'name'=>'required|min:3|max:50|string',
-            'area.id'=>'required',
-            'area.name'=>'required'
+            'name'              =>'required|min:3|max:50|string',
+            'area.id'           =>'required',
+            'area.name'         =>'required',
+            'headquarter.id'    =>'required',
+            'headquarter.name'  =>'required'
         ]);
 
         if ($request->id == 0) {
             $programa = Program::create([
-                'name'=>$request->name,
-                'area_id'=>$request->area['id'],
+                'name'          =>$request->name,
+                'area_id'       =>$request->area['id'],
+                'headquarter_id'=>$request->headquarter['id'],
             ]);
         }
         return;
@@ -74,14 +83,16 @@ class ProgramController extends Controller
     public function update(Request $request)
     {
         $data = request()->validate([
-            'name'=>'required|min:3|max:50|string',
-            'area'=>'required'
+            'name'          =>'required|min:3|max:50|string',
+            'area'          =>'required',
+            'headquarter'   =>'required'
         ]);
         if ($request->id > 0) {
             $programa = Program::findOrFail($request->id);
             $programa->update([
-                'name'=>$request->name,
-                'area_id'=>$request->area['id'],
+                'name'          =>$request->name,
+                'area_id'       =>$request->area['id'],
+                'headquarter_id'=>$request->headquarter['id'],
             ]);
         }
     }

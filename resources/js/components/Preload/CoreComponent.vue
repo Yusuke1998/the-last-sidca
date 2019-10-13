@@ -33,6 +33,7 @@
 			                <tr>
 			                    <th>#</th>
 			                    <th>Nombre</th>
+                                <th>Sede</th>
                                 <th>Area</th>
 			                    <th>Programa</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
@@ -40,11 +41,12 @@
 			            </thead>
 			            <tbody>
 			            	<tr v-if="!table_data.length > 0">
-			                    <td colspan="5" class="bg-secondary text-center text-light">No se encontraron datos.</td>
+			                    <td colspan="6" class="bg-secondary text-center text-light">No se encontraron datos.</td>
 			                </tr>
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
+                                <td class="font-w600 font-size-sm" v-text="item_table.headquarter.name"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.area.name"></td>
                                 <td class="font-w600 font-size-sm" v-text="item_table.program.name"></td>
 			                    <td class="text-center">
@@ -84,22 +86,28 @@
                         <div class="block-content font-size-sm">
                             <form class="row" @keydown.enter.prevent="storeData">
                                 <!-- col-12 -->
-                                <div class="col-4">
+                                <div class="col-3">
                                 	<div class="form-group">
                                 		<label for="">Nombre</label>
                                 		<input type="text" class="form-control" v-model="CoreData.name">
                                 	</div>
                                 </div>
-                                <div class="col-4">
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label>Sede</label>
+                                        <v-select label="name" v-model="CoreData.headquarter" @input="getAreas" :options="list_headquarters"></v-select>
+                                    </div>
+                                </div>
+                                <div class="col-3">
                                 	<div class="form-group">
                                 		<label>Area</label>
-                                    	<v-select label="name" v-model="CoreData.area" :options="list_areas"></v-select>
+                                    	<v-select label="name" :disabled="this.CoreData.headquarter.id == 0 || list_areas.length == 0" @input="getPrograms" v-model="CoreData.area" :options="list_areas"></v-select>
                                 	</div>
                                 </div>
-                                <div class="col-4">
+                                <div class="col-3">
                                     <div class="form-group">
                                         <label>Programa</label>
-                                        <v-select label="name" v-model="CoreData.program" :options="list_programs"></v-select>
+                                        <v-select label="name" :disabled="this.CoreData.area.id == 0 || list_programs.length == 0" v-model="CoreData.program" :options="list_programs"></v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
@@ -122,17 +130,21 @@
 export default {
     mounted(){
     	this.getData();
-    	this.getAreas();
-        this.getPrograms();
+    	this.getHeadquarters();
     },
     data() {
 		return {
             // AUXILIARES
+            list_headquarters:[],
             list_areas:[],
             list_programs:[],
             CoreData:{
             	id: 0,
                 name: null,
+                headquarter:{
+                    id:0,
+                    name:null
+                },
                 area:{
                 	id:0,
                 	name:null
@@ -162,9 +174,19 @@ export default {
         }
 	},
 	methods:{
-		getAreas()
+		getHeadquarters()
         {
-            let url = "/get-areas"
+            let url = location.origin+"/get-headquarters"
+            axios.get(url).then(response => {
+                this.list_headquarters = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        getAreas()
+        {
+            let idH = this.CoreData.headquarter.id 
+            let url = location.origin+"/get-areas/"+idH
             axios.get(url).then(response => {
                 this.list_areas = response.data
             }).catch(errors =>{
@@ -173,7 +195,8 @@ export default {
         },
         getPrograms()
         {
-            let url = "/get-programs"
+            let idA = this.CoreData.area.id 
+            let url = location.origin+"/get-programs/"+idA
             axios.get(url).then(response => {
                 this.list_programs = response.data
             }).catch(errors =>{
@@ -184,6 +207,10 @@ export default {
 			this.CoreData={
             	id: 0,
                 name: null,
+                headquarter:{
+                    id:0,
+                    name:null
+                },
                 area:{
                 	id:0,
                 	name:null
@@ -287,6 +314,10 @@ export default {
         		this.CoreData = {
         			id:model.id,
         			name:model.name,
+                    headquarter:{
+                        id:model.headquarter.id,
+                        name:model.headquarter.name
+                    },
         			area:{
 	                	id:model.area.id,
 	                	name:model.area.name

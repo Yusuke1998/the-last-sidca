@@ -12,9 +12,9 @@ class CoreController extends Controller
         return view('preload.cores');
     }
 
-    public function getAll()
+    public function getAll($area,$program)
     {
-        $nucleos = Core::all();
+        $nucleos = Core::where('area_id',$area)->where('program_id',$program)->get();
         return $nucleos;
     }
 
@@ -37,11 +37,14 @@ class CoreController extends Controller
     public function filterCoreDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $cores = Core::with('area','program');
+        $cores = Core::with('area','program','headquarter');
 
         if (!is_null($search) && !empty($search)) {
             $cores
             ->where('name','like','%'.$search.'%')
+            ->orWhereHas('headquarter',function ($query) use ($search) {
+                $query->where('name','like','%'.$search.'%');
+            })
             ->orWhereHas('area',function ($query) use ($search) {
                 $query->where('name','like','%'.$search.'%');
             })
@@ -56,6 +59,7 @@ class CoreController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
+            'headquarter'=>'required',
             'area'=>'required',
             'program'=>'required'
         ]);
@@ -63,6 +67,7 @@ class CoreController extends Controller
         if ($request->id == 0) {
             Core::create([
                 'name'=>$request->name,
+                'headquarter_id'=>$request->headquarter['id'],
                 'area_id'=>$request->area['id'],
                 'program_id'=>$request->program['id']
             ]);
@@ -74,6 +79,7 @@ class CoreController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
+            'headquarter'=>'required',
             'area'=>'required',
             'program'=>'required'
         ]);
@@ -82,6 +88,7 @@ class CoreController extends Controller
             Core::findOrFail($request->id)
             ->update([
                 'name'=>$request->name,
+                'headquarter_id'=>$request->headquarter['id'],
                 'area_id'=>$request->area['id'],
                 'program_id'=>$request->program['id']
             ]);

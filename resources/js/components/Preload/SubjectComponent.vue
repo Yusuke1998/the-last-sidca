@@ -111,7 +111,7 @@
                                 </div>
                                 <div class="col-3">
                                 	<div class="form-group">
-                                		<label>Carrera(s)</label>
+                                		<label>Programa(s)</label>
                                     	<v-select multiple label="name" v-model="SubjectData.programs" :options="list_programs"></v-select>
                                 	</div>
                                 </div>

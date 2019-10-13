@@ -2,8 +2,8 @@
 	<div class="container">
 		<div class="block">
 			<div class="block-header bg-primary-dark">
-				<h3 class="block-title text-white text-center">PROFESORES</h3>
-    			<button type="button" data-toggle="tooltip" title="Nuevo Profesor" @click="showModal('TeacherModal',null,'Nuevo Profesor','store')" class="btn btn-success">
+				<h3 class="block-title text-white text-center">PERSONAL DOCENTE <span v-show="type_contract" v-text="type_contract"></span></h3>
+    			<button type="button" data-toggle="tooltip" title="Nuevo" @click="showModal('TeacherModal',null,'Nuevo','store')" class="btn btn-success">
                     <i class="fa fa-plus"></i>
                 </button>
 			</div>
@@ -19,7 +19,7 @@
 		    		<div class="col-4 offset-6">
 		    			<div class="input-group input-group-primary">
 		    				<div class="input-group-prepend">
-                                <button @click="getData()" type="button" class="btn btn-primary">
+                                <button data-toggle="tooltip" title="Buscar" @click="getData()" type="button" class="btn btn-primary">
                                     <i class="fa fa-search"></i>
                                 </button>
                             </div>
@@ -34,25 +34,30 @@
 			                    <th>#</th>
 			                    <th>Nombres</th>
 			                    <th>Apellidos</th>
-			                    <th>Documento</th>
+                                <th>Documento</th>
+			                    <th>Condicion</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
 			            <tbody>
 			            	<tr v-if="!table_data.length > 0">
-			                    <td colspan="5" class="bg-secondary text-center text-light">No se encontraron datos.</td>
+			                    <td colspan="6" class="bg-secondary text-center text-light">No se encontraron datos.</td>
 			                </tr>
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.person.firstname"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.person.lastname"></td>
-			                    <td class="font-w600 font-size-sm" v-text="item_table.person.document.name+' '+item_table.person.nro_document"></td>
+                                <td class="font-w600 font-size-sm" v-text="item_table.person.document.name+' '+item_table.person.nro_document"></td>
+			                    <td class="font-w600 font-size-sm text-uppercase" v-text="item_table.condition.name"></td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
-			                            <button type="button" @click="showModal('TeacherModal',item_table,'Editar datos del Profesor','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar datos del Profesor">
+                                        <button type="button" @click="showModal('ProModal',item_table,'Sintesis Curricular','sintCu')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Sintesis Curricular">
+                                            <i class="fa fa-fw fa-address-card"></i>
+                                        </button>
+			                            <button type="button" @click="showModal('TeacherModal',item_table,'Editar','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
 			                                <i class="fa fa-fw fa-pencil-alt"></i>
 			                            </button>
-			                            <button type="button" @click="deleteData(item_table.id)" class="btn btn-sm btn-light" data-toggle="tooltip" title="Eliminar Profesor">
+			                            <button type="button" @click="deleteData(item_table.id)" class="btn btn-sm btn-light" data-toggle="tooltip" title="Eliminar">
 			                                <i class="fa fa-fw fa-times"></i>
 			                            </button>
 			                        </div>
@@ -89,7 +94,7 @@
                                 		<label>Nro de Documento</label>
                                         <div class="input-group">
                                             <div :hidden="exist_document" class="input-group-prepend">
-                                                <button @click="checkDocument" type="button" class="btn btn-primary">
+                                                <button @click="checkDocument" type="button" class="btn btn-primary"data-toggle="tooltip" title="Buscar">
                                                     <i class="fa fa-search mr-1"></i>
                                                 </button>
                                             </div>
@@ -149,6 +154,73 @@
 	                                </div>
                                 </div>
                                 <!-- col-12 -->
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label>Sede</label>
+                                        <v-select 
+                                        :disabled="!exist_document" 
+                                        @input="getAreas" 
+                                        label="name" 
+                                        v-model="teacherData.headquarter" 
+                                        :options="list_headquarters"></v-select>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label>Area</label>
+                                        <v-select 
+                                        :disabled="teacherData.headquarter.id == 0" 
+                                        @input="getPrograms" 
+                                        label="name" 
+                                        v-model="teacherData.area" 
+                                        :options="list_areas"></v-select>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label>Programa</label>
+                                        <v-select 
+                                        :disabled="teacherData.area.id == 0" 
+                                        @input="setExtras" 
+                                        label="name" 
+                                        v-model="teacherData.program" 
+                                        :options="list_programs"></v-select>
+                                    </div>
+                                </div>
+                                <!-- col-12 -->
+                                <template v-if="teacherData.headquarter.id > 0 && teacherData.area.id > 0 && teacherData.program.id > 0">
+                                    <div class="col-4" v-if="list_cores.length > 0">
+                                        <div class="form-group">
+                                            <label>Nucleo</label>
+                                            <v-select 
+                                            :disabled="teacherData.extension.id > 0 || teacherData.t_classroom.id > 0" 
+                                            label="name" 
+                                            v-model="teacherData.core" 
+                                            :options="list_cores"></v-select>
+                                        </div>
+                                    </div>
+                                    <div class="col-4" v-if="list_extensions.length > 0">
+                                        <div class="form-group">
+                                            <label>Extension</label>
+                                            <v-select 
+                                            :disabled="teacherData.core.id > 0 || teacherData.t_classroom.id > 0" 
+                                            label="name" 
+                                            v-model="teacherData.extension" 
+                                            :options="list_extensions"></v-select>
+                                        </div>
+                                    </div>
+                                    <div class="col-4" v-if="list_t_classrooms.length > 0">
+                                        <div class="form-group">
+                                            <label>Aula Territorial</label>
+                                            <v-select 
+                                            :disabled="teacherData.extension.id > 0 || teacherData.core.id > 0" 
+                                            label="name" 
+                                            v-model="teacherData.t_classroom" 
+                                            :options="list_t_classrooms"></v-select>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- col-12 -->
                             </form>
                         </div>
                         <div class="block-content block-content-full text-right border-top">
@@ -162,26 +234,300 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="ProModal" tabindex="-1" role="dialog" aria-labelledby="modal-block-extra-large" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="block block-themed block-transparent mb-0">
+                        <div class="block-header bg-primary-dark">
+                            <h3 class="block-title" v-text="modal_option"></h3>
+                            <div class="block-options">
+                                <button type="button" class="btn-block-option" data-dismiss="modal" aria-label="Close">
+                                    <i class="fa fa-fw fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="block-content font-size-sm">
+                            <div class="row">
+                                <div class="block col-12">
+                                    <div class="block-title">
+                                        Pregrado
+                                    </div>
+                                    <div class="block-content">
+                                        <form class="row">
+                                            <!-- col-12 -->
+                                            <div class="col-4">
+                                                <div class="form-group">
+                                                    <v-select 
+                                                    placeholder="Universidad" 
+                                                    @input="getTitles(preGData.university)" 
+                                                    label="name"
+                                                    v-model="preGData.university" 
+                                                    :options="list_universities"></v-select>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="form-group">
+                                                    <v-select 
+                                                    :disabled="preGData.university.id == 0"
+                                                    placeholder="Titulo" 
+                                                    label="title"
+                                                    v-model="preGData.title" 
+                                                    :options="list_titles"></v-select>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="form-group">
+                                                    <datepicker 
+                                                    :disabled="preGData.title.id == 0"
+                                                    placeholder="Año" 
+                                                    :disabled-dates="no_dates" 
+                                                    v-model="preGData.date" 
+                                                    input-class="bg-white form-control"></datepicker>
+                                                </div>
+                                            </div>
+                                            <div class="col-1">
+                                                <button @click.prevent="preGDataSave" class="btn btn-outline-primary">
+                                                    <i class="fa fa-check-circle"></i>
+                                                </button>
+                                            </div>
+                                            <!-- col-12 -->
+                                            <div class="col-12">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr class="text-center">
+                                                            <th>Universidad</th>
+                                                            <th>Titulo</th>
+                                                            <th>Año</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-if="list_preGTeacher.length == 0">
+                                                            <td class="text-center text-white bg-primary-dark" colspan="3">No hay registros...</td>
+                                                        </tr>
+                                                        <tr v-else v-for="pregrado in list_preGTeacher">
+                                                            <td v-text="pregrado.university.name"></td>
+                                                            <td v-text="pregrado.title.title"></td>
+                                                            <td v-text="pregrado.date"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="block col-12">
+                                    <div class="block-title">
+                                        Posgrado
+                                    </div>
+                                    <div class="block-content">
+                                        <form class="row">
+                                            <!-- col-12 -->
+                                            <div class="col-4">
+                                                <div class="form-group">
+                                                    <v-select 
+                                                    placeholder="Universidad" 
+                                                    @input="getTitles(postGData.university)" 
+                                                    label="name"
+                                                    v-model="postGData.university" 
+                                                    :options="list_universities"></v-select>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="form-group">
+                                                    <v-select
+                                                    :disabled="postGData.university.id == 0" 
+                                                    placeholder="Titulo" 
+                                                    label="title"
+                                                    v-model="postGData.title" 
+                                                    :options="list_titles"></v-select>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="form-group">
+                                                    <datepicker 
+                                                    :disabled="postGData.title.id == 0"
+                                                    placeholder="Año" 
+                                                    :disabled-dates="no_dates" 
+                                                    v-model="postGData.date" 
+                                                    input-class="bg-white form-control"></datepicker>
+                                                </div>
+                                            </div>
+                                            <div class="col-1">
+                                                <button @click.prevent="postGDataSave" class="btn btn-outline-primary">
+                                                    <i class="fa fa-check-circle"></i>
+                                                </button>
+                                            </div>
+                                            <!-- col-12 -->
+                                            <div class="col-12">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr class="text-center">
+                                                            <th>Universidad</th>
+                                                            <th>Titulo</th>
+                                                            <th>Año</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-if="list_postGTeacher.length == 0">
+                                                            <td class="text-center text-white bg-primary-dark" colspan="3">No hay registros...</td>
+                                                        </tr>
+                                                        <tr v-else v-for="posgrado in list_postGTeacher">
+                                                            <td v-text="posgrado.university.name"></td>
+                                                            <td v-text="posgrado.title.title"></td>
+                                                            <td v-text="posgrado.date"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="block-content block-content-full text-right border-top">
+                            <button type="button" @click="showModal('ConditionModal',null,'Condición','condition')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Condicion">
+                                <i class="fa fa-fw fa-object-group"></i>
+                            </button>
+                            <button type="button" @click="showModal('CategoryModal',null,'Categoria','category')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Categoria">
+                                <i class="fa fa-fw fa-newspaper"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
+                            <button @click="alert('Hola Mundo')" type="button" class="btn btn-sm btn-success" data-dismiss="modal"><i class="fa fa-check mr-1"></i>Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="ConditionModal" tabindex="-1" role="dialog" aria-labelledby="modal-block-extra-large" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="block block-themed block-transparent mb-0">
+                        <div class="block-header bg-primary-dark">
+                            <h3 class="block-title" v-text="modal_option"></h3>
+                            <div class="block-options">
+                                <button type="button" class="btn-block-option" data-dismiss="modal" aria-label="Close">
+                                    <i class="fa fa-fw fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="block-content font-size-sm">
+                            
+                        </div>
+                        <div class="block-content block-content-full text-right border-top">
+                            <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
+                            <button v-if="modal_type=='sintCu'" @click="alert('Hola Mundo')" type="button" class="btn btn-sm btn-success" data-dismiss="modal"><i class="fa fa-check mr-1"></i>Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="CategoryModal" tabindex="-1" role="dialog" aria-labelledby="modal-block-extra-large" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="block block-themed block-transparent mb-0">
+                        <div class="block-header bg-primary-dark">
+                            <h3 class="block-title" v-text="modal_option"></h3>
+                            <div class="block-options">
+                                <button type="button" class="btn-block-option" data-dismiss="modal" aria-label="Close">
+                                    <i class="fa fa-fw fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="block-content font-size-sm">
+                            
+                        </div>
+                        <div class="block-content block-content-full text-right border-top">
+                            <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
+                            <button v-if="modal_type=='sintCu'" @click="alert('Hola Mundo')" type="button" class="btn btn-sm btn-success" data-dismiss="modal"><i class="fa fa-check mr-1"></i>Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 	</div>
 </template>
 <script>
 export default {
     mounted(){
-    	this.getData();
         this.getDocuments();
+        this.typeContract();
+    	this.getData();
+        this.getHeadquarters();
     },
     data() {
 		return {
             // AUXILIARES
+            type_contract:'',
             document:{
             	nro:null,
             	type:null
             },
+            postGData:{
+                id:0,
+                title:{
+                    id:0,
+                    title:null
+                },
+                university:{
+                    id:0,
+                    name:null
+                },
+                date:null
+            },
+            preGData:{
+                id:0,
+                title:{
+                    id:0,
+                    title:null
+                },
+                university:{
+                    id:0,
+                    name:null
+                },
+                date:null
+            },
             exist_document:false,
             no_dates:{to: new Date('1919-01-01')},
+            list_titles:[],
+            list_universities:[],
             list_documents:[],
+            list_headquarters:[],
+            list_areas:[],
+            list_programs:[],
+            list_cores:[],
+            list_t_classrooms:[],
+            list_extensions:[],
+            list_preGTeacher:[],
+            list_postGTeacher:[],
             teacherData:{
-            	id_teacher:0,
+                id_teacher:0,
+            	headquarter:{
+                    id:0,
+                    name:null
+                },
+                area:{
+                    id:0,
+                    name:null
+                },
+                program:{
+                    id:0,
+                    name:null
+                },
+                core:{
+                    id:0,
+                    name:null
+                },
+                extension:{
+                    id:0,
+                    name:null
+                },
+                t_classroom:{
+                    id:0,
+                    name:null
+                },
                 person:{
                 	id: 0,
 	                firstname:null,
@@ -222,6 +568,30 @@ export default {
 		TeacherDataBlank(){
 			this.teacherData={
             	id_teacher: 0,
+                headquarter:{
+                    id:0,
+                    name:null
+                },
+                area:{
+                    id:0,
+                    name:null
+                },
+                program:{
+                    id:0,
+                    name:null
+                },
+                core:{
+                    id:0,
+                    name:null
+                },
+                extension:{
+                    id:0,
+                    name:null
+                },
+                t_classroom:{
+                    id:0,
+                    name:null
+                },
                 person:{
             		id: 0,
                 	firstname:null,
@@ -240,20 +610,149 @@ export default {
                 }
             }
 		},
+        getPreG(){
+            let url = location.origin+"/get-pre-teacher/"+this.teacherData.id_teacher
+            axios.get(url).then(response => {
+                this.list_preGTeacher = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        preGDataSave(){
+            alert('aaaaaaaaa')
+        },
+        getPostG(){
+            let url = location.origin+"/get-post-teacher/"+this.teacherData.id_teacher
+            axios.get(url).then(response => {
+                this.list_postGTeacher = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        postGDataSave(){
+            alert('aaaaaaaaa')
+        },
+        getUniversities(){
+            let url = location.origin+"/get-universities"
+            axios.get(url).then(response => {
+                this.list_universities = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        getTitles(Uni){
+            if (Uni.id !== null) {
+                this.list_titles = Uni.titles
+            }
+        },
+        getHeadquarters()
+        {
+            let url = location.origin+"/get-headquarters"
+            axios.get(url).then(response => {
+                this.list_headquarters = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        getAreas()
+        {
+            let idH = this.teacherData.headquarter.id 
+            let url = location.origin+"/get-areas/"+idH
+            axios.get(url).then(response => {
+                this.list_areas = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+            if (this.list_areas.length == 0) {
+                this.teacherData.area={
+                    id:0,
+                    name:null
+                }
+            }
+        },
+        getPrograms()
+        {
+            let idA = this.teacherData.area.id 
+            let url = location.origin+"/get-programs/"+idA
+            axios.get(url).then(response => {
+                this.list_programs = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+            if (this.list_programs.length == 0) {
+                this.teacherData.program={
+                    id:0,
+                    name:null
+                }
+            }
+        },
+        getCores()
+        {
+            let idA = this.teacherData.area.id 
+            let idP = this.teacherData.program.id
+            let url = location.origin+'/get-cores/'+idA+'/'+idP
+            axios.get(url).then(response => {
+                this.list_cores = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        getExtensions()
+        {
+            let idA = this.teacherData.area.id 
+            let idP = this.teacherData.program.id
+            let url = location.origin+'/get-extensions/'+idA+'/'+idP
+            axios.get(url).then(response => {
+                this.list_extensions = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        getTClassrooms()
+        {
+            let idA = this.teacherData.area.id 
+            let idP = this.teacherData.program.id
+            let url = location.origin+'/get-tclassrooms/'+idA+'/'+idP
+            axios.get(url).then(response => {
+                this.list_t_classrooms = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        setExtras()
+        {
+            this.getCores();
+            this.getExtensions();
+            this.getTClassrooms();
+        },
 		getDocuments()
         {
-            let url = "get-documents"
+            let url = location.origin+"/get-documents"
             axios.get(url).then(response => {
                 this.list_documents = response.data
             }).catch(errors =>{
                 console.log(errors.response)
             })
         },
+        typeContract(){
+            switch (location.pathname){
+                case "/profesores/ordinarios":
+                {
+                    this.type_contract = 'ordinario';
+                    break;  
+                }
+                case "/profesores/contratados":
+                {
+                    this.type_contract = 'contratado';
+                    break;  
+                }
+            }
+        },
         checkDocument()
         {
         	if (this.teacherData.person.nro_document !== null) {
 	        	this.document.nro 	= this.teacherData.person.nro_document
-        		let url = '/check-document'
+        		let url = location.origin+'/check-document'
 	        	axios.post(url,
 	        		this.document
 	        	).then(response => {
@@ -262,7 +761,7 @@ export default {
 	        				response.data.types.forEach(data=>{
 	        					if (data.name == 'teacher') {
                 					$("#TeacherModal").modal('hide')
-	        						this.$alertify.warning('Esta persona ya esta registrada como profesor!')
+	        						this.$alertify.warning('Esta persona ya esta registrada como docente!')
 	        						return;
 	        					}else{
 					        		this.exist_document = true
@@ -312,13 +811,13 @@ export default {
                 page   : page, 
                 sort   : this.sort_selected, 
                 search : this.search_table,
+                type   : this.type_contract
             }).then(response =>{
                 this.table_pagination	= response.data.pagination
                 this.table_data			= response.data.table.data
-            	this.search_table		= ''
-
+                this.search_table       = ''
             	if (this.table_data.length > 0) {
-                	this.$alertify.success('Exito al cargar Profesores')
+                	this.$alertify.success('Exito al cargar docentes')
             	}else{
                 	this.$alertify.warning('No se encontraron coincidencias')
             	}
@@ -328,14 +827,15 @@ export default {
         },
         storeData()
         {
-            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar est@ profesor@')
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este docente')
             let url = '/store-teacher'
             axios.post(url,{
-                teacherData :this.teacherData
+                teacherData : this.teacherData,
+                type : this.type_contract
             }).then(response => {
                 swal.close()
                 $("#TeacherModal").modal('hide')
-        		this.$alertify.success('El profesor se registro con exito')
+        		this.$alertify.success('El docente se registro con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -349,14 +849,14 @@ export default {
         },
         updateData()
         {
-        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar est@ profesor@')
+        	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar este docente')
             let url = '/update-teacher'
             axios.post(url,{
                 teacherData :this.teacherData
             }).then(response => {
                 swal.close()
                 $("#TeacherModal").modal('hide')
-        		this.$alertify.success('El profesor se actualizo con exito')
+        		this.$alertify.success('El docente se actualizo con exito')
                 this.getData()
             }).catch(errors => {
                 swal.close()
@@ -371,20 +871,20 @@ export default {
         deleteData(idProf)
         {
         	swal({
-                text: "Esta seguro que quiere eliminar este profesor?",
+                text: "Esta seguro que quiere eliminar este docente?",
                 icon: "warning",
                 buttons: ['Cancelar','Eliminar'],
                 dangerMode: true,
             }).then((willDelete) => {
                 if (willDelete) {
-        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar este profesor')
+        			this.$root.loading('Evaluando','Espere mientras se verifican los datos para eliminar este docente')
 		            let url = '/delete-teacher'
 		            axios.post(url,{
 		                id:idProf
 		            }).then(response => {
 		                swal.close()
 		                this.getData()
-		        		this.$alertify.success('El profesor fue eliminado con exito')
+		        		this.$alertify.success('El docente fue eliminado con exito')
 		            }).catch(errors => {
 		                swal.close()
 		            })
@@ -403,6 +903,30 @@ export default {
                 this.exist_document = true
         		this.teacherData={
 	            	id_teacher:model.id,
+                    headquarter:{
+                        id:model.headquarter.id,
+                        name:model.headquarter.name
+                    },
+                    area:{
+                        id:model.area.id,
+                        name:model.area.name
+                    },
+                    program:{
+                        id:model.program.id,
+                        name:model.program.name
+                    },
+                    core:{
+                        id:0,
+                        name:null
+                    },
+                    extension:{
+                        id:0,
+                        name:null
+                    },
+                    t_classroom:{
+                        id:0,
+                        name:null
+                    },
 	                person:{
 	                	id:model.person.id,
 	                	firstname:model.person.firstname,
@@ -420,12 +944,41 @@ export default {
 		                mail_contact:model.person.mail_contact
 		            }
 	            }
+                if (model.core !== undefined && model.core !== null) {
+                    this.teacherData.core={
+                        id:model.core.id,
+                        name:model.core.name
+                    }
+                }
+                if (model.extension !== undefined && model.extension !== null) {
+                    this.teacherData.extension={
+                        id:model.extension.id,
+                        name:model.extension.name
+                    }
+                }
+                if (model.territorial_classroom !== undefined && model.territorial_classroom !== null) {
+                    this.teacherData.t_classroom={
+                        id:model.territorial_classroom.id,
+                        name:model.territorial_classroom.name
+                    }
+                }
         	}else{
                 this.TeacherDataBlank()
                 this.exist_document = false
             }
+
+            if (this.modal_type == 'sintCu') {
+                this.teacherData.id_teacher=model.id
+                this.getPreG();
+                this.getPostG();
+                this.getUniversities();
+            }
+
             $("#"+modal_id).modal('show')
         }
-	}
+	},
+    computed:{
+
+    }
 }
 </script>

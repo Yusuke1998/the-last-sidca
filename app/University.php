@@ -12,4 +12,14 @@ class University extends Model
     {
     	return $this->belongsToMany(Title::class);
     }
+
+    public function postgraduates()
+    {
+        return $this->hasMany(Postgraduate::class);
+    }
+
+    public function undergraduates()
+    {
+        return $this->hasMany(Undergraduate::class);
+    }
 }

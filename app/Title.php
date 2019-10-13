@@ -17,4 +17,14 @@ class Title extends Model
     {
     	return $this->belongsToMany(Teacher::class);
     }
+
+    public function postgraduates()
+    {
+        return $this->hasMany(Postgraduate::class);
+    }
+
+    public function undergraduates()
+    {
+        return $this->hasMany(Undergraduate::class);
+    }
 }

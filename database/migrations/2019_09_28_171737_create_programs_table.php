@@ -12,6 +12,13 @@ class CreateProgramsTable extends Migration
             $table->bigIncrements('id');
             $table->string('name');
 
+            $table->bigInteger('headquarter_id')->unsigned(); #sede
+            $table->foreign('headquarter_id')
+                ->references('id')
+                ->on('headquarters')
+                ->ondDelete('cascade')
+                ->onUpdate('cascade');
+                
             $table->bigInteger('area_id')->unsigned(); #area
             $table->foreign('area_id')
                 ->references('id')

@@ -3,12 +3,13 @@
 use Illuminate\Database\Seeder;
 use App\Headquarter;
 use App\Core;
+use App\Condition;
 use App\Area;
 use App\Program;
 use App\University;
 use App\Title;
 use App\Extension;
-use App\Territorial_Classroom;
+use App\TerritorialClassroom;
 
 class PreloadSeeder extends Seeder
 {
@@ -17,32 +18,146 @@ class PreloadSeeder extends Seeder
      */
     public function run()
     {
+        $condiciones = [
+            [
+                'name' => 'Fijo',
+                'contract'  => 'ordinario'
+            ],
+            [
+                'name' => 'Contratado',
+                'contract'  => 'contratado'
+            ],
+            [
+                'name' => 'Honorario Profesional',
+                'contract'  => 'contratado'
+            ],
+            [
+                'name' => 'Auxiliar Docente',
+                'contract'  => 'contratado'
+            ]
+        ];
+
+        foreach ($condiciones as $condicion) {
+            Condition::create([
+                'name'      =>  $condicion['name'],
+                'contract'  =>  $condicion['contract']
+            ]);
+        }
+
         $sedes = ['San Juan de los Morros'];
         foreach ($sedes as $key => $sede) {
         	Headquarter::create(['name'=>$sede]);
         }
 
         $sede = Headquarter::first();
-        $areas = ['Sistemas','Agronomia','Medicina'];
+        $areas = [
+            [
+                'name'      =>  'CIENCIAS DE LA SALUD',
+                'acronym'   =>  'ACS'
+            ],
+            [
+                'name'      =>  'CIENCIAS ECONOMICAS',
+                'acronym'   =>  'ACES'
+            ],
+            [
+                'name'      =>  'INGENIERIA DE SISTEMAS',
+                'acronym'   =>  'AIS'
+            ],
+            [
+                'name'      =>  'INGENIERIA, ARQUITECTURA Y TECNOLOGIA',
+                'acronym'   =>  'AIAT'
+            ],
+            [
+                'name'      =>  'INGENIERIA AGRONOMICA',
+                'acronym'   =>  'AIA'
+            ],
+            [
+                'name'      =>  'CIENCIAS POLITICAS Y JURIDICAS',
+                'acronym'   =>  'ACP'
+            ],
+            [
+                'name'      =>  'AREA DE MEDICINA VETERINARIA',
+                'acronym'   =>  'AMV'
+            ],
+            [
+                'name'      =>  'HUMANIDADES, LETRAS Y ARTE',
+                'acronym'   =>  'AHLA'
+            ],
+            [
+                'name'      =>  'CIENCIAS ODONTOLOGICAS',
+                'acronym'   =>  'ACO'
+            ],
+            [
+                'name'      =>  'CIENCIAS DE LA EDUCACION',
+                'acronym'   =>  'ACE'
+            ],
+            [
+                'name'      =>  'PROGRAMA NACIONAL DE FORMACION',
+                'acronym'   =>  'PNF'
+            ],
+            [
+                'name'      =>  'FISIOTERAPIA',
+                'acronym'   =>  'PNF-FI'
+            ],
+            [
+                'name'      =>  'TERAPIA OCUPACIONAL',
+                'acronym'   =>  'PNF-TE'
+            ],
+            [
+                'name'      =>  'HISTORIA',
+                'acronym'   =>  'PNF-HI'
+            ],
+            [
+                'name'      =>  'NUTRICION Y DIETETICA',
+                'acronym'   =>  'PNF-NU'
+            ],
+            [
+                'name'      =>  'HISTOCITOTECNOLOA',
+                'acronym'   =>  'PNF-HT'
+            ],
+            [
+                'name'      =>  'OPTOMETRIA Y OPTICA',
+                'acronym'   =>  'PNF-OP'
+            ],
+            [
+                'name'      =>  'EDUCACION CONTINUA',
+                'acronym'   =>  'DEC'
+            ]
+        ];
         foreach ($areas as $key => $area) {
-            Area::create(['name'=>$area,'headquarter_id'=>$sede->id]);
+            Area::create([
+                'name'          =>  $area['name'],
+                'acronym'       =>  $area['acronym'],
+                'headquarter_id'=>  $sede->id
+            ]);
         }
         
         $area = Area::first();
+        $sede = $area->headquarter;
         $programa = ['Ingenieria en Informatica','Ingenieria Agronomica','Ingenieria en Hidrocarburos'];
-        foreach ($programa as $key => $programa) {
-            Program::create(['name'=>$programa,'area_id'=>$area->id]);
+        foreach ($programa as $programa) {
+            Program::create([
+                'name'          =>$programa,
+                'area_id'       =>$area->id,
+                'headquarter_id'=>$sede->id,
+            ]);
         }
 
         $programa = Program::first();
+        $sede = $programa->headquarter;
         $nucleos = ['Mellado','Calabozo','Ortiz'];
         foreach ($nucleos as $key => $nucleo) {
-            Core::create(['name'=>$nucleo,'area_id'=>$area->id,'program_id'=>$programa->id]);
+            Core::create([
+                'name'=>$nucleo,
+                'headquarter_id'=>$sede->id,
+                'area_id'=>$area->id,
+                'program_id'=>$programa->id
+            ]);
         }
 
         $aulas_territoriales = ['Mellado','Calabozo','Ortiz'];
         foreach ($aulas_territoriales as $key => $aulas) {
-            Territorial_Classroom::create(['name'=>$aulas,'area_id'=>$area->id,'program_id'=>$programa->id]);
+            TerritorialClassroom::create(['name'=>$aulas,'area_id'=>$area->id,'program_id'=>$programa->id]);
         }
 
         $extensiones = ['Mellado','Calabozo','Ortiz'];
@@ -72,11 +187,15 @@ class PreloadSeeder extends Seeder
         [
             [
                 'title'=>'Ingenieria X',
-                'level'=>'Licenciado'
+                'level'=>'doctorado'
             ],
             [
                 'title'=>'Ingenieria Y',
-                'level'=>'Licenciado'
+                'level'=>'especializacion'
+            ],
+            [
+                'title'=>'Ingenieria Z',
+                'level'=>'maestria'
             ]
         ];
         foreach ($titulos as $key => $titulo) {

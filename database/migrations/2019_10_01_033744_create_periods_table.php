@@ -12,8 +12,8 @@ class CreatePeriodsTable extends Migration
             $table->bigIncrements('id');
             $table->string('title')->unique();
             $table->string('period')->unique();
-            $table->date('start');
-            $table->date('end');
+            $table->date('date_start');
+            $table->date('date_end');
             $table->timestamps();
         });
     }

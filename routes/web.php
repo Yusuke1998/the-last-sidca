@@ -6,15 +6,21 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/dashboard', 'HomeController@dashboard')->name('dashboard');
 
 // DATA
-Route::get('/get-documents', 'DocumentController@getAll');
+Route::get('/get-pre-teacher/{teacher}', 'UndergraduateController@getAll');
+Route::get('/get-post-teacher/{teacher}', 'PostgraduateController@getAll');
 Route::get('/get-headquarters', 'HeadquarterController@getAll');
+Route::get('/get-areas/{headquarter}', 'AreaController@getAll');
+Route::get('/get-programs/{area}', 'ProgramController@getAll');
+Route::get('/get-programs', 'ProgramController@getMany');
+Route::get('/get-cores/{area}/{program}', 'CoreController@getAll');
+Route::get('/get-extensions/{area}/{program}', 'ExtensionController@getAll');
+Route::get('/get-tclassrooms/{area}/{program}', 'TerritorialClassroomController@getAll');
+Route::get('/get-subjects', 'SubjectController@getAll');
 Route::get('/get-cores', 'CoreController@getAll');
+Route::get('/get-documents', 'DocumentController@getAll');
 Route::get('/get-titles', 'TitleController@getAll');
 Route::get('/get-universities', 'UniversityController@getAll');
-Route::get('/get-subjects', 'SubjectController@getAll');
-Route::get('/get-areas', 'AreaController@getAll');
 Route::get('/get-periods', 'PeriodController@getAll');
-Route::get('/get-programs', 'ProgramController@getAll');
 Route::get('/get-types', 'TypeController@getAll');
 Route::post('/check-document', 'DocumentController@check_document');
 // FIN DATA
@@ -125,9 +131,14 @@ Route::get('/profile-user/{username?}','UsersController@profile')->name('profile
 // FIN USUARIOS
 
 // PROFESORES
-Route::get('/profesores','TeacherController@index')
-	->name('teacher.index')
+Route::get('/profesores/ordinarios','TeacherController@ordinary')
+	->name('ordinary.index')
 	->middleware('auth');
+
+Route::get('/profesores/contratados','TeacherController@hired')
+	->name('hired.index')
+	->middleware('auth');
+
 Route::post('/get-teachers','TeacherController@teacherDataTable');
 Route::post('/store-teacher','TeacherController@store');
 Route::post('/update-teacher','TeacherController@update');

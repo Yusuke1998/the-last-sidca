@@ -82,7 +82,7 @@
                         <div class="block-content font-size-sm">
                             <form class="row" @keydown.enter.prevent="storeData()">
                                 <!-- col-12 -->
-                                <div class="col-8">
+                                <div class="col-4">
                                     <div class="form-group">
                                         <label for="">Nombre</label>
                                         <input type="text" class="form-control" v-model="ProgramData.name">
@@ -90,8 +90,14 @@
                                 </div>
                                 <div class="col-4">
                                     <div class="form-group">
+                                        <label>Sedes</label>
+                                        <v-select label="name" v-model="ProgramData.headquarter" :options="list_headquarters" @input="getAreas"></v-select>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
                                         <label>Areas</label>
-                                        <v-select label="name" v-model="ProgramData.area" :options="list_areas"></v-select>
+                                        <v-select label="name" :disabled="ProgramData.headquarter.id == 0 || list_areas.length == 0" v-model="ProgramData.area" :options="list_areas"></v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
@@ -114,15 +120,20 @@
 export default {
     mounted(){
         this.getData();
-        this.getAreas();
+        this.getHeadquarters();
     },
     data() {
         return {
             // AUXILIARES
+            list_headquarters:[],
             list_areas:[],
             ProgramData:{
                 id: 0,
                 name: null,
+                headquarter:{
+                    id:0,
+                    name:null
+                },
                 area:{
                     id:0,
                     name:null
@@ -148,9 +159,18 @@ export default {
         }
     },
     methods:{
+        getHeadquarters()
+        {
+            let url = location.origin+"/get-headquarters"
+            axios.get(url).then(response => {
+                this.list_headquarters = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
         getAreas()
         {
-            let url = "/get-areas"
+            let url = '/get-areas/'+this.ProgramData.headquarter.id
             axios.get(url).then(response => {
                 this.list_areas = response.data
             }).catch(errors =>{
@@ -161,6 +181,10 @@ export default {
             this.ProgramData={
                 id: 0,
                 name: null,
+                headquarter:{
+                    id:0,
+                    name:null
+                },
                 area:{
                     id:0,
                     name:null
@@ -261,6 +285,10 @@ export default {
                 this.ProgramData = {
                     id:model.id,
                     name:model.name,
+                    headquarter:{
+                        id:model.headquarter.id,
+                        name:model.headquarter.name
+                    },
                     area:{
                         id:model.area.id,
                         name:model.area.name

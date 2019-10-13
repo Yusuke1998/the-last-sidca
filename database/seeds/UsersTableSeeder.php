@@ -30,6 +30,10 @@ class UsersTableSeeder extends Seeder
         ]);
         // Fin Administrador
 
+        $sede = App\Headquarter::first();
+        $area = App\Area::first();
+        $prog = App\Program::first();
+        $cond = App\Condition::where('contract','contratado')->first();
         // Profesor
         $person = App\Person::create([
             'firstname'     =>  'Edith',
@@ -39,7 +43,14 @@ class UsersTableSeeder extends Seeder
             'birthday'      =>  '1992-01-10',
             'direction'     =>  'San Juan',
         ]);
-        $teacher = App\teacher::create(['person_id'=>$person->id]);
+        $teacher = App\teacher::create([
+            'person_id'         =>  $person->id,
+            'contract'          =>  'contratado',
+            'headquarter_id'    =>  $sede->id,
+            'area_id'           =>  $area->id,
+            'program_id'        =>  $prog->id,
+            'condition_id'      =>  $cond->id
+        ]);
         $type = App\Type::where('name','teacher')->first();
         $person->types()->attach($type->id);
         // Fin Profesor

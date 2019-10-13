@@ -14,7 +14,7 @@ class TitleController extends Controller
 
     public function getAll()
     {
-        $titulos = Title::all();
+        $titulos = Title::with('universities')->get();
         return $titulos;
     }
 

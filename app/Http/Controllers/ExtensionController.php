@@ -12,10 +12,10 @@ class ExtensionController extends Controller
         return view('preload.extensions');
     }
 
-    public function getAll()
+    public function getAll($area,$program)
     {
-        $nucleos = Extension::all();
-        return $nucleos;
+        $extensiones = Extension::where('area_id',$area)->where('program_id',$program)->get();
+        return $extensiones;
     }
 
     public function extensionDataTable(Request $request)

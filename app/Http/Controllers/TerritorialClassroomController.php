@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Territorial_Classroom;
+use App\TerritorialClassroom;
 use Illuminate\Http\Request;
 
 class TerritorialClassroomController extends Controller
@@ -12,9 +12,9 @@ class TerritorialClassroomController extends Controller
         return view('preload.tclassroom');
     }
 
-    public function getAll()
+    public function getAll($area,$program)
     {
-        $tclassroom = Territorial_Classroom::all();
+        $tclassroom = TerritorialClassroom::where('area_id',$area)->where('program_id',$program)->get();
         return $tclassroom;
     }
 
@@ -37,7 +37,7 @@ class TerritorialClassroomController extends Controller
     public function filterTclassroomDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $tClassroom = Territorial_Classroom::with('area','program');
+        $tClassroom = TerritorialClassroom::with('area','program');
 
         if (!is_null($search) && !empty($search)) {
             $tClassroom
@@ -61,7 +61,7 @@ class TerritorialClassroomController extends Controller
         ]);
         
         if ($request->id == 0) {
-            Territorial_Classroom::create([
+            TerritorialClassroom::create([
                 'name'=>$request->name,
                 'area_id'=>$request->area['id'],
                 'program_id'=>$request->program['id']
@@ -79,7 +79,7 @@ class TerritorialClassroomController extends Controller
         ]);
 
         if ($request->id > 0) {
-            Territorial_Classroom::findOrFail($request->id)
+            TerritorialClassroom::findOrFail($request->id)
                 ->update([
                     'name'=>$request->name,
                     'area_id'=>$request->area['id'],
@@ -91,7 +91,7 @@ class TerritorialClassroomController extends Controller
 
     public function destroy(Request $request)
     {
-        $extension = Territorial_Classroom::findOrFail($request->id);
+        $extension = TerritorialClassroom::findOrFail($request->id);
         $extension->delete();
         return;
     }
