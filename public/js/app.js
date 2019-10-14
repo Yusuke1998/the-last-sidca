@@ -9464,8 +9464,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.verifyDni();
@@ -9521,6 +9519,12 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
+    formatDate: function formatDate(date) {
+      var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+
+      moment.locale('es');
+      return 'actualizado ' + moment(date).startOf('hour').fromNow();
+    },
     verifyDni: function verifyDni() {
       var dni = location.pathname.split('/')[3];
 
@@ -9541,11 +9545,60 @@ __webpack_require__.r(__webpack_exports__);
             _this.teacherData = response.data;
           }
         } else {
+          _this.teacherDataBlack();
+
           _this.$alertify.error('Busqueda sin resultado');
         }
       })["catch"](function (errors) {
         console.log(errors.response);
       });
+    },
+    teacherDataBlack: function teacherDataBlack() {
+      this.teacherData = {
+        id: 0,
+        headquarter: {
+          id: 0,
+          name: null
+        },
+        area: {
+          id: 0,
+          name: null
+        },
+        program: {
+          id: 0,
+          name: null
+        },
+        core: {
+          id: 0,
+          name: null
+        },
+        extension: {
+          id: 0,
+          name: null
+        },
+        t_classroom: {
+          id: 0,
+          name: null
+        },
+        person: {
+          id: 0,
+          firstname: null,
+          lastname: null,
+          nro_document: null,
+          document: {
+            id: 0,
+            name: null
+          },
+          img_document: null,
+          birthday: new Date(),
+          direction: null,
+          local_phone: null,
+          movil_phone: null,
+          mail_contact: null
+        },
+        postgraduates: [],
+        undergraduates: []
+      };
     }
   }
 });
@@ -87510,7 +87563,32 @@ var render = function() {
             attrs: { "data-toggle": "appear" }
           },
           [
-            _vm._m(1),
+            _c("div", { staticClass: "block-header block-header-default" }, [
+              _c("h3", { staticClass: "block-title" }, [
+                _vm._v("Datos Personales")
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "block-options" }, [
+                _c(
+                  "div",
+                  {
+                    staticClass:
+                      "timeline-event-time block-options-item font-size-sm font-w600"
+                  },
+                  [
+                    _vm.teacherData.person.id !== 0
+                      ? _c("span", {
+                          domProps: {
+                            textContent: _vm._s(
+                              _vm.formatDate(_vm.teacherData.person.updated_at)
+                            )
+                          }
+                        })
+                      : _vm._e()
+                  ]
+                )
+              ])
+            ]),
             _vm._v(" "),
             _vm.teacherData.person.id !== 0
               ? _c("div", { staticClass: "block-content" }, [
@@ -87529,7 +87607,7 @@ var render = function() {
                             }
                           ],
                           staticClass: "form-control",
-                          attrs: { type: "number" },
+                          attrs: { disabled: "", type: "number" },
                           domProps: {
                             value: _vm.teacherData.person.nro_document
                           },
@@ -87563,7 +87641,7 @@ var render = function() {
                             }
                           ],
                           staticClass: "form-control",
-                          attrs: { tipe: "text" },
+                          attrs: { disabled: "", tipe: "text" },
                           domProps: {
                             value: _vm.teacherData.person.document.name
                           },
@@ -87599,7 +87677,7 @@ var render = function() {
                             }
                           ],
                           staticClass: "form-control",
-                          attrs: { type: "text" },
+                          attrs: { disabled: "", type: "text" },
                           domProps: { value: _vm.teacherData.person.firstname },
                           on: {
                             input: function($event) {
@@ -87633,7 +87711,7 @@ var render = function() {
                             }
                           ],
                           staticClass: "form-control",
-                          attrs: { type: "text" },
+                          attrs: { disabled: "", type: "text" },
                           domProps: { value: _vm.teacherData.person.lastname },
                           on: {
                             input: function($event) {
@@ -87660,10 +87738,8 @@ var render = function() {
                           _vm._v(" "),
                           _c("datepicker", {
                             attrs: {
-                              "full-month-name": true,
-                              language: _vm.es,
-                              "disabled-dates": _vm.no_dates,
-                              "input-class": "bg-white form-control"
+                              disabled: "",
+                              "input-class": "form-control"
                             },
                             model: {
                               value: _vm.teacherData.person.birthday,
@@ -87696,6 +87772,7 @@ var render = function() {
                             }
                           ],
                           staticClass: "form-control",
+                          attrs: { disabled: "" },
                           domProps: { value: _vm.teacherData.person.direction },
                           on: {
                             input: function($event) {
@@ -87727,6 +87804,7 @@ var render = function() {
                             }
                           ],
                           staticClass: "form-control",
+                          attrs: { disabled: "" },
                           domProps: {
                             value: _vm.teacherData.person.local_phone
                           },
@@ -87760,6 +87838,7 @@ var render = function() {
                             }
                           ],
                           staticClass: "form-control",
+                          attrs: { disabled: "" },
                           domProps: {
                             value: _vm.teacherData.person.movil_phone
                           },
@@ -87793,6 +87872,7 @@ var render = function() {
                             }
                           ],
                           staticClass: "form-control",
+                          attrs: { disabled: "" },
                           domProps: {
                             value: _vm.teacherData.person.mail_contact
                           },
@@ -87823,7 +87903,7 @@ var render = function() {
       ]),
       _vm._v(" "),
       _c("li", { staticClass: "timeline-event" }, [
-        _vm._m(2),
+        _vm._m(1),
         _vm._v(" "),
         _c(
           "div",
@@ -87832,7 +87912,7 @@ var render = function() {
             attrs: { "data-toggle": "appear" }
           },
           [
-            _vm._m(3),
+            _vm._m(2),
             _vm._v(" "),
             _vm.teacherData.postgraduates.length > 0 ||
             _vm.teacherData.undergraduates.length > 0
@@ -87850,7 +87930,7 @@ var render = function() {
                           "table",
                           { staticClass: "table table-striped table-sm" },
                           [
-                            _vm._m(4),
+                            _vm._m(3),
                             _vm._v(" "),
                             _c(
                               "tbody",
@@ -87921,7 +88001,7 @@ var render = function() {
                           "table",
                           { staticClass: "table table-striped table-sm" },
                           [
-                            _vm._m(5),
+                            _vm._m(4),
                             _vm._v(" "),
                             _c(
                               "tbody",
@@ -87998,15 +88078,15 @@ var render = function() {
         )
       ]),
       _vm._v(" "),
+      _vm._m(5),
+      _vm._v(" "),
       _vm._m(6),
       _vm._v(" "),
       _vm._m(7),
       _vm._v(" "),
       _vm._m(8),
       _vm._v(" "),
-      _vm._m(9),
-      _vm._v(" "),
-      _vm._m(10)
+      _vm._m(9)
     ])
   ])
 }
@@ -88017,29 +88097,6 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "timeline-event-icon bg-success" }, [
       _c("i", { staticClass: "fa fa-address-card" })
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "block-header block-header-default" }, [
-      _c("h3", { staticClass: "block-title" }, [_vm._v("Datos Personales")]),
-      _vm._v(" "),
-      _c("div", { staticClass: "block-options" }, [
-        _c(
-          "div",
-          {
-            staticClass:
-              "timeline-event-time block-options-item font-size-sm font-w600"
-          },
-          [
-            _vm._v(
-              "\n                                actualizado hace 10 min\n                            "
-            )
-          ]
-        )
-      ])
     ])
   },
   function() {

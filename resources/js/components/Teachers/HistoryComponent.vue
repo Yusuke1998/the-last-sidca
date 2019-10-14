@@ -25,7 +25,7 @@
                         <h3 class="block-title">Datos Personales</h3>
                         <div class="block-options">
                             <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
+                                <span v-if="teacherData.person.id !== 0" v-text="formatDate(teacherData.person.updated_at)"></span>
                             </div>
                         </div>
                     </div>
@@ -35,26 +35,26 @@
                             <div class="col-6">
                             	<div class="form-group">
                             		<label>Nro de Documento</label>
-                                    <input type="number" v-model="teacherData.person.nro_document" class="form-control">
+                                    <input disabled type="number" v-model="teacherData.person.nro_document" class="form-control">
                                 </div>
                             </div>
                             <div class="col-6">
                             	<div class="form-group">
                             		<label>Tipo de Documento</label>
-                                	<input tipe="text" v-model="teacherData.person.document.name" class="form-control">
+                                	<input disabled tipe="text" v-model="teacherData.person.document.name" class="form-control">
                             	</div>
                             </div>
                             <!-- col-12 -->
                             <div class="col-6">
                             	<div class="form-group">
                             		<label for="">Nombres</label>
-                            		<input type="text" class="form-control" v-model="teacherData.person.firstname">
+                            		<input disabled type="text" class="form-control" v-model="teacherData.person.firstname">
                             	</div>
                             </div>
                             <div class="col-6">
                             	<div class="form-group">
                             		<label for="">Apellidos</label>
-                            		<input type="text" class="form-control" v-model="teacherData.person.lastname">
+                            		<input disabled type="text" class="form-control" v-model="teacherData.person.lastname">
                             	</div>
                             </div>
                             <!-- col-12 -->
@@ -62,36 +62,34 @@
                                 <div class="form-group">
                                     <label>Fecha de Nacimiento</label>
                                     <datepicker
-                                    :full-month-name="true"
-                                    :language="es" 
-                                    :disabled-dates="no_dates" 
+                                    disabled
                                     v-model="teacherData.person.birthday"
-                                    input-class="bg-white form-control"></datepicker>
+                                    input-class="form-control"></datepicker>
                                 </div>
                             </div>
                             <div class="col-8">
                                 <div class="form-group">
                                     <label>Direccion</label>
-                                    <textarea v-model="teacherData.person.direction" class="form-control"></textarea>
+                                    <textarea disabled v-model="teacherData.person.direction" class="form-control"></textarea>
                                 </div>
                             </div>
                             <!-- col-12 -->
                             <div class="col-4">
                                 <div class="form-group">
                                     <label>Telefono Local</label>
-                                    <input v-model="teacherData.person.local_phone" class="form-control"></input>
+                                    <input disabled v-model="teacherData.person.local_phone" class="form-control"></input>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-group">
                                     <label>Telefono Movil</label>
-                                    <input v-model="teacherData.person.movil_phone" class="form-control"></input>
+                                    <input disabled v-model="teacherData.person.movil_phone" class="form-control"></input>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-group">
                                     <label>Correo Electronico</label>
-                                    <input v-model="teacherData.person.mail_contact" class="form-control"></input>
+                                    <input disabled v-model="teacherData.person.mail_contact" class="form-control"></input>
                                 </div>
                             </div>
                             <!-- col-12 -->
@@ -330,10 +328,15 @@ export default {
 	        	},
 	        	postgraduates:[],
                 undergraduates:[],
-            },
+            }
 		}
 	},
 	methods:{
+		formatDate(date){
+			let moment = require('moment');
+			moment.locale('es');
+			return 'actualizado '+moment(date).startOf('hour').fromNow();
+		},
 		verifyDni()
         {
         	let dni = location.pathname.split('/')[3]
@@ -352,11 +355,59 @@ export default {
 		        		this.teacherData = response.data
 		        	}
 		        }else{
+		        	this.teacherDataBlack()
                 	this.$alertify.error('Busqueda sin resultado')
 		        }
 		    }).catch(errors =>{
 		        console.log(errors.response)
 		    })
+		},
+		teacherDataBlack(){
+			this.teacherData={
+                id:0,
+            	headquarter:{
+                    id:0,
+                    name:null
+                },
+                area:{
+                    id:0,
+                    name:null
+                },
+                program:{
+                    id:0,
+                    name:null
+                },
+                core:{
+                    id:0,
+                    name:null
+                },
+                extension:{
+                    id:0,
+                    name:null
+                },
+                t_classroom:{
+                    id:0,
+                    name:null
+                },
+                person:{
+                	id: 0,
+	                firstname:null,
+	                lastname:null,
+	                nro_document:null,
+	                document:{
+                        id:0,
+	                    name:null,
+	                },
+	                img_document:null,
+	                birthday:new Date(),
+	                direction:null,
+	                local_phone:null,
+	                movil_phone:null,
+	                mail_contact:null
+	        	},
+	        	postgraduates:[],
+                undergraduates:[],
+            }
 		}
 	}
 }
