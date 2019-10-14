@@ -33,19 +33,21 @@
 			                <tr>
 			                    <th>#</th>
 			                    <th>Titulo</th>
-			                    <th>Nivel</th>
+			                    <th>Grado</th>
+                                <th>Nivel</th>
 			                    <th>Universidad(es)</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
 			                </tr>
 			            </thead>
 			            <tbody>
 			            	<tr v-if="!table_data.length > 0">
-			                    <td colspan="5" class="bg-secondary text-center text-light">No se encontraron datos.</td>
+			                    <td colspan="6" class="bg-secondary text-center text-light">No se encontraron datos.</td>
 			                </tr>
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
-			                    <td class="font-w600 font-size-sm" v-text="item_table.title"></td>
-			                    <td class="font-w600 font-size-sm" v-text="item_table.level"></td>
+                                <td class="font-w600 font-size-sm" v-text="item_table.title"></td>
+			                    <td class="font-w600 font-size-sm" v-text="item_table.grade"></td>
+			                    <td class="font-w600 font-size-sm" v-text="item_table.level!==null?item_table.level:'(No Aplica)'"></td>
 			                    <td v-if="item_table.universities.length > 0" class="font-w600 font-size-sm">
                                     <ul>
                                         <li v-for="item in item_table.universities" v-text="item.name+'/'+item.acronym"></li>
@@ -89,22 +91,32 @@
                         <div class="block-content font-size-sm">
                             <form class="row" @keydown.enter.prevent="storeData">
                                 <!-- col-12 -->
-                                <div class="col-5">
+                                <div class="col-3">
                                 	<div class="form-group">
-                                		<label for="">Titulo</label>
+                                		<label>Titulo</label>
                                 		<input type="text" class="form-control" v-model="TitleData.title">
                                 	</div>
                                 </div>
                                 <div class="col-3">
+                                    <div class="form-group">
+                                        <label>Grado</label>
+                                        <v-select @input="eraseLevel" v-model="TitleData.grade" :options="['posgrado','pregrado']"></v-select>
+                                    </div>
+                                </div>
+                                <div class="col-3" v-if="TitleData.grade=='posgrado'">
                                 	<div class="form-group">
-                                		<label for="">Nivel</label>
-                                		<v-select label="level" v-model="TitleData.level" :options="['doctorado','maestria','especializacion']"></v-select>
+                                		<label>Nivel</label>
+                                		<v-select v-model="TitleData.level" :options="['doctorado','maestria','especializacion']"></v-select>
                                 	</div>
                                 </div>
-                                <div class="col-4">
+                                <div :class="TitleData.grade=='posgrado'?'col-3':'col-6'">
                                 	<div class="form-group">
                                 		<label>Universidad(es)</label>
-                                    	<v-select multiple label="name" v-model="TitleData.universities" :options="list_universities"></v-select>
+                                    	<v-select 
+                                        multiple 
+                                        label="name" 
+                                        v-model="TitleData.universities" 
+                                        :options="list_universities"></v-select>
                                 	</div>
                                 </div>
                                 <!-- col-12 -->
@@ -136,6 +148,7 @@ export default {
             TitleData:{
             	id: 0,
                 title: null,
+                grade: null,
                 level: null,
                 universities:[]
             },
@@ -172,6 +185,7 @@ export default {
 			this.TitleData={
             	id: 0,
                 title: null,
+                grade: null,
                 level: null,
                 universities:[]
             }
@@ -203,6 +217,7 @@ export default {
                 $("#TitleModal").modal('hide')
         		this.$alertify.success('El titulo se registro con exito')
                 this.getData()
+                this.TitleDataBlank()
             }).catch(errors => {
                 swal.close()
                 if (status = 204)
@@ -221,6 +236,7 @@ export default {
                 this.TitleData
             ).then(response => {
                 swal.close()
+                this.TitleDataBlank()
                 $("#TitleModal").modal('hide')
         		this.$alertify.success('El titulo fue actualizado con exito')
                 this.getData()
@@ -262,6 +278,11 @@ export default {
             this.table_pagination.current_page = page;
             this.getData(page);
         },
+        eraseLevel(){
+            if (this.TitleData.grade == 'pregrado') {
+                this.TitleData.level = null
+            }
+        },
         showModal(modal_id, model,option, type){
         	this.modal_option	= option
         	this.modal_type		= type
@@ -269,7 +290,8 @@ export default {
         		this.TitleData = {
         			id:model.id,
         			title:model.title,
-        			level:model.level,
+                    level:model.level,
+        			grade:model.grade,
         			universities:model.universities
         		}
         	}else{

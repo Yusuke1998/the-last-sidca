@@ -41,6 +41,11 @@ class Teacher extends Model
         return $this->belongsTo(Condition::class);
     }
 
+    // public function category()
+    // {
+    //     return $this->belongsTo(Category::class);
+    // }
+
     public function headquarter()
     {
         return $this->belongsTo(Headquarter::class);

@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class TerritorialClassroom extends Model
 {
-    protected $fillable = ['name','area_id','program_id'];
+    protected $fillable = ['name','headquarter_id','area_id','program_id'];
+
+    public function headquarter()
+    {
+        return $this->belongsTo(Headquarter::class);
+    }
 
     public function area()
     {

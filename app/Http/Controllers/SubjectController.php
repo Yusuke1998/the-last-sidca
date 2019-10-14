@@ -14,7 +14,7 @@ class SubjectController extends Controller
 
     public function getAll()
     {
-        $asignaturas = Subject::all();
+        $asignaturas = Subject::with('programs')->get();
         return $asignaturas;
     }
 

@@ -12,9 +12,9 @@ class TerritorialClassroomController extends Controller
         return view('preload.tclassroom');
     }
 
-    public function getAll($area,$program)
+    public function getAll()
     {
-        $tclassroom = TerritorialClassroom::where('area_id',$area)->where('program_id',$program)->get();
+        $tclassroom = TerritorialClassroom::with('headquarter','area','program')->get();
         return $tclassroom;
     }
 
@@ -37,11 +37,14 @@ class TerritorialClassroomController extends Controller
     public function filterTclassroomDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $tClassroom = TerritorialClassroom::with('area','program');
+        $tClassroom = TerritorialClassroom::with('headquarter','area','program');
 
         if (!is_null($search) && !empty($search)) {
             $tClassroom
             ->where('name','like','%'.$search.'%')
+            ->orWhereHas('headquarter',function ($query) use ($search) {
+                $query->where('name','like','%'.$search.'%');
+            })
             ->orWhereHas('area',function ($query) use ($search) {
                 $query->where('name','like','%'.$search.'%');
             })
@@ -56,6 +59,7 @@ class TerritorialClassroomController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
+            'headquarter'=>'required',
             'area'=>'required',
             'program'=>'required'
         ]);
@@ -63,6 +67,7 @@ class TerritorialClassroomController extends Controller
         if ($request->id == 0) {
             TerritorialClassroom::create([
                 'name'=>$request->name,
+                'headquarter_id'=>$request->headquarter['id'],
                 'area_id'=>$request->area['id'],
                 'program_id'=>$request->program['id']
             ]);
@@ -73,6 +78,7 @@ class TerritorialClassroomController extends Controller
     public function update(Request $request)
     {
         $data = request()->validate([
+            'headquarter'=>'required',
             'name'=>'required|min:3|max:50|string',
             'area'=>'required',
             'program'=>'required'
@@ -81,6 +87,7 @@ class TerritorialClassroomController extends Controller
         if ($request->id > 0) {
             TerritorialClassroom::findOrFail($request->id)
                 ->update([
+                    'headquarter_id'=>$request->headquarter['id'],
                     'name'=>$request->name,
                     'area_id'=>$request->area['id'],
                     'program_id'=>$request->program['id']

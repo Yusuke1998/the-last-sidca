@@ -54,12 +54,21 @@
                                         <button type="button" @click="showModal('ProModal',item_table,'Sintesis Curricular','sintCu')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Sintesis Curricular">
                                             <i class="fa fa-fw fa-address-card"></i>
                                         </button>
-			                            <button type="button" @click="showModal('TeacherModal',item_table,'Editar','edit')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Editar">
+                                        <button type="button" @click="showModal('ConditionModal',null,'Condición','condition')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Condicion">
+                                            <i class="fa fa-fw fa-object-group"></i>
+                                        </button>
+                                        <button type="button" @click="showModal('CategoryModal',null,'Categoria','category')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Categoria">
+                                            <i class="fa fa-fw fa-newspaper"></i>
+                                        </button>
+                                        <button type="button" @click="redirectHistory(item_table)" class="text-white btn btn-sm btn-light bg-warning" data-toggle="tooltip" title="Historico">
+                                            <i class="fa fa-clipboard-check"></i>
+                                        </button>
+			                            <button type="button" @click="showModal('TeacherModal',item_table,'Editar','edit')" class="text-white btn btn-sm btn-light bg-info" data-toggle="tooltip" title="Editar">
 			                                <i class="fa fa-fw fa-pencil-alt"></i>
 			                            </button>
-			                            <button type="button" @click="deleteData(item_table.id)" class="btn btn-sm btn-light" data-toggle="tooltip" title="Eliminar">
+			                            <button type="button" @click="deleteData(item_table.id)" class="text-white btn btn-sm btn-light bg-danger" data-toggle="tooltip" title="Eliminar">
 			                                <i class="fa fa-fw fa-times"></i>
-			                            </button>
+			                            </button>                                        
 			                        </div>
 			                    </td>
 			                </tr>
@@ -178,7 +187,7 @@
                                         @input="getAreas" 
                                         label="name" 
                                         v-model="teacherData.headquarter" 
-                                        :options="list_headquarters"></v-select>
+                                        :options="list_headquarters"><div slot="no-options">No hay coincidencias</div></v-select>
                                     </div>
                                 </div>
                                 <div class="col-4">
@@ -189,7 +198,7 @@
                                         @input="getPrograms" 
                                         label="name" 
                                         v-model="teacherData.area" 
-                                        :options="list_areas"></v-select>
+                                        :options="list_areas"><div slot="no-options">No hay coincidencias</div></v-select>
                                     </div>
                                 </div>
                                 <div class="col-4">
@@ -200,7 +209,7 @@
                                         @input="setExtras" 
                                         label="name" 
                                         v-model="teacherData.program" 
-                                        :options="list_programs"></v-select>
+                                        :options="list_programs"><div slot="no-options">No hay coincidencias</div></v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
@@ -212,7 +221,7 @@
                                             :disabled="teacherData.extension.id > 0 || teacherData.t_classroom.id > 0" 
                                             label="name" 
                                             v-model="teacherData.core" 
-                                            :options="list_cores"></v-select>
+                                            :options="list_cores"><div slot="no-options">No hay coincidencias</div></v-select>
                                         </div>
                                     </div>
                                     <div class="col-4" v-if="list_extensions.length > 0">
@@ -222,7 +231,7 @@
                                             :disabled="teacherData.core.id > 0 || teacherData.t_classroom.id > 0" 
                                             label="name" 
                                             v-model="teacherData.extension" 
-                                            :options="list_extensions"></v-select>
+                                            :options="list_extensions"><div slot="no-options">No hay coincidencias</div></v-select>
                                         </div>
                                     </div>
                                     <div class="col-4" v-if="list_t_classrooms.length > 0">
@@ -232,47 +241,26 @@
                                             :disabled="teacherData.extension.id > 0 || teacherData.core.id > 0" 
                                             label="name" 
                                             v-model="teacherData.t_classroom" 
-                                            :options="list_t_classrooms"></v-select>
+                                            :options="list_t_classrooms"><div slot="no-options">No hay coincidencias</div></v-select>
                                         </div>
                                     </div>
                                 </template>
-                                <!-- col-12 -->
-
-                                <div class="col-12 text-center">
-                                    <h4>Otros</h4>
-                                </div>
-
                                 <!-- col-12 -->
                                 <div class="col-12" v-if="type_contract.type=='contratado'">
                                     <div class="form-group">
                                         <label>Condicion</label>
                                         <v-select 
-                                        :disabled="!exist_document" 
-                                        @input="getAreas" 
+                                        :disabled="teacherData.id_teacher == 0"
                                         v-model="type_contract.condition" 
-                                        :options="['contratado','honorario profesional','auxiliar docente']"></v-select>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Asignatura</label>
-                                        <v-select 
-                                        :disabled="teacherData.headquarter.id == 0" 
-                                        @input="getPrograms" 
-                                        label="name" 
-                                        v-model="teacherData.area" 
-                                        :options="list_areas"></v-select>
+                                        :options="['contratado','honorario profesional','auxiliar docente']"><div slot="no-options">No hay coincidencias</div></v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
-
                             </form>
                         </div>
                         <div class="block-content block-content-full text-right border-top">
                             <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
-
                             <button v-if="modal_type=='store'" @click="storeData()" type="button" class="btn btn-sm btn-success" data-dismiss="modal"><i class="fa fa-check mr-1"></i>Guardar</button>
-
                             <button v-if="modal_type=='edit'" @click="updateData()" type="button" class="btn btn-sm btn-success" data-dismiss="modal"><i class="fa fa-check mr-1"></i>Actualizar</button>
                         </div>
                     </div>
@@ -308,7 +296,7 @@
                                                     @input="getTitles(preGData.university)" 
                                                     label="name"
                                                     v-model="preGData.university" 
-                                                    :options="list_universities"></v-select>
+                                                    :options="list_universities"><div slot="no-options">No hay coincidencias</div></v-select>
                                                 </div>
                                             </div>
                                             <div class="col-4">
@@ -319,31 +307,31 @@
                                                     placeholder="Titulo" 
                                                     label="title"
                                                     v-model="preGData.title" 
-                                                    :options="list_titles"></v-select>
+                                                    :options="list_titles"><div slot="no-options">No hay coincidencias</div></v-select>
                                                 </div>
                                             </div>
                                             <div class="col-3">
                                                 <div class="form-group">
-                                                    <label>Año de Obtención</label>
+                                                    <label>Año Obtenido</label>
                                                     <datepicker
                                                     :language="es"
                                                     :minimum-view="'year'"
                                                     :format="'yyyy'" 
                                                     :disabled="preGData.title.id == 0"
-                                                    placeholder="Año" 
                                                     :disabled-dates="no_dates" 
-                                                    v-model="preGData.date" 
-                                                    :input-class="(preGData.title.id == !0)?'bg-white form-control':'form-control'"></datepicker>
+                                                    v-model="preGData.date"
+                                                    :input-class="preGData.title.id > 0?'bg-white form-control':'form-control'"></datepicker>
                                                 </div>
                                             </div>
                                             <div class="col-1">
+                                                <label>&nbsp</label>
                                                 <button @click.prevent="preGDataSave" class="btn btn-outline-primary">
                                                     <i class="fa fa-check-circle"></i>
                                                 </button>
                                             </div>
                                             <!-- col-12 -->
                                             <div class="col-12">
-                                                <table class="table table-bordered">
+                                                <table class="table table-striped table-sm">
                                                     <thead>
                                                         <tr class="text-center">
                                                             <th>Universidad</th>
@@ -355,7 +343,7 @@
                                                         <tr v-if="list_preGTeacher.length == 0">
                                                             <td class="text-center text-white bg-primary-dark" colspan="3">No hay registros...</td>
                                                         </tr>
-                                                        <tr v-else v-for="pregrado in list_preGTeacher">
+                                                        <tr class="text-center" v-else v-for="pregrado in list_preGTeacher">
                                                             <td v-text="pregrado.university.name"></td>
                                                             <td v-text="pregrado.title.title"></td>
                                                             <td v-text="pregrado.date"></td>
@@ -380,7 +368,7 @@
                                                     @input="getTitles(postGData.university)" 
                                                     label="name"
                                                     v-model="postGData.university" 
-                                                    :options="list_universities"></v-select>
+                                                    :options="list_universities"><div slot="no-options">No hay coincidencias</div></v-select>
                                                 </div>
                                             </div>
                                             <div class="col-4">
@@ -391,31 +379,31 @@
                                                     placeholder="Titulo" 
                                                     label="title"
                                                     v-model="postGData.title" 
-                                                    :options="list_titles"></v-select>
+                                                    :options="list_titles"><div slot="no-options">No hay coincidencias</div></v-select>
                                                 </div>
                                             </div>
                                             <div class="col-3">
                                                 <div class="form-group">
-                                                    <label>Año de Obtención</label>
+                                                    <label>Año Obtenido</label>
                                                     <datepicker
                                                     :language="es"
                                                     :minimum-view="'year'"
                                                     :format="'yyyy'" 
                                                     :disabled="postGData.title.id == 0"
-                                                    placeholder="Año" 
                                                     :disabled-dates="no_dates" 
                                                     v-model="postGData.date" 
-                                                    :input-class="(postGData.title.id == !0)?'bg-white form-control':'form-control'"></datepicker>
+                                                    :input-class="postGData.title.id > 0?'bg-white form-control':'form-control'"></datepicker>
                                                 </div>
                                             </div>
                                             <div class="col-1">
+                                                <label>&nbsp</label>
                                                 <button @click.prevent="postGDataSave" class="btn btn-outline-primary">
                                                     <i class="fa fa-check-circle"></i>
                                                 </button>
                                             </div>
                                             <!-- col-12 -->
                                             <div class="col-12">
-                                                <table class="table table-bordered">
+                                                <table class="table table-striped table-sm">
                                                     <thead>
                                                         <tr class="text-center">
                                                             <th>Universidad</th>
@@ -427,7 +415,7 @@
                                                         <tr v-if="list_postGTeacher.length == 0">
                                                             <td class="text-center text-white bg-primary-dark" colspan="3">No hay registros...</td>
                                                         </tr>
-                                                        <tr v-else v-for="posgrado in list_postGTeacher">
+                                                        <tr class="text-center" v-else v-for="posgrado in list_postGTeacher">
                                                             <td v-text="posgrado.university.name"></td>
                                                             <td v-text="posgrado.title.title"></td>
                                                             <td v-text="posgrado.date"></td>
@@ -441,12 +429,6 @@
                             </div>
                         </div>
                         <div class="block-content block-content-full text-right border-top">
-                            <button type="button" @click="showModal('ConditionModal',null,'Condición','condition')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Condicion">
-                                <i class="fa fa-fw fa-object-group"></i>
-                            </button>
-                            <button type="button" @click="showModal('CategoryModal',null,'Categoria','category')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Categoria">
-                                <i class="fa fa-fw fa-newspaper"></i>
-                            </button>
                             <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
                         </div>
                     </div>
@@ -467,7 +449,8 @@
                             </div>
                         </div>
                         <div class="block-content font-size-sm">
-                            
+                            <div class="row">
+                            </div>
                         </div>
                         <div class="block-content block-content-full text-right border-top">
                             <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
@@ -627,6 +610,10 @@ export default {
         }
 	},
 	methods:{
+        redirectHistory(teacher){
+            let url = location.origin+'/profesores/historico/'+teacher.person.nro_document
+            window.open(url)
+        },
 		TeacherDataBlank(){
 			this.teacherData={
             	id_teacher: 0,
@@ -681,19 +668,15 @@ export default {
             })
         },
         blankPreG(){
-            preGData={
+            this.preGData.title={
                 id:0,
-                teacher_id:0,
-                title:{
-                    id:0,
-                    title:null
-                },
-                university:{
-                    id:0,
-                    name:null
-                },
-                date:null
+                title:null
             }
+            this.preGData.university={
+                id:0,
+                name:null
+            }
+            this.preGData.date=null
         },
         preGDataSave(){
             this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este pregrado')
@@ -724,19 +707,15 @@ export default {
             })
         },
         blankPostG(){
-            postGData={
+            this.postGData.title={
                 id:0,
-                teacher_id:0,
-                title:{
-                    id:0,
-                    title:null
-                },
-                university:{
-                    id:0,
-                    name:null
-                },
-                date:null
+                title:null
             }
+            this.postGData.university={
+                id:0,
+                name:null
+            }
+            this.postGData.date=null
         },
         postGDataSave(){
             this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este posgrado')
@@ -782,13 +761,10 @@ export default {
         },
         getAreas()
         {
-            let idH = this.teacherData.headquarter.id 
-            let url = location.origin+"/get-areas/"+idH
-            axios.get(url).then(response => {
-                this.list_areas = response.data
-            }).catch(errors =>{
-                console.log(errors.response)
-            })
+            let H = this.teacherData.headquarter
+            if (H.id !== null) {
+                this.list_areas = H.areas
+            }
             if (this.list_areas.length == 0) {
                 this.teacherData.area={
                     id:0,
@@ -798,58 +774,77 @@ export default {
         },
         getPrograms()
         {
-            let idA = this.teacherData.area.id 
-            let url = location.origin+"/get-programs/"+idA
-            axios.get(url).then(response => {
-                this.list_programs = response.data
-            }).catch(errors =>{
-                console.log(errors.response)
-            })
-            if (this.list_programs.length == 0) {
+            let A = this.teacherData.area
+            if (A.id !== null) {
+                this.list_programs = A.programs
+            }
+            if (this.list_programs.length == 0 || this.list_programs.length == undefined) {
                 this.teacherData.program={
                     id:0,
                     name:null
                 }
             }
+            this.blankExtras();
         },
         getCores()
         {
-            let idA = this.teacherData.area.id 
-            let idP = this.teacherData.program.id
-            let url = location.origin+'/get-cores/'+idA+'/'+idP
-            axios.get(url).then(response => {
-                this.list_cores = response.data
-            }).catch(errors =>{
-                console.log(errors.response)
-            })
+            let A = this.teacherData.area
+            if (A.id !== null) {
+                this.list_cores = A.cores
+            }
+            if (this.list_cores.length == 0 || this.list_cores.length == undefined) {
+                this.teacherData.core={
+                    id:0,
+                    name:null
+                }
+            }
         },
         getExtensions()
         {
-            let idA = this.teacherData.area.id 
-            let idP = this.teacherData.program.id
-            let url = location.origin+'/get-extensions/'+idA+'/'+idP
-            axios.get(url).then(response => {
-                this.list_extensions = response.data
-            }).catch(errors =>{
-                console.log(errors.response)
-            })
+            let A = this.teacherData.area
+            if (A.id !== null) {
+                this.list_extensions = A.extensions
+            }
+            if (this.list_extensions.length == 0 || this.list_extensions.length == undefined) {
+                this.teacherData.extension={
+                    id:0,
+                    name:null
+                }
+            }
         },
         getTClassrooms()
         {
-            let idA = this.teacherData.area.id 
-            let idP = this.teacherData.program.id
-            let url = location.origin+'/get-tclassrooms/'+idA+'/'+idP
-            axios.get(url).then(response => {
-                this.list_t_classrooms = response.data
-            }).catch(errors =>{
-                console.log(errors.response)
-            })
+            let A = this.teacherData.area
+            if (A.id !== null) {
+                this.list_t_classrooms = A.territorial_classrooms
+            }
+            if (this.list_t_classrooms.length == 0 || this.list_t_classrooms.length == undefined) {
+                this.teacherData.t_classroom={
+                    id:0,
+                    name:null
+                }
+            }
         },
         setExtras()
         {
+            this.blankExtras();
             this.getCores();
             this.getExtensions();
             this.getTClassrooms();
+        },
+        blankExtras(){
+            this.teacherData.t_classroom={
+                id:0,
+                name:null
+            }
+            this.teacherData.extension={
+                id:0,
+                name:null
+            }
+            this.teacherData.core={
+                id:0,
+                name:null
+            }
         },
 		getDocuments()
         {
@@ -1093,6 +1088,7 @@ export default {
                         name:model.territorial_classroom.name
                     }
                 }
+                this.getHeadquarters(); 
         	}else{
                 this.TeacherDataBlank()
                 this.exist_document = false
@@ -1105,6 +1101,9 @@ export default {
                 this.getPreG();
                 this.getPostG();
                 this.getUniversities();
+            }else{
+                this.blankPreG();
+                this.blankPostG();
             }
 
             $("#"+modal_id).modal('show')

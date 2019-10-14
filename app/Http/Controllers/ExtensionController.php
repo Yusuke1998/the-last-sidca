@@ -12,9 +12,9 @@ class ExtensionController extends Controller
         return view('preload.extensions');
     }
 
-    public function getAll($area,$program)
+    public function getAll()
     {
-        $extensiones = Extension::where('area_id',$area)->where('program_id',$program)->get();
+        $extensiones = Extension::whith('headquarter','area','program')->get();
         return $extensiones;
     }
 
@@ -37,11 +37,14 @@ class ExtensionController extends Controller
     public function filterExtensionDataTable($request)
     {
         $search = mb_strtolower($request->search,'UTF-8');
-        $extensions = Extension::with('area','program');
+        $extensions = Extension::with('headquarter','area','program');
 
         if (!is_null($search) && !empty($search)) {
             $extensions
             ->where('name','like','%'.$search.'%')
+            ->orWhereHas('headquarter',function ($query) use ($search) {
+                $query->where('name','like','%'.$search.'%');
+            })
             ->orWhereHas('area',function ($query) use ($search) {
                 $query->where('name','like','%'.$search.'%');
             })
@@ -56,6 +59,7 @@ class ExtensionController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
+            'headquarter'=>'required',
             'area'=>'required',
             'program'=>'required'
         ]);
@@ -63,6 +67,7 @@ class ExtensionController extends Controller
         if ($request->id == 0) {
             Extension::create([
                 'name'=>$request->name,
+                'headquarter_id'=>$request->headquarter['id'],
                 'area_id'=>$request->area['id'],
                 'program_id'=>$request->program['id']
             ]);
@@ -74,6 +79,7 @@ class ExtensionController extends Controller
     {
         $data = request()->validate([
             'name'=>'required|min:3|max:50|string',
+            'headquarter'=>'required',
             'area'=>'required',
             'program'=>'required'
         ]);
@@ -82,6 +88,7 @@ class ExtensionController extends Controller
             Extension::findOrFail($request->id)
             ->update([
                 'name'=>$request->name,
+                'headquarter_id'=>$request->headquarter['id'],
                 'area_id'=>$request->area['id'],
                 'program_id'=>$request->program['id']
             ]);

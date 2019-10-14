@@ -11,7 +11,8 @@ class CreateTitlesTable extends Migration
         Schema::create('titles', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title');
-            $table->enum('level',['doctorado','especializacion','maestria']);
+            $table->enum('grade',['posgrado','pregrado']);
+            $table->enum('level',['doctorado','especializacion','maestria'])->nullable();
             $table->timestamps();
         });
     }

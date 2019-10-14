@@ -170,12 +170,14 @@ export default {
         },
         getAreas()
         {
-            let url = '/get-areas/'+this.ProgramData.headquarter.id
-            axios.get(url).then(response => {
-                this.list_areas = response.data
-            }).catch(errors =>{
-                console.log(errors.response)
-            })
+            this.ProgramData.area={
+                id:0,
+                name:null
+            }
+            let H = this.ProgramData.headquarter
+            if (H.id !== null) {
+                this.list_areas = H.areas
+            }
         },
         ProgramDataBlank(){
             this.ProgramData={

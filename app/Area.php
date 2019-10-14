@@ -28,9 +28,9 @@ class Area extends Model
         return $this->hasMany(Extension::class);
     }
 
-    public function territorial_Classrooms()
+    public function territorial_classrooms()
     {
-    	return $this->hasMany(Territorial_Classroom::class);
+    	return $this->hasMany(TerritorialClassroom::class);
     }
 
     public function histories()

@@ -14,7 +14,7 @@ class HeadquarterController extends Controller
 
     public function getAll()
     {
-        $sedes = Headquarter::all();
+        $sedes = Headquarter::with('areas.programs.subjects','areas.cores','areas.extensions','areas.territorial_classrooms')->get();
         return $sedes;
     }
 

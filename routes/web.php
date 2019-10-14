@@ -8,13 +8,10 @@ Route::get('/dashboard', 'HomeController@dashboard')->name('dashboard');
 // DATA
 Route::get('/get-pre-teacher/{teacher}', 'UndergraduateController@getAll');
 Route::get('/get-post-teacher/{teacher}', 'PostgraduateController@getAll');
+Route::get('/get-teachers','TeacherController@getAll');
+Route::get('/get-teacher/{dni?}','TeacherController@search');
 Route::get('/get-headquarters', 'HeadquarterController@getAll');
-Route::get('/get-areas/{headquarter}', 'AreaController@getAll');
-Route::get('/get-programs/{area}', 'ProgramController@getAll');
-Route::get('/get-programs', 'ProgramController@getMany');
-Route::get('/get-cores/{area}/{program}', 'CoreController@getAll');
-Route::get('/get-extensions/{area}/{program}', 'ExtensionController@getAll');
-Route::get('/get-tclassrooms/{area}/{program}', 'TerritorialClassroomController@getAll');
+Route::get('/get-programs', 'ProgramController@getAll');
 Route::get('/get-subjects', 'SubjectController@getAll');
 Route::get('/get-cores', 'CoreController@getAll');
 Route::get('/get-documents', 'DocumentController@getAll');
@@ -146,6 +143,8 @@ Route::post('/delete-teacher','TeacherController@destroy');
 
 Route::post('/save-preG-title','TeacherController@savePreG');
 Route::post('/save-postG-title','TeacherController@savePostG');
+
+Route::get('/profesores/historico/{dni?}','TeacherController@history')->name('teacher.history');
 // FIN PROFESORES
 
 // NOTIFICACIONES

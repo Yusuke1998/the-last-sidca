@@ -1,4 +1,4 @@
-<template>
+    <template>
 	<div class="container">
 		<div class="block">
 			<div class="block-header bg-primary-dark">
@@ -33,6 +33,7 @@
 			                <tr>
 			                    <th>#</th>
 			                    <th>Nombre</th>
+                                <th>Sede</th>
                                 <th>Area</th>
 			                    <th>Programa</th>
 			                    <th class="text-center" style="width: 100px;">Acciones</th>
@@ -40,11 +41,12 @@
 			            </thead>
 			            <tbody>
 			            	<tr v-if="!table_data.length > 0">
-			                    <td colspan="5" class="bg-secondary text-center text-light">No se encontraron datos.</td>
+			                    <td colspan="6" class="bg-secondary text-center text-light">No se encontraron datos.</td>
 			                </tr>
 			                <tr v-else v-for="(item_table,index_for_table) in table_data" :key="index_for_table">
 			                    <td v-text="index_for_table + 1"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.name"></td>
+                                <td class="font-w600 font-size-sm" v-text="item_table.headquarter.name"></td>
                                 <td class="font-w600 font-size-sm" v-text="item_table.area.name"></td>
 			                    <td class="font-w600 font-size-sm" v-text="item_table.program.name"></td>
 			                    <td class="text-center">
@@ -84,22 +86,28 @@
                         <div class="block-content font-size-sm">
                             <form class="row" @keydown.enter.prevent="storeData">
                                 <!-- col-12 -->
-                                <div class="col-4">
-                                	<div class="form-group">
-                                		<label for="">Nombre</label>
-                                		<input type="text" class="form-control" v-model="ExtensionData.name">
-                                	</div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="">Nombre</label>
+                                        <input type="text" class="form-control" v-model="ExtensionData.name">
+                                    </div>
                                 </div>
-                                <div class="col-4">
-                                	<div class="form-group">
-                                		<label>Area</label>
-                                    	<v-select label="name" v-model="ExtensionData.area" :options="list_areas"></v-select>
-                                	</div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label>Sede</label>
+                                        <v-select label="name" v-model="ExtensionData.headquarter" @input="getAreas" :options="list_headquarters"></v-select>
+                                    </div>
                                 </div>
-                                <div class="col-4">
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label>Area</label>
+                                        <v-select label="name" :disabled="this.ExtensionData.headquarter.id == 0 || list_areas.length == 0" @input="getPrograms" v-model="ExtensionData.area" :options="list_areas"></v-select>
+                                    </div>
+                                </div>
+                                <div class="col-3">
                                     <div class="form-group">
                                         <label>Programa</label>
-                                        <v-select label="name" v-model="ExtensionData.program" :options="list_programs"></v-select>
+                                        <v-select label="name" :disabled="this.ExtensionData.area.id == 0 || list_programs.length == 0" v-model="ExtensionData.program" :options="list_programs"></v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
@@ -122,20 +130,24 @@
 export default {
     mounted(){
     	this.getData();
-        this.getAreas();
-    	this.getPrograms();
+        this.getHeadquarters();
     },
     data() {
 		return {
             // AUXILIARES
+            list_headquarters:[],
             list_areas:[],
             list_programs:[],
             ExtensionData:{
             	id: 0,
                 name: null,
+                headquarter:{
+                    id:0,
+                    name:null
+                },
                 area:{
-                	id:0,
-                	name:null
+                    id:0,
+                    name:null
                 },
                 program:{
                     id:0,
@@ -162,31 +174,52 @@ export default {
         }
 	},
 	methods:{
-		getAreas()
+		getHeadquarters()
         {
-            let url = "/get-areas"
+            let url = location.origin+"/get-headquarters"
             axios.get(url).then(response => {
-                this.list_areas = response.data
+                this.list_headquarters = response.data
             }).catch(errors =>{
                 console.log(errors.response)
             })
         },
+        getAreas()
+        {
+            let H = this.ExtensionData.headquarter
+            if (H.id !== null) {
+                this.list_areas = H.areas
+            }
+            if (this.list_areas.length == 0) {
+                this.ExtensionData.area={
+                    id:0,
+                    name:null
+                }
+            }
+        },
         getPrograms()
         {
-            let url = "/get-programs"
-            axios.get(url).then(response => {
-                this.list_programs = response.data
-            }).catch(errors =>{
-                console.log(errors.response)
-            })
+            let A = this.ExtensionData.area
+            if (A.id !== null) {
+                this.list_programs = A.programs
+            }
+            if (this.list_programs.length == 0) {
+                this.ExtensionData.program={
+                    id:0,
+                    name:null
+                }
+            }
         },
 		ExtensionDataBlank(){
 			this.ExtensionData={
             	id: 0,
                 name: null,
+                headquarter:{
+                    id:0,
+                    name:null
+                },
                 area:{
-                	id:0,
-                	name:null
+                    id:0,
+                    name:null
                 },
                 program:{
                     id:0,
@@ -287,6 +320,10 @@ export default {
         		this.ExtensionData = {
         			id:model.id,
         			name:model.name,
+                    headquarter:{
+                        id:model.headquarter.id,
+                        name:model.headquarter.name
+                    },
         			area:{
 	                	id:model.area.id,
 	                	name:model.area.name

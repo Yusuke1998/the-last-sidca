@@ -13,15 +13,9 @@ class ProgramController extends Controller
         return view('preload.programs');
     }
 
-    public function getAll($id)
+    public function getAll()
     {
-        $programas = Program::where('area_id',$id)->get();
-        return $programas;
-    }
-
-    public function getMany()
-    {
-        $programas = Program::all();
+        $programas = Program::with('subjects')->get();
         return $programas;
     }
 

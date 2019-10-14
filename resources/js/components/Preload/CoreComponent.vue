@@ -185,23 +185,29 @@ export default {
         },
         getAreas()
         {
-            let idH = this.CoreData.headquarter.id 
-            let url = location.origin+"/get-areas/"+idH
-            axios.get(url).then(response => {
-                this.list_areas = response.data
-            }).catch(errors =>{
-                console.log(errors.response)
-            })
+            let H = this.CoreData.headquarter
+            if (H.id !== null) {
+                this.list_areas = H.areas
+            }
+            if (this.list_areas.length == 0) {
+                this.CoreData.area={
+                    id:0,
+                    name:null
+                }
+            }
         },
         getPrograms()
         {
-            let idA = this.CoreData.area.id 
-            let url = location.origin+"/get-programs/"+idA
-            axios.get(url).then(response => {
-                this.list_programs = response.data
-            }).catch(errors =>{
-                console.log(errors.response)
-            })
+            let A = this.CoreData.area
+            if (A.id !== null) {
+                this.list_programs = A.programs
+            }
+            if (this.list_programs.length == 0) {
+                this.CoreData.program={
+                    id:0,
+                    name:null
+                }
+            }
         },
 		CoreDataBlank(){
 			this.CoreData={

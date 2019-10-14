@@ -43,6 +43,7 @@ class TitleController extends Controller
             $titles
             ->where('title','like','%'.$search.'%')
             ->orWhere('level','like','%'.$search.'%')
+            ->orWhere('grade','like','%'.$search.'%')
             ->orWhereHas('universities',function ($query) use ($search) {
                 $query
                 ->where('name','like','%'.$search.'%')
@@ -56,7 +57,8 @@ class TitleController extends Controller
     {
         $data = request()->validate([
             'title'=>'required|min:3|max:100|string',
-            'level'=>'required|min:3|max:20|string',
+            'grade'=>'required|min:3|max:20|string',
+            'level'=>'nullable|min:3|max:20|string',
             'universities'=>'required'
         ]);
         $universities = collect($request->universities);
@@ -64,8 +66,12 @@ class TitleController extends Controller
         if ($request->id == 0) {
             $title = Title::create([
                 'title'=>$request->title,
-                'level'=>$request->level,
+                'grade'=>$request->grade,
             ]);
+            if (!is_null($request->level)) {
+                $title->level = $request->level;
+                $title->save();
+            }
             $title->universities()->sync($ids);
         }
         return;
@@ -75,7 +81,8 @@ class TitleController extends Controller
     {
         $data = request()->validate([
             'title'=>'required|min:3|max:100|string',
-            'level'=>'required|min:3|max:20|string',
+            'level'=>'nullable|min:3|max:20|string',
+            'grade'=>'required|min:3|max:20|string',
             'universities'=>'required'
         ]);
         $universities = collect($request->universities);
@@ -84,8 +91,15 @@ class TitleController extends Controller
             $title = Title::findOrFail($request->id);
             $title->update([
                 'title'=>$request->title,
-                'level'=>$request->level,
+                'grade'=>$request->grade,
             ]);
+            if (!is_null($request->level)) {
+                $title->level = $request->level;
+                $title->save();
+            }else{
+                $title->level = null;
+                $title->save();
+            }
             $title->universities()->sync($ids);
         }
     }

@@ -23,6 +23,26 @@ class TeacherController extends Controller
         return view('teachers.ordinary');
     }
 
+    public function history()
+    {
+        return view('teachers.history');
+    }
+
+    public function getAll()
+    {
+        $teachers = Teacher::with('person.document','person.user','person.types','titles','undergraduates','postgraduates','condition','headquarter','area','program','core','extension','TerritorialClassroom')->get();
+        return $teachers;
+    }
+
+    public function search($dni)
+    {
+        $teacher = Teacher::with('person.document','person.user','person.types','titles','undergraduates.university','undergraduates.title','postgraduates.university','postgraduates.title','condition','headquarter','area','program','core','extension','TerritorialClassroom');
+        $teacher->whereHas('person',function ($query) use ($dni) {
+            $query->where('nro_document','=',$dni);
+        });
+        return $teacher->first();
+    }
+
     public function teacherDataTable(Request $request)
     {
         $teachers = $this->filterTeacherDataTable($request);

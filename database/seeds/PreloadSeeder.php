@@ -157,12 +157,22 @@ class PreloadSeeder extends Seeder
 
         $aulas_territoriales = ['Mellado','Calabozo','Ortiz'];
         foreach ($aulas_territoriales as $key => $aulas) {
-            TerritorialClassroom::create(['name'=>$aulas,'area_id'=>$area->id,'program_id'=>$programa->id]);
+            TerritorialClassroom::create([
+                'name'=>$aulas,
+                'headquarter_id'=>  $sede->id,
+                'area_id'=>$area->id,
+                'program_id'=>$programa->id
+            ]);
         }
 
         $extensiones = ['Mellado','Calabozo','Ortiz'];
         foreach ($nucleos as $key => $extension) {
-            Extension::create(['name'=>$extension,'area_id'=>$area->id,'program_id'=>$programa->id]);
+            Extension::create([
+                'name'=>$extension,
+                'headquarter_id'=>  $sede->id,
+                'area_id'=>$area->id,
+                'program_id'=>$programa->id
+            ]);
         }
 
         $universidades = 
