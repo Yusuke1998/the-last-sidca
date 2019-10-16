@@ -12,9 +12,4 @@ class Subject extends Model
     {
     	return $this->belongsToMany(Program::class);
     }
-
-    public function histories()
-    {
-    	return $this->hasMany(Historic::class);
-    }
 }

@@ -7,9 +7,4 @@ use Illuminate\Database\Eloquent\Model;
 class Period extends Model
 {
     protected $fillable = ['period','title','date_start','date_end'];
-
-    public function histories()
-    {
-    	return $this->hasMany(Historic::class);
-    }
 }

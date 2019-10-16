@@ -22,9 +22,4 @@ class Extension extends Model
     {
     	return $this->belongsTo(Program::class);
     }
-
-    public function histories()
-    {
-    	return $this->hasMany(Historic::class);
-    }
 }

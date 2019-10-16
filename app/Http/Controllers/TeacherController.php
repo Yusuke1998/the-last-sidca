@@ -31,13 +31,13 @@ class TeacherController extends Controller
 
     public function getAll()
     {
-        $teachers = Teacher::with('person.document','person.user','person.types','titles','undergraduates','postgraduates','condition','category','dedication','headquarter','area','program','core','extension','TerritorialClassroom')->get();
+        $teachers = Teacher::with('person.document','person.user','person.types','titles','undergraduates','postgraduates','condition','category','dedication','headquarter','area','program','core','extension','TerritorialClassroom','ascents')->get();
         return $teachers;
     }
 
     public function search($dni)
     {
-        $teacher = Teacher::with('person.document','person.user','person.types','titles','undergraduates.university','undergraduates.title','postgraduates.university','postgraduates.title','condition','category','dedication','headquarter','area','program','core','extension','TerritorialClassroom');
+        $teacher = Teacher::with('person.document','person.user','person.types','titles','undergraduates.university','undergraduates.title','postgraduates.university','postgraduates.title','condition','category','dedication','headquarter','area','program','core','extension','TerritorialClassroom','ascents');
         $teacher->whereHas('person',function ($query) use ($dni) {
             $query->where('nro_document','=',$dni);
         });
@@ -64,7 +64,7 @@ class TeacherController extends Controller
     {
         $search = mb_strtolower($request->search,'UTF-8');
         $type = mb_strtolower($request->type['type'],'UTF-8');
-        $teachers = Teacher::with('person.user','person.document','headquarter','area','core','program','extension','TerritorialClassroom','condition','category','dedication');
+        $teachers = Teacher::with('person.user','person.document','headquarter','area','core','program','extension','TerritorialClassroom','condition','category','dedication','ascents');
 
         if (!is_null($type) && !empty($type)) {
             $teachers->where('contract',$type);

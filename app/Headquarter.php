@@ -27,9 +27,4 @@ class Headquarter extends Model
     {
     	return $this->hasMany(TerritorialClassroom::class);
     }
-
-    public function histories()
-    {
-    	return $this->hasMany(Historic::class);
-    }
 }

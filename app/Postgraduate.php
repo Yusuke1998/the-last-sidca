@@ -22,4 +22,9 @@ class Postgraduate extends Model
     {
     	return $this->belongsTo(Teacher::class);
     }
+
+    public function publications()
+    {
+        return $this->hasMany(Publication::class);
+    }
 }

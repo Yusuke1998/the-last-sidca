@@ -3,7 +3,7 @@
 Auth::routes();
 Route::view('/','welcome');
 Route::get('/home', 'HomeController@index')->name('home');
-Route::get('/dashboard', 'HomeController@dashboard')->name('dashboard');
+Route::get('/dashboard', 'HomeController@dashboard')->name('dashboard')->middleware('auth');
 
 // DATA
 Route::get('/get-pre-teacher/{teacher}', 'UndergraduateController@getAll');
@@ -119,6 +119,16 @@ Route::group(['prefix'=>'precarga','middleware'=>'auth'],function(){
 
 });
 // FIN PRECARGA
+
+// MOVIMIENTOS
+Route::group(['prefix'=>'movimiento','middleware'=>'auth'],function(){
+
+	// ACENSO
+	Route::get('acenso/{dni?}','MovementController@ascent_index')->name('ascent.index');
+	// FIN ACENSO
+
+});
+// FIN MOVIMIENTOS
 
 // USUARIOS
 Route::get('/usuarios', 'UsersController@index')

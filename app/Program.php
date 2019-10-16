@@ -22,9 +22,4 @@ class Program extends Model
     {
     	return $this->belongsToMany(Subject::class);
     }
-
-    public function histories()
-    {
-    	return $this->hasMany(Historic::class);
-    }
 }

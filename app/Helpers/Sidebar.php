@@ -6,6 +6,13 @@
 
 class Sidebar
 {
+	public static function here($urls)
+	{
+		foreach ($urls as $url) {
+			if (request()->is($url))return"open";
+		}
+	}
+
 	public static function preload_here($urls)
 	{
 		foreach ($urls as $url) {
@@ -13,10 +20,10 @@ class Sidebar
 		}
 	}
 
-	public static function here($urls)
+	public static function movement_here($urls)
 	{
 		foreach ($urls as $url) {
-			if (request()->is($url))return"open";
+			if (request()->is("movimiento/".$url))return"open";
 		}
 	}
 }

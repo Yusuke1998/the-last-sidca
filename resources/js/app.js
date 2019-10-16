@@ -22,6 +22,9 @@ Vue.component('tclassroom-component', require('./components/Preload/TclassroomCo
 Vue.component('program-component', require('./components/Preload/ProgramComponent.vue').default);
 Vue.component('subject-component', require('./components/Preload/SubjectComponent.vue').default);
 Vue.component('authority-component', require('./components/Preload/AuthorityComponent.vue').default);
+// MOVIMIENTOS
+Vue.component('ascent-component', require('./components/Movements/AscentComponent.vue').default);
+
 
 /* PLUGINS */
 import swal from 'sweetalert';

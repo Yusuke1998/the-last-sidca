@@ -9,9 +9,18 @@ class Teacher extends Model
 	protected $fillable = [
         'person_id','contract','headquarter_id','area_id','program_id',
         'core_id','extension_id','territorial_classroom_id',
-        'condition_id','category_id','dedication_id','current_category',
-        'next_category','status'
+        'condition_id','category_id','dedication_id','status'
     ];
+
+    public function publications()
+    {
+        return $this->hasMany(Publication::class);
+    }
+
+    public function ascents()
+    {
+        return $this->hasMany(Ascent::class);
+    }
 
     public function postgraduates()
     {
@@ -31,11 +40,6 @@ class Teacher extends Model
     public function titles()
     {
     	return $this->belongsToMany(Title::class);
-    }
-
-    public function histories()
-    {
-    	return $this->hasMany(Historic::class);
     }
 
     public function condition()
