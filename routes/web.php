@@ -8,6 +8,7 @@ Route::get('/dashboard', 'HomeController@dashboard')->name('dashboard');
 // DATA
 Route::get('/get-pre-teacher/{teacher}', 'UndergraduateController@getAll');
 Route::get('/get-post-teacher/{teacher}', 'PostgraduateController@getAll');
+Route::get('/get-academic-trainings/{teacher}', 'AcademicTrainingController@getAll');
 Route::get('/get-teachers','TeacherController@getAll');
 Route::get('/get-teacher/{dni?}','TeacherController@search');
 Route::get('/get-headquarters', 'HeadquarterController@getAll');
@@ -22,7 +23,6 @@ Route::get('/get-types', 'TypeController@getAll');
 Route::get('/get-conditions', 'ConditionController@getAll');
 Route::get('/get-categories', 'CategoryController@getAll');
 Route::get('/get-dedications', 'DedicationController@getAll');
-
 Route::post('/check-document', 'DocumentController@check_document');
 // FIN DATA
 
@@ -135,19 +135,16 @@ Route::get('/profile-user/{username?}','UsersController@profile')->name('profile
 Route::get('/profesores/ordinarios','TeacherController@ordinary')
 	->name('ordinary.index')
 	->middleware('auth');
-
 Route::get('/profesores/contratados','TeacherController@hired')
 	->name('hired.index')
 	->middleware('auth');
-
 Route::post('/get-teachers','TeacherController@teacherDataTable');
 Route::post('/store-teacher','TeacherController@store');
 Route::post('/update-teacher','TeacherController@update');
 Route::post('/delete-teacher','TeacherController@destroy');
-
 Route::post('/save-preG-title','TeacherController@savePreG');
 Route::post('/save-postG-title','TeacherController@savePostG');
-
+Route::post('/save-academic-training','TeacherController@saveAcaTraining');
 Route::get('/profesores/historico/{dni?}','TeacherController@history')->name('teacher.history');
 // FIN PROFESORES
 

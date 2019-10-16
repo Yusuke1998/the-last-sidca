@@ -73,7 +73,7 @@
                     </li>
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="">
-                            <span class="nav-main-link-name">Convalidacion de Ascensos</span>
+                            <span class="nav-main-link-name">Convalidacion de Acensos</span>
                         </a>
                     </li>
                     <li class="nav-main-item">

@@ -256,11 +256,68 @@
 
             <li class="timeline-event">
                 <div class="timeline-event-icon bg-flat">
-                    <i class="fa fa-code-branch"></i>
+                    <i class="far fa-calendar-alt"></i>
                 </div>
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Traslados</h3>
+                        <div class="block-options">
+                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
+                                actualizado hace 10 min
+                            </div>
+                        </div>
+                    </div>
+                    <div class="block-content">
+
+                    </div>
+                </div>
+            </li>
+
+            <li class="timeline-event">
+                <div class="timeline-event-icon bg-modern-lighter">
+                    <i class="far fa-id-badge"></i>
+                </div>
+                <div class="timeline-event-block block invisible" data-toggle="appear">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Disfrute de Año Sabatico</h3>
+                        <div class="block-options">
+                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
+                                actualizado hace 10 min
+                            </div>
+                        </div>
+                    </div>
+                    <div class="block-content">
+
+                    </div>
+                </div>
+            </li>
+
+            <li class="timeline-event">
+                <div class="timeline-event-icon bg-gray-light">
+                    <i class="far fa-check-circle"></i>
+                </div>
+                <div class="timeline-event-block block invisible" data-toggle="appear">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Reincorporaciones</h3>
+                        <div class="block-options">
+                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
+                                actualizado hace 10 min
+                            </div>
+                        </div>
+                    </div>
+                    <div class="block-content">
+
+                    </div>
+                </div>
+            </li>
+
+            <li class="timeline-event">
+                <div class="timeline-event-icon bg-city-lighter">
+                    <i class="far fa-user-circle"></i>
+                </div>
+                <div class="timeline-event-block block invisible" data-toggle="appear">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Jubilaciones</h3>
                         <div class="block-options">
                             <div class="timeline-event-time block-options-item font-size-sm font-w600">
                                 actualizado hace 10 min

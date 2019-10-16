@@ -196,6 +196,12 @@ return [
         'teacherData.dedication'          => 'dedicacion',
         'teacherData.category'            => 'categoria',
         'teacherData.condition'           => 'condicion',
+        'academicTraining.type'           => 'tipo de formacion',
+        'academicTraining.description'    => 'descripcion',
+        'academicTraining.start'          => 'inicio',
+        'academicTraining.end'            => 'final',
+        'academicTraining.hours'          => 'horas',
+        'academicTraining.teacher_id'     => 'docente'
     ],
 
 ];

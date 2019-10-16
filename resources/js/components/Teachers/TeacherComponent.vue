@@ -51,7 +51,7 @@
 			                    <td class="font-w600 font-size-sm text-uppercase" v-text="item_table.condition.name"></td>
 			                    <td class="text-center">
 			                        <div class="btn-group">
-                                        <button type="button" @click="showModal('ProModal',item_table,'Sintesis Curricular','sintCu')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Sintesis Curricular">
+                                        <button type="button" @click="showModal('ProModal',item_table,'Sintesis Curricular','sintCu')" class="text-white btn btn-sm btn-light bg-primary" data-toggle="tooltip" title="Sintesis Curricular">
                                             <i class="fa fa-fw fa-address-card"></i>
                                         </button>
                                         <button type="button" @click="redirectHistory(item_table)" class="text-white btn btn-sm btn-light bg-warning" data-toggle="tooltip" title="Historico">
@@ -169,7 +169,7 @@
                                 </div>
 
                                 <div class="col-12 text-center">
-                                    <h4>Lugar donde está Adscrito</h4>
+                                    <h4>Informacion del Docente</h4>
                                 </div>
 
                                 <!-- col-12 -->
@@ -368,7 +368,7 @@
                                 </div>
                                 <div class="block col-12">
                                     <div class="block-title">
-                                        Posgrado
+                                        Postgrado
                                     </div>
                                     <div class="block-content">
                                         <form class="row">
@@ -427,10 +427,10 @@
                                                         <tr v-if="list_postGTeacher.length == 0">
                                                             <td class="text-center text-white bg-primary-dark" colspan="3">No hay registros...</td>
                                                         </tr>
-                                                        <tr v-else v-for="posgrado in list_postGTeacher">
-                                                            <td v-text="posgrado.university.name"></td>
-                                                            <td v-text="posgrado.title.title"></td>
-                                                            <td v-text="posgrado.date"></td>
+                                                        <tr v-else v-for="postgrado in list_postGTeacher">
+                                                            <td v-text="postgrado.university.name"></td>
+                                                            <td v-text="postgrado.title.title"></td>
+                                                            <td v-text="postgrado.date"></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -444,7 +444,8 @@
                                     </div>
                                     <div class="block-content">
                                         <form class="row">
-                                            <div class="col-4">
+                                            <!-- col-12 -->
+                                            <div class="col-3">
                                                 <div class="form-group">
                                                     <label>Tipo</label>
                                                     <v-select
@@ -477,16 +478,11 @@
                                             <div class="col-2">
                                                 <div class="form-group">
                                                     <label>Horas</label>
-                                                    <input type="number" v-model="academicTraining.hours">
-                                                </div>
-                                            </div>
-                                            <div class="col-11">
-                                                <div class="form-group">
-                                                    <label>Descripcion</label>
-                                                    <textarea 
-                                                    v-model="academicTraining.description"
-                                                    :disabled="academicTraining.type==null" 
-                                                    class="form-control"></textarea>
+                                                    <input 
+                                                    type="number" 
+                                                    :disabled="academicTraining.type==null"
+                                                    class="form-control" 
+                                                    v-model="academicTraining.hours">
                                                 </div>
                                             </div>
                                             <div class="col-1">
@@ -495,6 +491,43 @@
                                                     <i class="fa fa-check-circle"></i>
                                                 </button>
                                             </div>
+                                            <!-- col-12 -->
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label>Descripcion</label>
+                                                    <textarea 
+                                                    v-model="academicTraining.description"
+                                                    :disabled="academicTraining.type==null" 
+                                                    class="form-control"></textarea>
+                                                </div>
+                                            </div>
+                                            <!-- col-12 -->
+                                            <div class="col-12">
+                                                <table class="table table-striped table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Tipo</th>
+                                                            <th>Fecha (Inicio)</th>
+                                                            <th>Fecha (Final)</th>
+                                                            <th>Horas</th>
+                                                            <th>Descripcion</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-if="list_acadTraining.length == 0">
+                                                            <td class="text-center text-white bg-primary-dark" colspan="5">No hay registros...</td>
+                                                        </tr>
+                                                        <tr v-else v-for="acaTraining in list_acadTraining">
+                                                            <td v-text="acaTraining.type"></td>
+                                                            <td v-text="(acaTraining.start!==null)?formDate(acaTraining.start):'N/A'"></td>
+                                                            <td v-text="(acaTraining.end!==null)?formDate(acaTraining.end):'N/A'"></td>
+                                                            <td v-text="(acaTraining.hours!==null)?acaTraining.hours:'N/A'"></td>
+                                                            <td v-text="(acaTraining.description!==null)?acaTraining.description:'N/A'"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <!-- col-12 -->
                                         </form>
                                     </div>
                                 </div>
@@ -561,6 +594,7 @@ export default {
                 date:null
             },
             academicTraining:{
+                teacher_id:0,
                 type:null,
                 description:null,
                 start:null,
@@ -583,6 +617,7 @@ export default {
             list_extensions:[],
             list_preGTeacher:[],
             list_postGTeacher:[],
+            list_acadTraining:[],
             teacherData:{
                 id_teacher:0,
                 category:{
@@ -720,33 +755,11 @@ export default {
             }
 		},
         blankacademicTraining(){
-            this.academicTraining={
-                type:null,
-                description:null,
-                hours:null,
-                start:null,
-                end:null
-            }
-        },
-        academicTrainingSave(){
-            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar esta formacion academica')
-            let url = '/save-academic-training'
-            // axios.post(url,{
-            //     postGData : this.postGData,
-            // }).then(response => {
-            //     swal.close()
-            //     this.$alertify.success('Registro exitoso')
-            //     this.blankPostG()
-            //     this.getPostG()
-            // }).catch(errors => {
-            //     swal.close()
-            //     if (status = 204)
-            //     {
-            //         Object.values(errors.response.data.errors).forEach((element,indx) => {
-            //             this.$alertify.error(element.toString())
-            //         });
-            //     }
-            // })
+            this.academicTraining.type=null
+            this.academicTraining.description=null
+            this.academicTraining.hours=null
+            this.academicTraining.start=null
+            this.academicTraining.end=null
         },
         getConditions(){
             let url = location.origin+"/get-conditions"
@@ -782,6 +795,34 @@ export default {
                 this.list_dedications = response.data
             }).catch(errors =>{
                 console.log(errors.response)
+            })
+        },
+        getAcaTraining(){
+            let url = location.origin+"/get-academic-trainings/"+this.teacherData.id_teacher
+            axios.get(url).then(response => {
+                this.list_acadTraining = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        academicTrainingSave(){
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar esta formación')
+            let url = '/save-academic-training'
+            axios.post(url,{
+                academicTraining : this.academicTraining,
+            }).then(response => {
+                swal.close()
+                this.$alertify.success('Registro exitoso')
+                this.blankacademicTraining()
+                this.getAcaTraining()
+            }).catch(errors => {
+                swal.close()
+                if (status = 204)
+                {
+                    Object.values(errors.response.data.errors).forEach((element,indx) => {
+                        this.$alertify.error(element.toString())
+                    });
+                }
             })
         },
         getPreG(){
@@ -843,7 +884,7 @@ export default {
             this.postGData.date=null
         },
         postGDataSave(){
-            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este posgrado')
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este postgrado')
             let url = '/save-postG-title'
             axios.post(url,{
                 postGData : this.postGData,
@@ -1138,6 +1179,11 @@ export default {
                 }
             })
         },
+        formDate(date)
+        {
+            let d = date.split(' ')[0].split('-')
+            return d[2]+'/'+d[1]+'/'+d[0]
+        },
         changePage: function (page) 
         {
             this.table_pagination.current_page = page;
@@ -1250,9 +1296,11 @@ export default {
                 this.teacherData.id_teacher=model.id
                 this.postGData.teacher_id=model.id
                 this.preGData.teacher_id=model.id
+                this.academicTraining.teacher_id=model.id
                 this.getPreG();
                 this.getPostG();
                 this.getUniversities();
+                this.getAcaTraining();
             }else{
                 this.blankPreG();
                 this.blankPostG();

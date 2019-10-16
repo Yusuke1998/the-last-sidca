@@ -9464,6 +9464,63 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.verifyDni();
@@ -10127,6 +10184,39 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
@@ -10178,6 +10268,7 @@ __webpack_require__.r(__webpack_exports__);
         date: null
       },
       academicTraining: {
+        teacher_id: 0,
         type: null,
         description: null,
         start: null,
@@ -10202,6 +10293,7 @@ __webpack_require__.r(__webpack_exports__);
       list_extensions: [],
       list_preGTeacher: [],
       list_postGTeacher: [],
+      list_acadTraining: [],
       teacherData: {
         id_teacher: 0,
         category: {
@@ -10338,32 +10430,11 @@ __webpack_require__.r(__webpack_exports__);
       };
     },
     blankacademicTraining: function blankacademicTraining() {
-      this.academicTraining = {
-        type: null,
-        description: null,
-        hours: null,
-        start: null,
-        end: null
-      };
-    },
-    academicTrainingSave: function academicTrainingSave() {
-      this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar esta formacion academica');
-      var url = '/save-academic-training'; // axios.post(url,{
-      //     postGData : this.postGData,
-      // }).then(response => {
-      //     swal.close()
-      //     this.$alertify.success('Registro exitoso')
-      //     this.blankPostG()
-      //     this.getPostG()
-      // }).catch(errors => {
-      //     swal.close()
-      //     if (status = 204)
-      //     {
-      //         Object.values(errors.response.data.errors).forEach((element,indx) => {
-      //             this.$alertify.error(element.toString())
-      //         });
-      //     }
-      // })
+      this.academicTraining.type = null;
+      this.academicTraining.description = null;
+      this.academicTraining.hours = null;
+      this.academicTraining.start = null;
+      this.academicTraining.end = null;
     },
     getConditions: function getConditions() {
       var _this = this;
@@ -10407,12 +10478,47 @@ __webpack_require__.r(__webpack_exports__);
         console.log(errors.response);
       });
     },
-    getPreG: function getPreG() {
+    getAcaTraining: function getAcaTraining() {
       var _this4 = this;
+
+      var url = location.origin + "/get-academic-trainings/" + this.teacherData.id_teacher;
+      axios.get(url).then(function (response) {
+        _this4.list_acadTraining = response.data;
+      })["catch"](function (errors) {
+        console.log(errors.response);
+      });
+    },
+    academicTrainingSave: function academicTrainingSave() {
+      var _this5 = this;
+
+      this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar esta formación');
+      var url = '/save-academic-training';
+      axios.post(url, {
+        academicTraining: this.academicTraining
+      }).then(function (response) {
+        swal.close();
+
+        _this5.$alertify.success('Registro exitoso');
+
+        _this5.blankacademicTraining();
+
+        _this5.getAcaTraining();
+      })["catch"](function (errors) {
+        swal.close();
+
+        if (status = 204) {
+          Object.values(errors.response.data.errors).forEach(function (element, indx) {
+            _this5.$alertify.error(element.toString());
+          });
+        }
+      });
+    },
+    getPreG: function getPreG() {
+      var _this6 = this;
 
       var url = location.origin + "/get-pre-teacher/" + this.teacherData.id_teacher;
       axios.get(url).then(function (response) {
-        _this4.list_preGTeacher = response.data;
+        _this6.list_preGTeacher = response.data;
       })["catch"](function (errors) {
         console.log(errors.response);
       });
@@ -10429,7 +10535,7 @@ __webpack_require__.r(__webpack_exports__);
       this.preGData.date = null;
     },
     preGDataSave: function preGDataSave() {
-      var _this5 = this;
+      var _this7 = this;
 
       this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar este pregrado');
       var url = '/save-preG-title';
@@ -10438,27 +10544,27 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function (response) {
         swal.close();
 
-        _this5.$alertify.success('Registro exitoso');
+        _this7.$alertify.success('Registro exitoso');
 
-        _this5.blankPreG();
+        _this7.blankPreG();
 
-        _this5.getPreG();
+        _this7.getPreG();
       })["catch"](function (errors) {
         swal.close();
 
         if (status = 204) {
           Object.values(errors.response.data.errors).forEach(function (element, indx) {
-            _this5.$alertify.error(element.toString());
+            _this7.$alertify.error(element.toString());
           });
         }
       });
     },
     getPostG: function getPostG() {
-      var _this6 = this;
+      var _this8 = this;
 
       var url = location.origin + "/get-post-teacher/" + this.teacherData.id_teacher;
       axios.get(url).then(function (response) {
-        _this6.list_postGTeacher = response.data;
+        _this8.list_postGTeacher = response.data;
       })["catch"](function (errors) {
         console.log(errors.response);
       });
@@ -10475,36 +10581,36 @@ __webpack_require__.r(__webpack_exports__);
       this.postGData.date = null;
     },
     postGDataSave: function postGDataSave() {
-      var _this7 = this;
+      var _this9 = this;
 
-      this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar este posgrado');
+      this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar este postgrado');
       var url = '/save-postG-title';
       axios.post(url, {
         postGData: this.postGData
       }).then(function (response) {
         swal.close();
 
-        _this7.$alertify.success('Registro exitoso');
+        _this9.$alertify.success('Registro exitoso');
 
-        _this7.blankPostG();
+        _this9.blankPostG();
 
-        _this7.getPostG();
+        _this9.getPostG();
       })["catch"](function (errors) {
         swal.close();
 
         if (status = 204) {
           Object.values(errors.response.data.errors).forEach(function (element, indx) {
-            _this7.$alertify.error(element.toString());
+            _this9.$alertify.error(element.toString());
           });
         }
       });
     },
     getUniversities: function getUniversities() {
-      var _this8 = this;
+      var _this10 = this;
 
       var url = location.origin + "/get-universities";
       axios.get(url).then(function (response) {
-        _this8.list_universities = response.data;
+        _this10.list_universities = response.data;
       })["catch"](function (errors) {
         console.log(errors.response);
       });
@@ -10515,11 +10621,11 @@ __webpack_require__.r(__webpack_exports__);
       }
     },
     getHeadquarters: function getHeadquarters() {
-      var _this9 = this;
+      var _this11 = this;
 
       var url = location.origin + "/get-headquarters";
       axios.get(url).then(function (response) {
-        _this9.list_headquarters = response.data;
+        _this11.list_headquarters = response.data;
       })["catch"](function (errors) {
         console.log(errors.response);
       });
@@ -10617,11 +10723,11 @@ __webpack_require__.r(__webpack_exports__);
       };
     },
     getDocuments: function getDocuments() {
-      var _this10 = this;
+      var _this12 = this;
 
       var url = location.origin + "/get-documents";
       axios.get(url).then(function (response) {
-        _this10.list_documents = response.data;
+        _this12.list_documents = response.data;
       })["catch"](function (errors) {
         console.log(errors.response);
       });
@@ -10642,7 +10748,7 @@ __webpack_require__.r(__webpack_exports__);
       }
     },
     checkDocument: function checkDocument() {
-      var _this11 = this;
+      var _this13 = this;
 
       if (this.teacherData.person.nro_document !== null) {
         this.document.nro = this.teacherData.person.nro_document;
@@ -10654,12 +10760,12 @@ __webpack_require__.r(__webpack_exports__);
                 if (data.name == 'teacher') {
                   $("#TeacherModal").modal('hide');
 
-                  _this11.$alertify.warning('Esta persona ya esta registrada como docente!');
+                  _this13.$alertify.warning('Esta persona ya esta registrada como docente!');
 
                   return;
                 } else {
-                  _this11.exist_document = true;
-                  _this11.teacherData = {
+                  _this13.exist_document = true;
+                  _this13.teacherData = {
                     id_teacher: 0,
                     person: {
                       id: response.data.id,
@@ -10682,16 +10788,16 @@ __webpack_require__.r(__webpack_exports__);
               });
             }
           } else {
-            _this11.exist_document = true;
+            _this13.exist_document = true;
 
-            _this11.$alertify.warning('No se encontraron coincidencias con el documento');
+            _this13.$alertify.warning('No se encontraron coincidencias con el documento');
 
-            _this11.$alertify.success('Puedes registrar todos los datos y guardarlos');
+            _this13.$alertify.success('Puedes registrar todos los datos y guardarlos');
           }
         })["catch"](function (errors) {
           if (status = 204) {
             Object.values(errors.response.data.errors).forEach(function (element, indx) {
-              _this11.$alertify.error(element.toString());
+              _this13.$alertify.error(element.toString());
             });
           }
         });
@@ -10700,7 +10806,7 @@ __webpack_require__.r(__webpack_exports__);
       }
     },
     getData: function getData(page) {
-      var _this12 = this;
+      var _this14 = this;
 
       var url = "/get-teachers";
       axios.post(url, {
@@ -10709,21 +10815,21 @@ __webpack_require__.r(__webpack_exports__);
         search: this.search_table,
         type: this.type_contract
       }).then(function (response) {
-        _this12.table_pagination = response.data.pagination;
-        _this12.table_data = response.data.table.data;
-        _this12.search_table = '';
+        _this14.table_pagination = response.data.pagination;
+        _this14.table_data = response.data.table.data;
+        _this14.search_table = '';
 
-        if (_this12.table_data.length > 0) {
-          _this12.$alertify.success('Exito al cargar docentes');
+        if (_this14.table_data.length > 0) {
+          _this14.$alertify.success('Exito al cargar docentes');
         } else {
-          _this12.$alertify.warning('No se encontraron coincidencias');
+          _this14.$alertify.warning('No se encontraron coincidencias');
         }
       })["catch"](function (errors) {
         console.log(errors);
       });
     },
     storeData: function storeData() {
-      var _this13 = this;
+      var _this15 = this;
 
       this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar este docente');
       var url = '/store-teacher';
@@ -10734,21 +10840,21 @@ __webpack_require__.r(__webpack_exports__);
         swal.close();
         $("#TeacherModal").modal('hide');
 
-        _this13.$alertify.success('El docente se registro con exito');
+        _this15.$alertify.success('El docente se registro con exito');
 
-        _this13.getData();
+        _this15.getData();
       })["catch"](function (errors) {
         swal.close();
 
         if (status = 204) {
           Object.values(errors.response.data.errors).forEach(function (element, indx) {
-            _this13.$alertify.error(element.toString());
+            _this15.$alertify.error(element.toString());
           });
         }
       });
     },
     updateData: function updateData() {
-      var _this14 = this;
+      var _this16 = this;
 
       this.$root.loading('Verificando y actualizando', 'Espere mientras se verifican los datos para actualizar este docente');
       var url = '/update-teacher';
@@ -10759,21 +10865,21 @@ __webpack_require__.r(__webpack_exports__);
         swal.close();
         $("#TeacherModal").modal('hide');
 
-        _this14.$alertify.success('El docente se actualizo con exito');
+        _this16.$alertify.success('El docente se actualizo con exito');
 
-        _this14.getData();
+        _this16.getData();
       })["catch"](function (errors) {
         swal.close();
 
         if (status = 204) {
           Object.values(errors.response.data.errors).forEach(function (element) {
-            _this14.$alertify.error(element.toString());
+            _this16.$alertify.error(element.toString());
           });
         }
       });
     },
     deleteData: function deleteData(idProf) {
-      var _this15 = this;
+      var _this17 = this;
 
       swal({
         text: "Esta seguro que quiere eliminar este docente?",
@@ -10782,7 +10888,7 @@ __webpack_require__.r(__webpack_exports__);
         dangerMode: true
       }).then(function (willDelete) {
         if (willDelete) {
-          _this15.$root.loading('Evaluando', 'Espere mientras se verifican los datos para eliminar este docente');
+          _this17.$root.loading('Evaluando', 'Espere mientras se verifican los datos para eliminar este docente');
 
           var url = '/delete-teacher';
           axios.post(url, {
@@ -10790,21 +10896,25 @@ __webpack_require__.r(__webpack_exports__);
           }).then(function (response) {
             swal.close();
 
-            _this15.getData();
+            _this17.getData();
 
-            _this15.$alertify.success('El docente fue eliminado con exito');
+            _this17.$alertify.success('El docente fue eliminado con exito');
           })["catch"](function (errors) {
             swal.close();
           });
         }
       });
     },
+    formDate: function formDate(date) {
+      var d = date.split(' ')[0].split('-');
+      return d[2] + '/' + d[1] + '/' + d[0];
+    },
     changePage: function changePage(page) {
       this.table_pagination.current_page = page;
       this.getData(page);
     },
     showModal: function showModal(modal_id, model, option, type) {
-      var _this16 = this;
+      var _this18 = this;
 
       this.modal_option = option;
       this.modal_type = type;
@@ -10812,7 +10922,7 @@ __webpack_require__.r(__webpack_exports__);
       if (this.type_contract.type == 'contratado') {
         this.list_categories.forEach(function (category) {
           if (category.name === 'instructor') {
-            _this16.teacherData.category = category;
+            _this18.teacherData.category = category;
           }
         });
       }
@@ -10820,7 +10930,7 @@ __webpack_require__.r(__webpack_exports__);
       if (this.type_contract.type == 'ordinario') {
         this.list_conditions.forEach(function (condition) {
           if (condition.name === 'fijo') {
-            _this16.teacherData.condition = condition;
+            _this18.teacherData.condition = condition;
           }
         });
       }
@@ -10919,9 +11029,11 @@ __webpack_require__.r(__webpack_exports__);
         this.teacherData.id_teacher = model.id;
         this.postGData.teacher_id = model.id;
         this.preGData.teacher_id = model.id;
+        this.academicTraining.teacher_id = model.id;
         this.getPreG();
         this.getPostG();
         this.getUniversities();
+        this.getAcaTraining();
       } else {
         this.blankPreG();
         this.blankPostG();
@@ -88246,7 +88358,13 @@ var render = function() {
       _vm._v(" "),
       _vm._m(8),
       _vm._v(" "),
-      _vm._m(9)
+      _vm._m(9),
+      _vm._v(" "),
+      _vm._m(10),
+      _vm._v(" "),
+      _vm._m(11),
+      _vm._v(" "),
+      _vm._m(12)
     ])
   ])
 }
@@ -88494,7 +88612,7 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("li", { staticClass: "timeline-event" }, [
       _c("div", { staticClass: "timeline-event-icon bg-flat" }, [
-        _c("i", { staticClass: "fa fa-code-branch" })
+        _c("i", { staticClass: "far fa-calendar-alt" })
       ]),
       _vm._v(" "),
       _c(
@@ -88506,6 +88624,130 @@ var staticRenderFns = [
         [
           _c("div", { staticClass: "block-header block-header-default" }, [
             _c("h3", { staticClass: "block-title" }, [_vm._v("Traslados")]),
+            _vm._v(" "),
+            _c("div", { staticClass: "block-options" }, [
+              _c(
+                "div",
+                {
+                  staticClass:
+                    "timeline-event-time block-options-item font-size-sm font-w600"
+                },
+                [
+                  _vm._v(
+                    "\n                                actualizado hace 10 min\n                            "
+                  )
+                ]
+              )
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "block-content" })
+        ]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("li", { staticClass: "timeline-event" }, [
+      _c("div", { staticClass: "timeline-event-icon bg-modern-lighter" }, [
+        _c("i", { staticClass: "far fa-id-badge" })
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "timeline-event-block block invisible",
+          attrs: { "data-toggle": "appear" }
+        },
+        [
+          _c("div", { staticClass: "block-header block-header-default" }, [
+            _c("h3", { staticClass: "block-title" }, [
+              _vm._v("Disfrute de Año Sabatico")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "block-options" }, [
+              _c(
+                "div",
+                {
+                  staticClass:
+                    "timeline-event-time block-options-item font-size-sm font-w600"
+                },
+                [
+                  _vm._v(
+                    "\n                                actualizado hace 10 min\n                            "
+                  )
+                ]
+              )
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "block-content" })
+        ]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("li", { staticClass: "timeline-event" }, [
+      _c("div", { staticClass: "timeline-event-icon bg-gray-light" }, [
+        _c("i", { staticClass: "far fa-check-circle" })
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "timeline-event-block block invisible",
+          attrs: { "data-toggle": "appear" }
+        },
+        [
+          _c("div", { staticClass: "block-header block-header-default" }, [
+            _c("h3", { staticClass: "block-title" }, [
+              _vm._v("Reincorporaciones")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "block-options" }, [
+              _c(
+                "div",
+                {
+                  staticClass:
+                    "timeline-event-time block-options-item font-size-sm font-w600"
+                },
+                [
+                  _vm._v(
+                    "\n                                actualizado hace 10 min\n                            "
+                  )
+                ]
+              )
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "block-content" })
+        ]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("li", { staticClass: "timeline-event" }, [
+      _c("div", { staticClass: "timeline-event-icon bg-city-lighter" }, [
+        _c("i", { staticClass: "far fa-user-circle" })
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "timeline-event-block block invisible",
+          attrs: { "data-toggle": "appear" }
+        },
+        [
+          _c("div", { staticClass: "block-header block-header-default" }, [
+            _c("h3", { staticClass: "block-title" }, [_vm._v("Jubilaciones")]),
             _vm._v(" "),
             _c("div", { staticClass: "block-options" }, [
               _c(
@@ -88756,7 +88998,8 @@ var render = function() {
                               _c(
                                 "button",
                                 {
-                                  staticClass: "btn btn-sm btn-light",
+                                  staticClass:
+                                    "text-white btn btn-sm btn-light bg-primary",
                                   attrs: {
                                     type: "button",
                                     "data-toggle": "tooltip",
@@ -89992,7 +90235,7 @@ var render = function() {
                       _c("div", { staticClass: "block col-12" }, [
                         _c("div", { staticClass: "block-title" }, [
                           _vm._v(
-                            "\n                                        Posgrado\n                                    "
+                            "\n                                        Postgrado\n                                    "
                           )
                         ]),
                         _vm._v(" "),
@@ -90162,12 +90405,12 @@ var render = function() {
                                           ])
                                         : _vm._l(
                                             _vm.list_postGTeacher,
-                                            function(posgrado) {
+                                            function(postgrado) {
                                               return _c("tr", [
                                                 _c("td", {
                                                   domProps: {
                                                     textContent: _vm._s(
-                                                      posgrado.university.name
+                                                      postgrado.university.name
                                                     )
                                                   }
                                                 }),
@@ -90175,7 +90418,7 @@ var render = function() {
                                                 _c("td", {
                                                   domProps: {
                                                     textContent: _vm._s(
-                                                      posgrado.title.title
+                                                      postgrado.title.title
                                                     )
                                                   }
                                                 }),
@@ -90183,7 +90426,7 @@ var render = function() {
                                                 _c("td", {
                                                   domProps: {
                                                     textContent: _vm._s(
-                                                      posgrado.date
+                                                      postgrado.date
                                                     )
                                                   }
                                                 })
@@ -90209,7 +90452,7 @@ var render = function() {
                         _vm._v(" "),
                         _c("div", { staticClass: "block-content" }, [
                           _c("form", { staticClass: "row" }, [
-                            _c("div", { staticClass: "col-4" }, [
+                            _c("div", { staticClass: "col-3" }, [
                               _c(
                                 "div",
                                 { staticClass: "form-group" },
@@ -90339,7 +90582,11 @@ var render = function() {
                                       expression: "academicTraining.hours"
                                     }
                                   ],
-                                  attrs: { type: "number" },
+                                  staticClass: "form-control",
+                                  attrs: {
+                                    type: "number",
+                                    disabled: _vm.academicTraining.type == null
+                                  },
                                   domProps: {
                                     value: _vm.academicTraining.hours
                                   },
@@ -90359,7 +90606,25 @@ var render = function() {
                               ])
                             ]),
                             _vm._v(" "),
-                            _c("div", { staticClass: "col-11" }, [
+                            _c("div", { staticClass: "col-1" }, [
+                              _c("label", [_vm._v(" ")]),
+                              _vm._v(" "),
+                              _c(
+                                "button",
+                                {
+                                  staticClass: "btn btn-outline-primary",
+                                  on: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      return _vm.academicTrainingSave($event)
+                                    }
+                                  }
+                                },
+                                [_c("i", { staticClass: "fa fa-check-circle" })]
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "col-12" }, [
                               _c("div", { staticClass: "form-group" }, [
                                 _c("label", [_vm._v("Descripcion")]),
                                 _vm._v(" "),
@@ -90395,21 +90660,91 @@ var render = function() {
                               ])
                             ]),
                             _vm._v(" "),
-                            _c("div", { staticClass: "col-1" }, [
-                              _c("label", [_vm._v(" ")]),
-                              _vm._v(" "),
+                            _c("div", { staticClass: "col-12" }, [
                               _c(
-                                "button",
-                                {
-                                  staticClass: "btn btn-outline-primary",
-                                  on: {
-                                    click: function($event) {
-                                      $event.preventDefault()
-                                      return _vm.academicTrainingSave($event)
-                                    }
-                                  }
-                                },
-                                [_c("i", { staticClass: "fa fa-check-circle" })]
+                                "table",
+                                { staticClass: "table table-striped table-sm" },
+                                [
+                                  _vm._m(7),
+                                  _vm._v(" "),
+                                  _c(
+                                    "tbody",
+                                    [
+                                      _vm.list_acadTraining.length == 0
+                                        ? _c("tr", [
+                                            _c(
+                                              "td",
+                                              {
+                                                staticClass:
+                                                  "text-center text-white bg-primary-dark",
+                                                attrs: { colspan: "5" }
+                                              },
+                                              [_vm._v("No hay registros...")]
+                                            )
+                                          ])
+                                        : _vm._l(
+                                            _vm.list_acadTraining,
+                                            function(acaTraining) {
+                                              return _c("tr", [
+                                                _c("td", {
+                                                  domProps: {
+                                                    textContent: _vm._s(
+                                                      acaTraining.type
+                                                    )
+                                                  }
+                                                }),
+                                                _vm._v(" "),
+                                                _c("td", {
+                                                  domProps: {
+                                                    textContent: _vm._s(
+                                                      acaTraining.start !== null
+                                                        ? _vm.formDate(
+                                                            acaTraining.start
+                                                          )
+                                                        : "N/A"
+                                                    )
+                                                  }
+                                                }),
+                                                _vm._v(" "),
+                                                _c("td", {
+                                                  domProps: {
+                                                    textContent: _vm._s(
+                                                      acaTraining.end !== null
+                                                        ? _vm.formDate(
+                                                            acaTraining.end
+                                                          )
+                                                        : "N/A"
+                                                    )
+                                                  }
+                                                }),
+                                                _vm._v(" "),
+                                                _c("td", {
+                                                  domProps: {
+                                                    textContent: _vm._s(
+                                                      acaTraining.hours !== null
+                                                        ? acaTraining.hours
+                                                        : "N/A"
+                                                    )
+                                                  }
+                                                }),
+                                                _vm._v(" "),
+                                                _c("td", {
+                                                  domProps: {
+                                                    textContent: _vm._s(
+                                                      acaTraining.description !==
+                                                        null
+                                                        ? acaTraining.description
+                                                        : "N/A"
+                                                    )
+                                                  }
+                                                })
+                                              ])
+                                            }
+                                          )
+                                    ],
+                                    2
+                                  )
+                                ]
                               )
                             ])
                           ])
@@ -90418,7 +90753,7 @@ var render = function() {
                     ])
                   ]),
                   _vm._v(" "),
-                  _vm._m(7)
+                  _vm._m(8)
                 ]
               )
             ])
@@ -90485,7 +90820,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-12 text-center" }, [
-      _c("h4", [_vm._v("Lugar donde está Adscrito")])
+      _c("h4", [_vm._v("Informacion del Docente")])
     ])
   },
   function() {
@@ -90532,6 +90867,24 @@ var staticRenderFns = [
         _c("th", [_vm._v("Titulo")]),
         _vm._v(" "),
         _c("th", [_vm._v("Año")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", [
+        _c("th", [_vm._v("Tipo")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Fecha (Inicio)")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Fecha (Final)")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Horas")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Descripcion")])
       ])
     ])
   },

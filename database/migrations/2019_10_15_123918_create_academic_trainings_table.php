@@ -12,9 +12,9 @@ class CreateAcademicTrainingsTable extends Migration
             $table->bigIncrements('id');
             $table->enum('type',['curso','taller','conferencia']); #tipos
             $table->text('description'); #descripcion
-            $table->date('start'); #inicio
-            $table->date('end'); #fin
-            $table->time('hours'); #horas
+            $table->date('start')->nullable(); #inicio
+            $table->date('end')->nullable(); #fin
+            $table->integer('hours')->nullable(); #horas
 
             $table->bigInteger('teacher_id')->unsigned(); #profesor
             $table->foreign('teacher_id')

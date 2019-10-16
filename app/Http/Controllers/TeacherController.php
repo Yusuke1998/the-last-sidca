@@ -8,6 +8,7 @@ use App\Teacher;
 use App\Condition;
 use App\Postgraduate;
 use App\Undergraduate;
+use App\AcademicTraining;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -271,6 +272,29 @@ class TeacherController extends Controller
                 'date'          =>  $date
             ]);
         }
+        return;
+    }
+
+    public function saveAcaTraining(Request $request)
+    {
+        $data = request()->validate([
+            'academicTraining.type'             =>  'required',
+            'academicTraining.description'      =>  'required',
+            'academicTraining.start'            =>  'nullable',
+            'academicTraining.end'              =>  'nullable',
+            'academicTraining.hours'            =>  'nullable',
+            'academicTraining.teacher_id'       =>  'required'
+        ]);
+        $start = Carbon::parse($request->academicTraining['start'])->format('Y-m-d');
+        $end = Carbon::parse($request->academicTraining['end'])->format('Y-m-d');
+        AcademicTraining::create([
+            'teacher_id'    =>  $request->academicTraining['teacher_id'],
+            'description'   =>  $request->academicTraining['description'],
+            'hours'         =>  $request->academicTraining['hours'],
+            'type'          =>  $request->academicTraining['type'],
+            'start'         =>  $start,
+            'end'           =>  $end
+        ]);
         return;
     }
 

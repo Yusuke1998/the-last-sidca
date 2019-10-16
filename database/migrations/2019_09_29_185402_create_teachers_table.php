@@ -11,6 +11,9 @@ class CreateTeachersTable extends Migration
         Schema::create('teachers', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->enum('contract',['contratado','ordinario']); #contrato
+            $table->datetime('current_category')->nullable(); #fecha de la categoria actual
+            $table->datetime('next_category')->nullable(); #fecha de la categoria siguiente
+            $table->enum('status',['activo','inactivo'])->default('activo'); #estatus
             $table->bigInteger('person_id')->unsigned(); #persona
             $table->bigInteger('headquarter_id')->unsigned(); #sede
             $table->bigInteger('area_id')->unsigned(); #area

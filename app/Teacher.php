@@ -9,7 +9,8 @@ class Teacher extends Model
 	protected $fillable = [
         'person_id','contract','headquarter_id','area_id','program_id',
         'core_id','extension_id','territorial_classroom_id',
-        'condition_id','category_id','dedication_id'
+        'condition_id','category_id','dedication_id','current_category',
+        'next_category','status'
     ];
 
     public function postgraduates()
