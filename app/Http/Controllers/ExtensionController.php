@@ -14,7 +14,7 @@ class ExtensionController extends Controller
 
     public function getAll()
     {
-        $extensiones = Extension::whith('headquarter','area','program')->get();
+        $extensiones = Extension::with('headquarter','area','program')->get();
         return $extensiones;
     }
 

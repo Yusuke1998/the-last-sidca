@@ -193,6 +193,9 @@ return [
         'postGData.title.title'           => 'titulo obtenido',
         'postGData.university.name'       => 'universidad',
         'postGData.date'                  => 'fecha de obtencion',
+        'teacherData.dedication'          => 'dedicacion',
+        'teacherData.category'            => 'categoria',
+        'teacherData.condition'           => 'condicion',
     ],
 
 ];

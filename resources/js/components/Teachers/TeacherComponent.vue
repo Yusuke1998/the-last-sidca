@@ -54,12 +54,6 @@
                                         <button type="button" @click="showModal('ProModal',item_table,'Sintesis Curricular','sintCu')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Sintesis Curricular">
                                             <i class="fa fa-fw fa-address-card"></i>
                                         </button>
-                                        <button type="button" @click="showModal('ConditionModal',null,'Condición','condition')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Condicion">
-                                            <i class="fa fa-fw fa-object-group"></i>
-                                        </button>
-                                        <button type="button" @click="showModal('CategoryModal',null,'Categoria','category')" class="btn btn-sm btn-light" data-toggle="tooltip" title="Categoria">
-                                            <i class="fa fa-fw fa-newspaper"></i>
-                                        </button>
                                         <button type="button" @click="redirectHistory(item_table)" class="text-white btn btn-sm btn-light bg-warning" data-toggle="tooltip" title="Historico">
                                             <i class="fa fa-clipboard-check"></i>
                                         </button>
@@ -246,13 +240,31 @@
                                     </div>
                                 </template>
                                 <!-- col-12 -->
-                                <div class="col-12" v-if="type_contract.type=='contratado'">
+                                <div class="col-4">
                                     <div class="form-group">
                                         <label>Condicion</label>
                                         <v-select 
-                                        :disabled="teacherData.id_teacher == 0"
-                                        v-model="type_contract.condition" 
-                                        :options="['contratado','honorario profesional','auxiliar docente']"><div slot="no-options">No hay coincidencias</div></v-select>
+                                        v-model="teacherData.condition" 
+                                        label="name"
+                                        :options="list_conditions"><div slot="no-options">No hay coincidencias</div></v-select>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label>Categoria</label>
+                                        <v-select 
+                                        v-model="teacherData.category" 
+                                        label="name"
+                                        :options="list_categories"><div slot="no-options">No hay coincidencias</div></v-select>
+                                    </div>  
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label>Dedicacion</label>
+                                        <v-select 
+                                        v-model="teacherData.dedication" 
+                                        label="name"
+                                        :options="list_dedications"><div slot="no-options">No hay coincidencias</div></v-select>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
@@ -333,7 +345,7 @@
                                             <div class="col-12">
                                                 <table class="table table-striped table-sm">
                                                     <thead>
-                                                        <tr class="text-center">
+                                                        <tr>
                                                             <th>Universidad</th>
                                                             <th>Titulo</th>
                                                             <th>Año</th>
@@ -343,7 +355,7 @@
                                                         <tr v-if="list_preGTeacher.length == 0">
                                                             <td class="text-center text-white bg-primary-dark" colspan="3">No hay registros...</td>
                                                         </tr>
-                                                        <tr class="text-center" v-else v-for="pregrado in list_preGTeacher">
+                                                        <tr v-else v-for="pregrado in list_preGTeacher">
                                                             <td v-text="pregrado.university.name"></td>
                                                             <td v-text="pregrado.title.title"></td>
                                                             <td v-text="pregrado.date"></td>
@@ -405,7 +417,7 @@
                                             <div class="col-12">
                                                 <table class="table table-striped table-sm">
                                                     <thead>
-                                                        <tr class="text-center">
+                                                        <tr>
                                                             <th>Universidad</th>
                                                             <th>Titulo</th>
                                                             <th>Año</th>
@@ -415,7 +427,7 @@
                                                         <tr v-if="list_postGTeacher.length == 0">
                                                             <td class="text-center text-white bg-primary-dark" colspan="3">No hay registros...</td>
                                                         </tr>
-                                                        <tr class="text-center" v-else v-for="posgrado in list_postGTeacher">
+                                                        <tr v-else v-for="posgrado in list_postGTeacher">
                                                             <td v-text="posgrado.university.name"></td>
                                                             <td v-text="posgrado.title.title"></td>
                                                             <td v-text="posgrado.date"></td>
@@ -426,59 +438,70 @@
                                         </form>
                                     </div>
                                 </div>
+                                <div class="block col-12">
+                                    <div class="block-title">
+                                        Formacion Academica
+                                    </div>
+                                    <div class="block-content">
+                                        <form class="row">
+                                            <div class="col-4">
+                                                <div class="form-group">
+                                                    <label>Tipo</label>
+                                                    <v-select
+                                                    v-model="academicTraining.type"
+                                                    :options="['curso','taller','conferencia']"><div slot="no-options">No hay coincidencias</div></v-select>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="form-group">
+                                                    <label>Fecha (Inicio)</label>
+                                                    <datepicker
+                                                    v-model="academicTraining.start"
+                                                    :language="es"
+                                                    :disabled="academicTraining.type==null"
+                                                    :disabled-dates="no_dates" 
+                                                    :input-class="academicTraining.type!==null?'bg-white form-control':'form-control'"></datepicker>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="form-group">
+                                                    <label>Fecha (Hasta) opcional</label>
+                                                    <datepicker
+                                                    v-model="academicTraining.end"
+                                                    :disabled="academicTraining.start==null"
+                                                    :language="es"
+                                                    :disabled-dates="no_dates" 
+                                                    :input-class="academicTraining.start!==null?'bg-white form-control':'form-control'"></datepicker>
+                                                </div>
+                                            </div>
+                                            <div class="col-2">
+                                                <div class="form-group">
+                                                    <label>Horas</label>
+                                                    <input type="number" v-model="academicTraining.hours">
+                                                </div>
+                                            </div>
+                                            <div class="col-11">
+                                                <div class="form-group">
+                                                    <label>Descripcion</label>
+                                                    <textarea 
+                                                    v-model="academicTraining.description"
+                                                    :disabled="academicTraining.type==null" 
+                                                    class="form-control"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-1">
+                                                <label>&nbsp</label>
+                                                <button @click.prevent="academicTrainingSave" class="btn btn-outline-primary">
+                                                    <i class="fa fa-check-circle"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="block-content block-content-full text-right border-top">
                             <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="ConditionModal" tabindex="-1" role="dialog" aria-labelledby="modal-block-extra-large" aria-hidden="true">
-            <div class="modal-dialog modal-xl" role="document">
-                <div class="modal-content">
-                    <div class="block block-themed block-transparent mb-0">
-                        <div class="block-header bg-primary-dark">
-                            <h3 class="block-title" v-text="modal_option"></h3>
-                            <div class="block-options">
-                                <button type="button" class="btn-block-option" data-dismiss="modal" aria-label="Close">
-                                    <i class="fa fa-fw fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="block-content font-size-sm">
-                            <div class="row">
-                            </div>
-                        </div>
-                        <div class="block-content block-content-full text-right border-top">
-                            <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
-                            <button v-if="modal_type=='sintCu'" @click="alert('Hola Mundo')" type="button" class="btn btn-sm btn-success" data-dismiss="modal"><i class="fa fa-check mr-1"></i>Guardar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="CategoryModal" tabindex="-1" role="dialog" aria-labelledby="modal-block-extra-large" aria-hidden="true">
-            <div class="modal-dialog modal-xl" role="document">
-                <div class="modal-content">
-                    <div class="block block-themed block-transparent mb-0">
-                        <div class="block-header bg-primary-dark">
-                            <h3 class="block-title" v-text="modal_option"></h3>
-                            <div class="block-options">
-                                <button type="button" class="btn-block-option" data-dismiss="modal" aria-label="Close">
-                                    <i class="fa fa-fw fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="block-content font-size-sm">
-                            
-                        </div>
-                        <div class="block-content block-content-full text-right border-top">
-                            <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
-                            <button v-if="modal_type=='sintCu'" @click="alert('Hola Mundo')" type="button" class="btn btn-sm btn-success" data-dismiss="modal"><i class="fa fa-check mr-1"></i>Guardar</button>
                         </div>
                     </div>
                 </div>
@@ -494,6 +517,9 @@ export default {
         this.typeContract();
     	this.getData();
         this.getHeadquarters();
+        this.getConditions();
+        this.getCategories();
+        this.getDedications();
     },
     data() {
 		return {
@@ -534,8 +560,18 @@ export default {
                 },
                 date:null
             },
+            academicTraining:{
+                type:null,
+                description:null,
+                start:null,
+                hours:null,
+                end:null
+            },
             exist_document:false,
             no_dates:{to: new Date('1919-01-01')},
+            list_categories:[],
+            list_dedications:[],
+            list_conditions:[],
             list_titles:[],
             list_universities:[],
             list_documents:[],
@@ -549,6 +585,18 @@ export default {
             list_postGTeacher:[],
             teacherData:{
                 id_teacher:0,
+                category:{
+                    id:0,
+                    name:null
+                },
+                condition:{
+                    id:0,
+                    name:null
+                },
+                dedication:{
+                    id:0,
+                    name:null
+                },
             	headquarter:{
                     id:0,
                     name:null
@@ -617,6 +665,18 @@ export default {
 		TeacherDataBlank(){
 			this.teacherData={
             	id_teacher: 0,
+                category:{
+                    id:0,
+                    name:null
+                },
+                condition:{
+                    id:0,
+                    name:null
+                },
+                dedication:{
+                    id:0,
+                    name:null
+                },
                 headquarter:{
                     id:0,
                     name:null
@@ -659,6 +719,71 @@ export default {
                 }
             }
 		},
+        blankacademicTraining(){
+            this.academicTraining={
+                type:null,
+                description:null,
+                hours:null,
+                start:null,
+                end:null
+            }
+        },
+        academicTrainingSave(){
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar esta formacion academica')
+            let url = '/save-academic-training'
+            // axios.post(url,{
+            //     postGData : this.postGData,
+            // }).then(response => {
+            //     swal.close()
+            //     this.$alertify.success('Registro exitoso')
+            //     this.blankPostG()
+            //     this.getPostG()
+            // }).catch(errors => {
+            //     swal.close()
+            //     if (status = 204)
+            //     {
+            //         Object.values(errors.response.data.errors).forEach((element,indx) => {
+            //             this.$alertify.error(element.toString())
+            //         });
+            //     }
+            // })
+        },
+        getConditions(){
+            let url = location.origin+"/get-conditions"
+            axios.get(url).then(response => {
+                this.list_conditions = response.data.filter((cond,ind,arr)=>{
+                    if (this.type_contract.type=='contratado') {
+                        return (cond.name.toLowerCase().indexOf('fijo') == -1)
+                    }else{
+                        return (cond.name.toLowerCase().indexOf('fijo') !== -1)
+                    }
+                });
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        getCategories(){
+            let url = location.origin+"/get-categories"
+            axios.get(url).then(response => {
+                this.list_categories = response.data.filter((cate,ind,arr)=>{
+                    if (this.type_contract.type=='ordinario') {
+                        return (cate.name.toLowerCase().indexOf('todos') == -1)
+                    }else{
+                        return (cate.name.toLowerCase().indexOf('instructor') !== -1)
+                    }
+                });
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
+        getDedications(){
+            let url = location.origin+"/get-dedications"
+            axios.get(url).then(response => {
+                this.list_dedications = response.data
+            }).catch(errors =>{
+                console.log(errors.response)
+            })
+        },
         getPreG(){
             let url = location.origin+"/get-pre-teacher/"+this.teacherData.id_teacher
             axios.get(url).then(response => {
@@ -1021,10 +1146,37 @@ export default {
         showModal(modal_id, model,option, type){
         	this.modal_option	= option
         	this.modal_type		= type
+            if (this.type_contract.type=='contratado') {
+                this.list_categories.forEach(category => {
+                    if(category.name === 'instructor'){
+                        this.teacherData.category = category
+                    }
+                });
+            }
+            if (this.type_contract.type=='ordinario') {
+                this.list_conditions.forEach(condition => {
+                    if(condition.name === 'fijo'){
+                        this.teacherData.condition = condition
+                    }
+                });
+            }
+
         	if (type == 'edit' && model !== null) {
                 this.exist_document = true
         		this.teacherData={
 	            	id_teacher:model.id,
+                    category:{
+                        id:model.category.id,
+                        name:model.category.name,
+                    },
+                    condition:{
+                        id:model.condition.id,
+                        name:model.condition.name,
+                    },
+                    dedication:{
+                        id:model.dedication.id,
+                        name:model.dedication.name,
+                    },
                     headquarter:{
                         id:model.headquarter.id,
                         name:model.headquarter.name

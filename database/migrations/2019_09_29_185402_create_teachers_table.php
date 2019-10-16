@@ -19,6 +19,8 @@ class CreateTeachersTable extends Migration
             $table->bigInteger('extension_id')->unsigned()->nullable(); #extension
             $table->bigInteger('territorial_classroom_id')->unsigned()->nullable(); #aula territorial
             $table->bigInteger('condition_id')->unsigned()->nullable(); #condicion
+            $table->bigInteger('category_id')->unsigned()->nullable(); #categoria
+            $table->bigInteger('dedication_id')->unsigned()->nullable(); #dedicacion
 
             $table->foreign('person_id')
                 ->references('id')
@@ -58,6 +60,16 @@ class CreateTeachersTable extends Migration
             $table->foreign('condition_id')
                 ->references('id')
                 ->on('conditions')
+                ->ondDelete('cascade')
+                ->onUpdate('cascade');
+            $table->foreign('dedication_id')
+                ->references('id')
+                ->on('dedications')
+                ->ondDelete('cascade')
+                ->onUpdate('cascade');
+            $table->foreign('category_id')
+                ->references('id')
+                ->on('categories')
                 ->ondDelete('cascade')
                 ->onUpdate('cascade');
 

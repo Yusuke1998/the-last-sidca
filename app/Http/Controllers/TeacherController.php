@@ -30,13 +30,13 @@ class TeacherController extends Controller
 
     public function getAll()
     {
-        $teachers = Teacher::with('person.document','person.user','person.types','titles','undergraduates','postgraduates','condition','headquarter','area','program','core','extension','TerritorialClassroom')->get();
+        $teachers = Teacher::with('person.document','person.user','person.types','titles','undergraduates','postgraduates','condition','category','dedication','headquarter','area','program','core','extension','TerritorialClassroom')->get();
         return $teachers;
     }
 
     public function search($dni)
     {
-        $teacher = Teacher::with('person.document','person.user','person.types','titles','undergraduates.university','undergraduates.title','postgraduates.university','postgraduates.title','condition','headquarter','area','program','core','extension','TerritorialClassroom');
+        $teacher = Teacher::with('person.document','person.user','person.types','titles','undergraduates.university','undergraduates.title','postgraduates.university','postgraduates.title','condition','category','dedication','headquarter','area','program','core','extension','TerritorialClassroom');
         $teacher->whereHas('person',function ($query) use ($dni) {
             $query->where('nro_document','=',$dni);
         });
@@ -63,7 +63,7 @@ class TeacherController extends Controller
     {
         $search = mb_strtolower($request->search,'UTF-8');
         $type = mb_strtolower($request->type['type'],'UTF-8');
-        $teachers = Teacher::with('person.user','person.document','headquarter','area','core','program','extension','TerritorialClassroom','condition');
+        $teachers = Teacher::with('person.user','person.document','headquarter','area','core','program','extension','TerritorialClassroom','condition','category','dedication');
 
         if (!is_null($type) && !empty($type)) {
             $teachers->where('contract',$type);
@@ -111,7 +111,10 @@ class TeacherController extends Controller
             'teacherData.person.firstname'    => 'required',
             'teacherData.person.lastname'     => 'required', 
             'teacherData.person.document.id'  => 'required',
-            'teacherData.person.birthday'     => 'required|date'
+            'teacherData.person.birthday'     => 'required|date',
+            'teacherData.dedication'          => 'required',
+            'teacherData.condition'           => 'required',
+            'teacherData.category'            => 'required',
         ]);
 
         if ($request->teacherData['id_teacher'] == 0 && $request->teacherData['person']['id'] == 0) {
@@ -130,14 +133,16 @@ class TeacherController extends Controller
                 $type = Type::where('name','teacher')->first();
                 $persona->types()->attach($type->id);
             }
-            $condicion = $this->setCondition($request);
+
             $profesor = Teacher::create([
                 'person_id'         => $persona->id, 
                 'contract'          => $request->type['type'],
-                'condition_id'      => $condicion->id,
+                'condition_id'      => $request->teacherData['condition']['id'],
+                'category_id'       => $request->teacherData['category']['id'],
+                'dedication_id'     => $request->teacherData['dedication']['id'],
                 'headquarter_id'    => $request->teacherData['headquarter']['id'],
                 'area_id'           => $request->teacherData['area']['id'],
-                'program_id'        => $request->teacherData['program']['id']
+                'program_id'        => $request->teacherData['program']['id'],
             ]);
 
 
@@ -157,11 +162,13 @@ class TeacherController extends Controller
                 $type = Type::where('name','teacher')->first();
                 $persona->types()->attach($type->id);
             }
-            $condicion = $this->setCondition($request);
+
             $profesor = Teacher::create([
                 'person_id'         => $persona->id, 
                 'contract'          => $request->type['type'],
-                'condition_id'      => $condicion->id,
+                'condition_id'      => $request->teacherData['condition']['id'],
+                'category_id'       => $request->teacherData['category']['id'],
+                'dedication_id'     => $request->teacherData['dedication']['id'],
                 'headquarter_id'    => $request->teacherData['headquarter']['id'],
                 'area_id'           => $request->teacherData['area']['id'],
                 'program_id'        => $request->teacherData['program']['id'],
@@ -189,7 +196,10 @@ class TeacherController extends Controller
             'teacherData.person.lastname'     => 'required', 
             'teacherData.person.document.id'  => 'required',
             'teacherData.person.nro_document' => 'required',
-            'teacherData.person.birthday'     => 'required|date'
+            'teacherData.person.birthday'     => 'required|date',
+            'teacherData.dedication'          => 'required',
+            'teacherData.condition'           => 'required',
+            'teacherData.category'            => 'required',
         ]);
 
         $teacher = Teacher::findOrFail($request->teacherData['id_teacher']);
@@ -204,9 +214,11 @@ class TeacherController extends Controller
             'mail_contact'      => mb_strtolower($request->teacherData['person']['mail_contact'],'UTF-8'),
             'birthday'          => Carbon::parse($request->teacherData['person']['birthday'])->toDateString(),
         ]);
-        $condicion = $this->setCondition($request);
+
         $teacher->update([
-            'condition_id'   => $condicion->id,
+            'condition_id'   => $request->teacherData['condition']['id'],
+            'category_id'    => $request->teacherData['category']['id'],
+            'dedication_id'  => $request->teacherData['dedication']['id'],
             'headquarter_id' => $request->teacherData['headquarter']['id'],
             'area_id'        => $request->teacherData['area']['id'],
             'program_id'     => $request->teacherData['program']['id'],

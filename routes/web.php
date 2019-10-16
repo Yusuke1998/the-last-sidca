@@ -19,6 +19,10 @@ Route::get('/get-titles', 'TitleController@getAll');
 Route::get('/get-universities', 'UniversityController@getAll');
 Route::get('/get-periods', 'PeriodController@getAll');
 Route::get('/get-types', 'TypeController@getAll');
+Route::get('/get-conditions', 'ConditionController@getAll');
+Route::get('/get-categories', 'CategoryController@getAll');
+Route::get('/get-dedications', 'DedicationController@getAll');
+
 Route::post('/check-document', 'DocumentController@check_document');
 // FIN DATA
 

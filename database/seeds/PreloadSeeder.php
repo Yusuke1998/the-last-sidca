@@ -4,6 +4,8 @@ use Illuminate\Database\Seeder;
 use App\Headquarter;
 use App\Core;
 use App\Condition;
+use App\Dedication;
+use App\Category;
 use App\Area;
 use App\Program;
 use App\University;
@@ -18,30 +20,22 @@ class PreloadSeeder extends Seeder
      */
     public function run()
     {
-        $condiciones = [
-            [
-                'name' => 'fijo',
-                'contract'  => 'ordinario'
-            ],
-            [
-                'name' => 'contratado',
-                'contract'  => 'contratado'
-            ],
-            [
-                'name' => 'honorario profesional',
-                'contract'  => 'contratado'
-            ],
-            [
-                'name' => 'auxiliar docente',
-                'contract'  => 'contratado'
-            ]
-        ];
+        $condiciones = ['fijo','contratado','honorario profesional','auxiliar docente'];
 
         foreach ($condiciones as $condicion) {
-            Condition::create([
-                'name'      =>  $condicion['name'],
-                'contract'  =>  $condicion['contract']
-            ]);
+            Condition::create(['name'   =>  $condicion]);
+        }
+
+        $dedicaciones = ['exclusiva','tiempo completo','medio tiempo','tiempo convencional'];
+
+        foreach ($dedicaciones as $dedicacion) {
+            Dedication::create(['name'   =>  $dedicacion]);
+        }
+
+        $categorias = ['instructor','asistente','agregado','asociado'];
+
+        foreach ($categorias as $categoria) {
+            Category::create(['name'   =>  $categoria]);
         }
 
         $sedes = ['San Juan de los Morros'];

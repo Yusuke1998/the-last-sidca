@@ -8,7 +8,8 @@ class Teacher extends Model
 {
 	protected $fillable = [
         'person_id','contract','headquarter_id','area_id','program_id',
-        'core_id','extension_id','territorial_classroom_id','condition_id'
+        'core_id','extension_id','territorial_classroom_id',
+        'condition_id','category_id','dedication_id'
     ];
 
     public function postgraduates()
@@ -41,10 +42,15 @@ class Teacher extends Model
         return $this->belongsTo(Condition::class);
     }
 
-    // public function category()
-    // {
-    //     return $this->belongsTo(Category::class);
-    // }
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function dedication()
+    {
+        return $this->belongsTo(Dedication::class);
+    }
 
     public function headquarter()
     {

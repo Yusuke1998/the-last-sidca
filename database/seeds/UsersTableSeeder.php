@@ -33,7 +33,10 @@ class UsersTableSeeder extends Seeder
         $sede = App\Headquarter::first();
         $area = App\Area::first();
         $prog = App\Program::first();
-        $cond = App\Condition::where('contract','contratado')->first();
+
+        $cond = App\Condition::where('name','fijo')->first();
+        $cate = App\Category::where('name','instructor')->first();
+        $dedi = App\Dedication::where('name','exclusiva')->first();
         // Profesor
         $person = App\Person::create([
             'firstname'     =>  'Edith',
@@ -45,11 +48,13 @@ class UsersTableSeeder extends Seeder
         ]);
         $teacher = App\teacher::create([
             'person_id'         =>  $person->id,
-            'contract'          =>  'contratado',
+            'contract'          =>  'ordinario',
             'headquarter_id'    =>  $sede->id,
             'area_id'           =>  $area->id,
             'program_id'        =>  $prog->id,
-            'condition_id'      =>  $cond->id
+            'condition_id'      =>  $cond->id,
+            'category_id'       =>  $cate->id,
+            'dedication_id'     =>  $dedi->id
         ]);
         $type = App\Type::where('name','teacher')->first();
         $person->types()->attach($type->id);

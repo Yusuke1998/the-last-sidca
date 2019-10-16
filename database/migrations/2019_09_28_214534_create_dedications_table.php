@@ -10,6 +10,7 @@ class CreateDedicationsTable extends Migration
     {
         Schema::create('dedications', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }
