@@ -5598,6 +5598,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.verifyDni();
@@ -5605,7 +5606,7 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       dni: null,
-      modalities: ['art.61', 'art.64', 'publicacion'],
+      modalities: ['art. 61', 'art. 64'],
       list_categories: [],
       ascent: {
         id: 0,
@@ -5678,14 +5679,9 @@ __webpack_require__.r(__webpack_exports__);
 
       var url = location.origin + "/get-categories";
       axios.get(url).then(function (response) {
-        // this.list_categories = response.data.filter((cate,ind,arr)=>{
-        //     if (this.type_contract.type=='ordinario') {
-        //         return (cate.name.toLowerCase().indexOf('todos') == -1)
-        //     }else{
-        //         return (cate.name.toLowerCase().indexOf('instructor') !== -1)
-        //     }
-        // });
-        _this.list_categories = response.data;
+        _this.list_categories = response.data.filter(function (cat, ind, arr) {
+          return cat.name.toLowerCase().indexOf('instructor') == -1;
+        });
       })["catch"](function (errors) {
         console.log(errors.response);
       });
@@ -5703,6 +5699,24 @@ __webpack_require__.r(__webpack_exports__);
         this.dni = dni;
         this.searchTeacher();
       }
+    },
+    verifyRequeriments: function verifyRequeriments() {
+      if (this.ascent.modality == 'art. 61') {
+        if (this.teacherData.ascents.length == 0) {
+          this.$alertify.warning('No tienes acensos registrados!');
+        } else {
+          console.log(this.teacherData.ascents); // this.list_conditions = response.data.filter((cond,ind,arr)=>{
+          //     if (this.type_contract.type=='contratado') {
+          //         return (cond.name.toLowerCase().indexOf('fijo') == -1)
+          //     }else{
+          //         return (cond.name.toLowerCase().indexOf('fijo') !== -1)
+          //     }
+          // });
+          // this.$alertify.warning('Tienes !')
+        }
+      }
+
+      if (this.ascent.modality == 'art. 64') {}
     },
     searchTeacher: function searchTeacher() {
       var _this2 = this;
@@ -10495,6 +10509,18 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
@@ -10576,7 +10602,8 @@ __webpack_require__.r(__webpack_exports__);
         id_teacher: 0,
         category: {
           id: 0,
-          name: null
+          name: null,
+          date: null
         },
         condition: {
           id: 0,
@@ -10655,7 +10682,8 @@ __webpack_require__.r(__webpack_exports__);
         id_teacher: 0,
         category: {
           id: 0,
-          name: null
+          name: null,
+          date: null
         },
         condition: {
           id: 0,
@@ -81618,6 +81646,7 @@ var render = function() {
                             label: "name",
                             options: _vm.list_categories
                           },
+                          on: { input: _vm.verifyRequeriments },
                           model: {
                             value: _vm.ascent.category,
                             callback: function($$v) {
@@ -90402,44 +90431,6 @@ var render = function() {
                             "div",
                             { staticClass: "form-group" },
                             [
-                              _c("label", [_vm._v("Categoria")]),
-                              _vm._v(" "),
-                              _c(
-                                "v-select",
-                                {
-                                  attrs: {
-                                    label: "name",
-                                    options: _vm.list_categories
-                                  },
-                                  model: {
-                                    value: _vm.teacherData.category,
-                                    callback: function($$v) {
-                                      _vm.$set(_vm.teacherData, "category", $$v)
-                                    },
-                                    expression: "teacherData.category"
-                                  }
-                                },
-                                [
-                                  _c(
-                                    "div",
-                                    {
-                                      attrs: { slot: "no-options" },
-                                      slot: "no-options"
-                                    },
-                                    [_vm._v("No hay coincidencias")]
-                                  )
-                                ]
-                              )
-                            ],
-                            1
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "col-4" }, [
-                          _c(
-                            "div",
-                            { staticClass: "form-group" },
-                            [
                               _c("label", [_vm._v("Dedicacion")]),
                               _vm._v(" "),
                               _c(
@@ -90475,7 +90466,94 @@ var render = function() {
                             ],
                             1
                           )
-                        ])
+                        ]),
+                        _vm._v(" "),
+                        _c(
+                          "div",
+                          {
+                            class:
+                              _vm.teacherData.category.id !== 0
+                                ? "col-2"
+                                : "col-4"
+                          },
+                          [
+                            _c(
+                              "div",
+                              { staticClass: "form-group" },
+                              [
+                                _c("label", [_vm._v("Categoria")]),
+                                _vm._v(" "),
+                                _c(
+                                  "v-select",
+                                  {
+                                    attrs: {
+                                      label: "name",
+                                      options: _vm.list_categories
+                                    },
+                                    model: {
+                                      value: _vm.teacherData.category,
+                                      callback: function($$v) {
+                                        _vm.$set(
+                                          _vm.teacherData,
+                                          "category",
+                                          $$v
+                                        )
+                                      },
+                                      expression: "teacherData.category"
+                                    }
+                                  },
+                                  [
+                                    _c(
+                                      "div",
+                                      {
+                                        attrs: { slot: "no-options" },
+                                        slot: "no-options"
+                                      },
+                                      [_vm._v("No hay coincidencias")]
+                                    )
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _vm.teacherData.category.id !== 0
+                          ? _c("div", { staticClass: "col-2" }, [
+                              _c(
+                                "div",
+                                { staticClass: "form-group" },
+                                [
+                                  _c("label", [_vm._v("Fecha")]),
+                                  _vm._v(" "),
+                                  _c("datepicker", {
+                                    attrs: {
+                                      "full-month-name": true,
+                                      language: _vm.es,
+                                      disabled: !_vm.exist_document,
+                                      "disabled-dates": _vm.no_dates,
+                                      "input-class": _vm.exist_document
+                                        ? "bg-white form-control"
+                                        : "form-control"
+                                    },
+                                    model: {
+                                      value: _vm.teacherData.category.date,
+                                      callback: function($$v) {
+                                        _vm.$set(
+                                          _vm.teacherData.category,
+                                          "date",
+                                          $$v
+                                        )
+                                      },
+                                      expression: "teacherData.category.date"
+                                    }
+                                  })
+                                ],
+                                1
+                              )
+                            ])
+                          : _vm._e()
                       ],
                       2
                     )
@@ -108701,7 +108779,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!**********************************************************************************************!*\
   !*** ./resources/js/components/Teachers/TeacherComponent.vue?vue&type=template&id=a0c90704& ***!
   \**********************************************************************************************/
-/*! no static exports found */
+/*! exports provided: render, staticRenderFns */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

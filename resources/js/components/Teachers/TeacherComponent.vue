@@ -251,6 +251,15 @@
                                 </div>
                                 <div class="col-4">
                                     <div class="form-group">
+                                        <label>Dedicacion</label>
+                                        <v-select 
+                                        v-model="teacherData.dedication" 
+                                        label="name"
+                                        :options="list_dedications"><div slot="no-options">No hay coincidencias</div></v-select>
+                                    </div>
+                                </div>
+                                <div :class="teacherData.category.id!==0?'col-2':'col-4'">
+                                    <div class="form-group">
                                         <label>Categoria</label>
                                         <v-select 
                                         v-model="teacherData.category" 
@@ -258,13 +267,16 @@
                                         :options="list_categories"><div slot="no-options">No hay coincidencias</div></v-select>
                                     </div>  
                                 </div>
-                                <div class="col-4">
+                                <div v-if="teacherData.category.id!==0" class="col-2">
                                     <div class="form-group">
-                                        <label>Dedicacion</label>
-                                        <v-select 
-                                        v-model="teacherData.dedication" 
-                                        label="name"
-                                        :options="list_dedications"><div slot="no-options">No hay coincidencias</div></v-select>
+                                        <label>Fecha</label>
+                                        <datepicker
+                                        :full-month-name="true"
+                                        :language="es" 
+                                        :disabled="!exist_document" 
+                                        :disabled-dates="no_dates" 
+                                        v-model="teacherData.category.date"
+                                        :input-class="(exist_document)?'bg-white form-control':'form-control'"></datepicker>
                                     </div>
                                 </div>
                                 <!-- col-12 -->
@@ -622,7 +634,8 @@ export default {
                 id_teacher:0,
                 category:{
                     id:0,
-                    name:null
+                    name:null,
+                    date:null
                 },
                 condition:{
                     id:0,
@@ -702,7 +715,8 @@ export default {
             	id_teacher: 0,
                 category:{
                     id:0,
-                    name:null
+                    name:null,
+                    date:null
                 },
                 condition:{
                     id:0,

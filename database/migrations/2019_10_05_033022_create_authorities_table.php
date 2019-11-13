@@ -12,9 +12,11 @@ class CreateAuthoritiesTable extends Migration
             $table->bigIncrements('id');
             $table->enum('type',[
                 'rector', #rector
-                'academic_vice_chancellor', #vicerrector academico
-                'administrative_vice_chancellor', #vicerrector administrativo
-                'secretary', #secretario
+                'vicerector academico', #vicerrector academico
+                'vicerector administrativo', #vicerrector administrativo
+                'secretario', #secretario
+                'decano', #secretario
+                'director', #secretario
                 'other' #otro
             ])->default('other');
 

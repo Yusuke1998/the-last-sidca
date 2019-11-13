@@ -52,7 +52,8 @@
                             <v-select 
                             class="text-uppercase" 
                             :disabled="dni == null" 
-                            label="name" 
+                            label="name"
+                            @input="verifyRequeriments" 
                             v-model="ascent.category" 
                             :options="list_categories"><div slot="no-options">No hay coincidencias</div></v-select>
                         </div>
@@ -71,7 +72,7 @@ export default {
 	data(){
 		return {
 			dni:null,
-            modalities:['art.61','art.64','publicacion'],
+            modalities:['art. 61','art. 64'],
             list_categories:[],
             ascent:{
                 id:0,
@@ -142,14 +143,9 @@ export default {
         getCategories(){
             let url = location.origin+"/get-categories"
             axios.get(url).then(response => {
-                // this.list_categories = response.data.filter((cate,ind,arr)=>{
-                //     if (this.type_contract.type=='ordinario') {
-                //         return (cate.name.toLowerCase().indexOf('todos') == -1)
-                //     }else{
-                //         return (cate.name.toLowerCase().indexOf('instructor') !== -1)
-                //     }
-                // });
-                this.list_categories = response.data
+                this.list_categories = response.data.filter((cat,ind,arr)=>{
+                    return (cat.name.toLowerCase().indexOf('instructor') == -1)
+                });
             }).catch(errors =>{
                 console.log(errors.response)
             })
@@ -166,6 +162,30 @@ export default {
         		this.dni = dni
         		this.searchTeacher()
         	}
+        },
+        verifyRequeriments()
+        {
+            if (this.ascent.modality == 'art. 61') {
+                if (this.teacherData.ascents.length == 0) {
+                    this.$alertify.warning('No tienes acensos registrados!')
+                }else{
+                    console.log(this.teacherData.ascents)
+
+                    // this.list_conditions = response.data.filter((cond,ind,arr)=>{
+                    //     if (this.type_contract.type=='contratado') {
+                    //         return (cond.name.toLowerCase().indexOf('fijo') == -1)
+                    //     }else{
+                    //         return (cond.name.toLowerCase().indexOf('fijo') !== -1)
+                    //     }
+                    // });
+
+                    // this.$alertify.warning('Tienes !')
+                }
+            }
+
+            if (this.ascent.modality == 'art. 64') {
+
+            }
         },
 		searchTeacher()
 		{

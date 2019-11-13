@@ -201,7 +201,8 @@ return [
         'academicTraining.start'          => 'inicio',
         'academicTraining.end'            => 'final',
         'academicTraining.hours'          => 'horas',
-        'academicTraining.teacher_id'     => 'docente'
+        'academicTraining.teacher_id'     => 'docente',
+        'teacherData.category.date'       => 'fecha de acenso a categoria'
     ],
 
 ];

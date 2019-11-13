@@ -10,8 +10,9 @@ class CreateAscentsTable extends Migration
     {
         Schema::create('ascents', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->datetime('time'); #tiempo para acender
-            $table->enum('modality',['art. 61','art. 64','publicacion']); #modalidad
+            $table->date('date'); #fecha de acenso
+            $table->date('date_next')->nullable(); #fecha siguiente asenso
+            $table->enum('modality',['art. 61','art. 64','tiempo cumplido'])->nullable(); #modalidad
 
             $table->bigInteger('teacher_id')->unsigned(); #docente
             $table->foreign('teacher_id')
@@ -27,7 +28,7 @@ class CreateAscentsTable extends Migration
                 ->ondDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->bigInteger('next_category_id')->unsigned(); #categoria siguiente
+            $table->bigInteger('next_category_id')->unsigned()->nullable(); #categoria siguiente
             $table->foreign('next_category_id')
                 ->references('id')
                 ->on('categories')

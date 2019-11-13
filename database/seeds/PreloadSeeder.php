@@ -32,7 +32,7 @@ class PreloadSeeder extends Seeder
             Dedication::create(['name'   =>  $dedicacion]);
         }
 
-        $categorias = ['instructor','asistente','agregado','asociado'];
+        $categorias = ['instructor','asistente','agregado','asociado','titular'];
 
         foreach ($categorias as $categoria) {
             Category::create(['name'   =>  $categoria]);

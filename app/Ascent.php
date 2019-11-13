@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Ascent extends Model
 {
-    protected $fillable = ['current_category_id','next_category_id','teacher_id','time','modality'];
+    protected $fillable = ['current_category_id','next_category_id','teacher_id','date','date_next','modality'];
 
     public function teacher()
     {
