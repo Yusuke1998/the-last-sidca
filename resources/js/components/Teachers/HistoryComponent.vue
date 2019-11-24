@@ -32,17 +32,22 @@
                     <div v-if="teacherData.person.id !== 0" class="block-content">
 						<div class="row">
                             <!-- col-12 -->
-                            <div class="col-6">
+                            <div class="col-3">
                             	<div class="form-group">
                             		<label>Nro de Documento</label>
                                     <input disabled type="number" v-model="teacherData.person.nro_document" class="form-control">
                                 </div>
                             </div>
-                            <div class="col-6">
+                            <div class="col-3">
                             	<div class="form-group">
                             		<label>Tipo de Documento</label>
                                 	<input disabled tipe="text" v-model="teacherData.person.document.name" class="form-control">
                             	</div>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <center>
+                                    <img width="350" height="200" :src="img_url">
+                                </center>
                             </div>
                             <!-- col-12 -->
                             <div class="col-6">
@@ -340,6 +345,7 @@ export default {
 	},
 	data(){
 		return {
+            img_url:null,
 			dni:null,
 			teacherData:{
                 id:0,
@@ -389,6 +395,10 @@ export default {
 		}
 	},
 	methods:{
+        baseUrl(){
+            this.img_url = location.origin+'/storage/'+this.teacherData.person.img_document
+            console.log(this.img_url);
+        },
 		formatDate(date){
 			let moment = require('moment');
 			moment.locale('es');
@@ -410,6 +420,7 @@ export default {
 		        	if (response.data.id > 0) {
                 		this.$alertify.success('Busqueda exitosa')
 		        		this.teacherData = response.data
+                        this.baseUrl()
 		        	}
 		        }else{
 		        	this.teacherDataBlack()

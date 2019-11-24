@@ -131,7 +131,7 @@ class UsersController extends Controller
             $expl3 = explode(';',$expl2[1]);
             $extension = $expl3[0];
             $filename = 'documents/'.$request->personData['nro_document'].'.'.$extension;
-            $path = Storage::put($filename, $decoded, 'public');
+            $path = Storage::put("public/".$filename, $decoded);
         }
 
         $this->ValidateUser($request->userData,$request->personData);
@@ -164,16 +164,17 @@ class UsersController extends Controller
 
     public function update(Request $request)
     {
-        if (isset($request->personData['img_document'])) {
+        $b64 = strpos($request->personData['img_document'], 'base64');
+        if ($b64 != false)
+        {
             $expl1 = explode(',', $request->personData['img_document']);
             $decoded = base64_decode($expl1[1]);
             $expl2 = explode('/',$expl1[0]);
             $expl3 = explode(';',$expl2[1]);
             $extension = $expl3[0];
             $filename = 'documents/'.$request->personData['nro_document'].'.'.$extension;
-            $path = Storage::put($filename, $decoded, 'public');
+            $path = Storage::put("public/".$filename, $decoded);
         }
-
         if($request->userData['id']>0)
         {
             $this->vUser($request->userData);
@@ -197,9 +198,13 @@ class UsersController extends Controller
                 'direction'     => mb_strtolower($request->personData['direction'],'UTF-8'),
                 'mail_contact'  => mb_strtolower($request->personData['direction'],'UTF-8'),
                 'birthday'      => Carbon::parse($request->personData['birthday'])->toDateString(),
-                'img_document' => (isset($filename))?$filename:'documents/default.png'
             ]);
+            if (isset($filename)) 
+            {
+                $person->update(['img_document' => $filename]);
+            }
         }
+
         if (isset($request->userData['password'])) {
             $user->update(['password'  => bcrypt($request->userData['password'])]);
         }

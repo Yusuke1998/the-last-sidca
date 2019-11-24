@@ -21,7 +21,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Fecha de Nacimiento</label>
-                                <datepicker :disabled-dates="no_dates" v-model="personData.birthday" input-class="bg-white form-control"></datepicker>
+                                <datepicker v-model="personData.birthday" input-class="bg-white form-control"></datepicker>
                             </div>
                             <div class="form-group">
                                 <label>Direccion</label>
@@ -40,9 +40,9 @@
                             <div class="form-group">
                                 <label>Foto de Documento</label>
                                 <picture-input
+                                  :prefill="'/storage/'+prefill_img"
                                   @change="onChange"
                                   :crop="false"
-                                  accept="image/jpeg,image/png"
                                   size="10" 
                                   buttonClass="btn btn-sm"
                                   :hideChangeButton="true"
@@ -99,6 +99,7 @@ export default {
     },
     data() {
 		return {
+            prefill_img:null,
             no_dates:{to: new Date('1919-01-01')},
             list_documents:[],
             userID:null,
@@ -148,6 +149,8 @@ export default {
         {
             let url = "/profile-user/"+this.username
             axios.get(url).then(response => {
+                console.log(response.data)
+                this.prefill_img = response.data.person.img_document
                 this.userData = {
                     id:response.data.id,
                     username:response.data.username,
@@ -175,16 +178,13 @@ export default {
         },
         updateUser()
         {
-            this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar Usuario')
             let url = '/update-user'
             axios.post(url,{
                 userData:this.userData
             }).then(response => {
-                swal.close()
                 this.$alertify.success('Usuario actualizado con exito')
                 this.getUser()
             }).catch(errors => {
-                swal.close()
                 if (status = 204)
                 {
                     Object.values(errors.response.data.errors).forEach(element => {
@@ -195,16 +195,13 @@ export default {
         },
         updatePerson()
         {
-            this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar la Persona')
             let url = '/update-user'
             axios.post(url,{
                 personData:this.personData
             }).then(response => {
-                swal.close()
                 this.$alertify.success('Persona actualizada con exito')
                 this.getUser()
             }).catch(errors => {
-                swal.close()
                 if (status = 204)
                 {
                     Object.values(errors.response.data.errors).forEach(element => {

@@ -9813,12 +9813,18 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.verifyDni();
   },
   data: function data() {
     return {
+      img_url: null,
       dni: null,
       teacherData: {
         id: 0,
@@ -9868,6 +9874,10 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
+    baseUrl: function baseUrl() {
+      this.img_url = location.origin + '/storage/' + this.teacherData.person.img_document;
+      console.log(this.img_url);
+    },
     formatDate: function formatDate(date) {
       var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 
@@ -9892,6 +9902,8 @@ __webpack_require__.r(__webpack_exports__);
             _this.$alertify.success('Busqueda exitosa');
 
             _this.teacherData = response.data;
+
+            _this.baseUrl();
           }
         } else {
           _this.teacherDataBlack();
@@ -11460,6 +11472,7 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
+      prefill_img: null,
       no_dates: {
         to: new Date('1919-01-01')
       },
@@ -11512,6 +11525,8 @@ __webpack_require__.r(__webpack_exports__);
 
       var url = "/profile-user/" + this.username;
       axios.get(url).then(function (response) {
+        console.log(response.data);
+        _this2.prefill_img = response.data.person.img_document;
         _this2.userData = {
           id: response.data.id,
           username: response.data.username,
@@ -11540,19 +11555,14 @@ __webpack_require__.r(__webpack_exports__);
     updateUser: function updateUser() {
       var _this3 = this;
 
-      this.$root.loading('Verificando y actualizando', 'Espere mientras se verifican los datos para actualizar Usuario');
       var url = '/update-user';
       axios.post(url, {
         userData: this.userData
       }).then(function (response) {
-        swal.close();
-
         _this3.$alertify.success('Usuario actualizado con exito');
 
         _this3.getUser();
       })["catch"](function (errors) {
-        swal.close();
-
         if (status = 204) {
           Object.values(errors.response.data.errors).forEach(function (element) {
             _this3.$alertify.error(element.toString());
@@ -11563,19 +11573,14 @@ __webpack_require__.r(__webpack_exports__);
     updatePerson: function updatePerson() {
       var _this4 = this;
 
-      this.$root.loading('Verificando y actualizando', 'Espere mientras se verifican los datos para actualizar la Persona');
       var url = '/update-user';
       axios.post(url, {
         personData: this.personData
       }).then(function (response) {
-        swal.close();
-
         _this4.$alertify.success('Persona actualizada con exito');
 
         _this4.getUser();
       })["catch"](function (errors) {
-        swal.close();
-
         if (status = 204) {
           Object.values(errors.response.data.errors).forEach(function (element) {
             _this4.$alertify.error(element.toString());
@@ -88455,7 +88460,7 @@ var render = function() {
             _vm.teacherData.person.id !== 0
               ? _c("div", { staticClass: "block-content" }, [
                   _c("div", { staticClass: "row" }, [
-                    _c("div", { staticClass: "col-6" }, [
+                    _c("div", { staticClass: "col-3" }, [
                       _c("div", { staticClass: "form-group" }, [
                         _c("label", [_vm._v("Nro de Documento")]),
                         _vm._v(" "),
@@ -88489,7 +88494,7 @@ var render = function() {
                       ])
                     ]),
                     _vm._v(" "),
-                    _c("div", { staticClass: "col-6" }, [
+                    _c("div", { staticClass: "col-3" }, [
                       _c("div", { staticClass: "form-group" }, [
                         _c("label", [_vm._v("Tipo de Documento")]),
                         _vm._v(" "),
@@ -88522,6 +88527,23 @@ var render = function() {
                         })
                       ])
                     ]),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      { staticClass: "col-6 mb-2" },
+                      [
+                        _c("center", [
+                          _c("img", {
+                            attrs: {
+                              width: "350",
+                              height: "200",
+                              src: _vm.img_url
+                            }
+                          })
+                        ])
+                      ],
+                      1
+                    ),
                     _vm._v(" "),
                     _c("div", { staticClass: "col-6" }, [
                       _c("div", { staticClass: "form-group" }, [
@@ -91664,10 +91686,7 @@ var render = function() {
                     _c("label", [_vm._v("Fecha de Nacimiento")]),
                     _vm._v(" "),
                     _c("datepicker", {
-                      attrs: {
-                        "disabled-dates": _vm.no_dates,
-                        "input-class": "bg-white form-control"
-                      },
+                      attrs: { "input-class": "bg-white form-control" },
                       model: {
                         value: _vm.personData.birthday,
                         callback: function($$v) {
@@ -91769,8 +91788,8 @@ var render = function() {
                     _vm._v(" "),
                     _c("picture-input", {
                       attrs: {
+                        prefill: "/storage/" + _vm.prefill_img,
                         crop: false,
-                        accept: "image/jpeg,image/png",
                         size: "10",
                         buttonClass: "btn btn-sm",
                         hideChangeButton: true,
@@ -109036,8 +109055,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\xampp\htdocs\SIDCA\yusuke-sidca\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\xampp\htdocs\SIDCA\yusuke-sidca\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\xampp\htdocs\yusuke-sidca\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\xampp\htdocs\yusuke-sidca\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })
