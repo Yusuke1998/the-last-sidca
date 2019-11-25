@@ -5599,6 +5599,211 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.verifyDni();
@@ -5606,7 +5811,14 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       dni: null,
-      modalities: ['art. 61', 'art. 64'],
+      modalities: ['art. 61', 'art. 64', 'publicación'],
+      list_works: ['libro', 'trabajo de investigacion', 'publicacion'],
+      list_headquarters: [],
+      list_areas: [],
+      list_programs: [],
+      list_cores: [],
+      list_t_classrooms: [],
+      list_extensions: [],
       list_categories: [],
       ascent: {
         id: 0,
@@ -5648,7 +5860,7 @@ __webpack_require__.r(__webpack_exports__);
           id: 0,
           name: null
         },
-        t_classroom: {
+        territorial_classroom: {
           id: 0,
           name: null
         },
@@ -5674,12 +5886,114 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
-    getCategories: function getCategories() {
+    getHeadquarters: function getHeadquarters() {
       var _this = this;
+
+      var url = location.origin + "/get-headquarters";
+      axios.get(url).then(function (response) {
+        _this.list_headquarters = response.data;
+      })["catch"](function (errors) {
+        console.log(errors.response);
+      });
+    },
+    getAreas: function getAreas() {
+      var H = this.teacherData.headquarter;
+
+      if (H.id !== null) {
+        this.list_areas = H.areas;
+      }
+
+      if (this.list_areas.length == 0) {
+        this.teacherData.area = {
+          id: 0,
+          name: null
+        };
+      }
+    },
+    getPrograms: function getPrograms() {
+      var A = this.teacherData.area;
+
+      if (A.id !== null) {
+        this.list_programs = A.programs;
+      }
+
+      if (this.list_programs.length == 0 || this.list_programs.length == undefined) {
+        this.teacherData.program = {
+          id: 0,
+          name: null
+        };
+      }
+
+      this.blankExtras();
+    },
+    setExtras: function setExtras() {
+      this.blankExtras();
+      this.getCores();
+      this.getExtensions();
+      this.getTClassrooms();
+    },
+    getCores: function getCores() {
+      var A = this.teacherData.area;
+
+      if (A.id !== null) {
+        this.list_cores = A.cores;
+      }
+
+      if (this.list_cores.length == 0 || this.list_cores.length == undefined) {
+        this.teacherData.core = {
+          id: 0,
+          name: null
+        };
+      }
+    },
+    getExtensions: function getExtensions() {
+      var A = this.teacherData.area;
+
+      if (A.id !== null) {
+        this.list_extensions = A.extensions;
+      }
+
+      if (this.list_extensions.length == 0 || this.list_extensions.length == undefined) {
+        this.teacherData.extension = {
+          id: 0,
+          name: null
+        };
+      }
+    },
+    getTClassrooms: function getTClassrooms() {
+      var A = this.teacherData.area;
+
+      if (A.id !== null) {
+        this.list_t_classrooms = A.territorial_classrooms;
+      }
+
+      if (this.list_t_classrooms.length == 0 || this.list_t_classrooms.length == undefined) {
+        this.teacherData.territorial_classroom = {
+          id: 0,
+          name: null
+        };
+      }
+    },
+    blankExtras: function blankExtras() {
+      this.teacherData.territorial_classroom = {
+        id: 0,
+        name: null
+      };
+      this.teacherData.extension = {
+        id: 0,
+        name: null
+      };
+      this.teacherData.core = {
+        id: 0,
+        name: null
+      };
+    },
+    getCategories: function getCategories() {
+      var _this2 = this;
 
       var url = location.origin + "/get-categories";
       axios.get(url).then(function (response) {
-        _this.list_categories = response.data.filter(function (cat, ind, arr) {
+        _this2.list_categories = response.data.filter(function (cat, ind, arr) {
           return cat.name.toLowerCase().indexOf('instructor') == -1;
         });
       })["catch"](function (errors) {
@@ -5719,20 +6033,28 @@ __webpack_require__.r(__webpack_exports__);
       if (this.ascent.modality == 'art. 64') {}
     },
     searchTeacher: function searchTeacher() {
-      var _this2 = this;
+      var _this3 = this;
 
       var url = location.origin + "/get-teacher/" + this.dni;
       axios.get(url).then(function (response) {
         if (response.data !== 0 && response.data !== null && response.data !== undefined && response.data !== '') {
           if (response.data.id > 0) {
-            _this2.$alertify.success('Busqueda exitosa');
+            _this3.$alertify.success('Busqueda exitosa');
 
-            _this2.teacherData = response.data;
+            _this3.teacherData = response.data;
+
+            _this3.getHeadquarters();
+
+            _this3.getAreas();
+
+            _this3.getPrograms();
+
+            _this3.setExtras();
           }
         } else {
-          _this2.teacherDataBlack();
+          _this3.teacherDataBlack();
 
-          _this2.$alertify.error('Busqueda sin resultado');
+          _this3.$alertify.error('Busqueda sin resultado');
         }
       })["catch"](function (errors) {
         console.log(errors.response);
@@ -5773,7 +6095,7 @@ __webpack_require__.r(__webpack_exports__);
           id: 0,
           name: null
         },
-        t_classroom: {
+        territorial_classroom: {
           id: 0,
           name: null
         },
@@ -81567,9 +81889,9 @@ var render = function() {
               ])
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "col-3" }, [
+            _c("div", { staticClass: "col-2" }, [
               _c("div", { staticClass: "form-group" }, [
-                _c("label", [_vm._v("Categoria")]),
+                _c("label", [_vm._v("Categoria Actual")]),
                 _vm._v(" "),
                 _c("input", {
                   directives: [
@@ -81599,7 +81921,7 @@ var render = function() {
               ])
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "col-3" }, [
+            _c("div", { staticClass: "col-2" }, [
               _c(
                 "div",
                 { staticClass: "form-group" },
@@ -81607,9 +81929,9 @@ var render = function() {
                   _c("label", [_vm._v("Modalidad de Acenso")]),
                   _vm._v(" "),
                   _c("v-select", {
-                    staticClass: "text-uppercase",
+                    staticClass: "text-uppercase bg-white",
                     attrs: {
-                      disabled: _vm.dni == null,
+                      disabled: _vm.teacherData.id == 0,
                       label: "name",
                       options: _vm.modalities
                     },
@@ -81627,6 +81949,42 @@ var render = function() {
               )
             ]),
             _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "col-2" },
+              [
+                _c("label", [_vm._v("Categoria a Acender")]),
+                _vm._v(" "),
+                _c(
+                  "v-select",
+                  {
+                    staticClass: "text-uppercase",
+                    attrs: {
+                      disabled: _vm.ascent.modality == null,
+                      label: "name",
+                      options: _vm.list_categories
+                    },
+                    on: { input: _vm.verifyRequeriments },
+                    model: {
+                      value: _vm.ascent.category,
+                      callback: function($$v) {
+                        _vm.$set(_vm.ascent, "category", $$v)
+                      },
+                      expression: "ascent.category"
+                    }
+                  },
+                  [
+                    _c(
+                      "div",
+                      { attrs: { slot: "no-options" }, slot: "no-options" },
+                      [_vm._v("No hay coincidencias")]
+                    )
+                  ]
+                )
+              ],
+              1
+            ),
+            _vm._v(" "),
             _vm.ascent.modality !== null
               ? [
                   _c("div", { staticClass: "col-12 text-uppercase" }, [
@@ -81636,44 +81994,348 @@ var render = function() {
                     })
                   ]),
                   _vm._v(" "),
-                  _c(
-                    "div",
-                    { staticClass: "col-3" },
-                    [
-                      _c("label", [_vm._v("Categoria a Acender")]),
-                      _vm._v(" "),
-                      _c(
-                        "v-select",
-                        {
-                          staticClass: "text-uppercase",
-                          attrs: {
-                            disabled: _vm.dni == null,
-                            label: "name",
-                            options: _vm.list_categories
-                          },
-                          on: { input: _vm.verifyRequeriments },
-                          model: {
-                            value: _vm.ascent.category,
-                            callback: function($$v) {
-                              _vm.$set(_vm.ascent, "category", $$v)
-                            },
-                            expression: "ascent.category"
-                          }
-                        },
-                        [
+                  _vm.ascent.modality == "art. 61"
+                    ? [
+                        _vm._m(0),
+                        _vm._v(" "),
+                        _vm._m(1),
+                        _vm._v(" "),
+                        _vm._m(2)
+                      ]
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm.ascent.modality == "art. 64"
+                    ? [
+                        _vm._m(3),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-3" }, [
                           _c(
                             "div",
-                            {
-                              attrs: { slot: "no-options" },
-                              slot: "no-options"
-                            },
-                            [_vm._v("No hay coincidencias")]
+                            { staticClass: "form-group" },
+                            [
+                              _c("label", [_vm._v("Naturaleza del Trabajo")]),
+                              _vm._v(" "),
+                              _c("v-select", {
+                                staticClass: "text-uppercase bg-white",
+                                attrs: {
+                                  disabled: _vm.dni == null,
+                                  label: "name",
+                                  options: _vm.list_works
+                                }
+                              })
+                            ],
+                            1
                           )
-                        ]
-                      )
-                    ],
-                    1
-                  )
+                        ]),
+                        _vm._v(" "),
+                        _vm._m(4),
+                        _vm._v(" "),
+                        _vm._m(5),
+                        _vm._v(" "),
+                        _vm._m(6),
+                        _vm._v(" "),
+                        _vm._m(7),
+                        _vm._v(" "),
+                        _vm._m(8),
+                        _vm._v(" "),
+                        _vm._m(9),
+                        _vm._v(" "),
+                        _vm._m(10),
+                        _vm._v(" "),
+                        _vm._m(11),
+                        _vm._v(" "),
+                        _vm._m(12),
+                        _vm._v(" "),
+                        _vm._m(13),
+                        _vm._v(" "),
+                        _vm._m(14),
+                        _vm._v(" "),
+                        _vm._m(15)
+                      ]
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm.ascent.modality == "publicación"
+                    ? [
+                        _c("h4", { staticClass: "text-center" }, [
+                          _vm._v("data incompleta publicacion")
+                        ])
+                      ]
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm._m(16),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-4" }, [
+                    _c(
+                      "div",
+                      { staticClass: "form-group" },
+                      [
+                        _c("label", [_vm._v("Sede")]),
+                        _vm._v(" "),
+                        _c(
+                          "v-select",
+                          {
+                            staticClass: "text-uppercase bg-white",
+                            attrs: {
+                              disabled: _vm.teacherData.id == 0,
+                              label: "name",
+                              options: _vm.list_headquarters
+                            },
+                            on: { input: _vm.getAreas },
+                            model: {
+                              value: _vm.teacherData.headquarter,
+                              callback: function($$v) {
+                                _vm.$set(_vm.teacherData, "headquarter", $$v)
+                              },
+                              expression: "teacherData.headquarter"
+                            }
+                          },
+                          [
+                            _c(
+                              "div",
+                              {
+                                attrs: { slot: "no-options" },
+                                slot: "no-options"
+                              },
+                              [_vm._v("No hay coincidencias")]
+                            )
+                          ]
+                        )
+                      ],
+                      1
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-4" }, [
+                    _c(
+                      "div",
+                      { staticClass: "form-group" },
+                      [
+                        _c("label", [_vm._v("Area")]),
+                        _vm._v(" "),
+                        _c(
+                          "v-select",
+                          {
+                            staticClass: "text-uppercase bg-white",
+                            attrs: {
+                              disabled: _vm.teacherData.headquarter.id == 0,
+                              label: "name",
+                              options: _vm.list_areas
+                            },
+                            on: { input: _vm.getPrograms },
+                            model: {
+                              value: _vm.teacherData.area,
+                              callback: function($$v) {
+                                _vm.$set(_vm.teacherData, "area", $$v)
+                              },
+                              expression: "teacherData.area"
+                            }
+                          },
+                          [
+                            _c(
+                              "div",
+                              {
+                                attrs: { slot: "no-options" },
+                                slot: "no-options"
+                              },
+                              [_vm._v("No hay coincidencias")]
+                            )
+                          ]
+                        )
+                      ],
+                      1
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-4" }, [
+                    _c(
+                      "div",
+                      { staticClass: "form-group" },
+                      [
+                        _c("label", [_vm._v("Programa")]),
+                        _vm._v(" "),
+                        _c(
+                          "v-select",
+                          {
+                            staticClass: "text-uppercase bg-white",
+                            attrs: {
+                              disabled: _vm.teacherData.area.id == 0,
+                              label: "name",
+                              options: _vm.list_programs
+                            },
+                            on: { input: _vm.setExtras },
+                            model: {
+                              value: _vm.teacherData.program,
+                              callback: function($$v) {
+                                _vm.$set(_vm.teacherData, "program", $$v)
+                              },
+                              expression: "teacherData.program"
+                            }
+                          },
+                          [
+                            _c(
+                              "div",
+                              {
+                                attrs: { slot: "no-options" },
+                                slot: "no-options"
+                              },
+                              [_vm._v("No hay coincidencias")]
+                            )
+                          ]
+                        )
+                      ],
+                      1
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _vm.teacherData.headquarter.id > 0 &&
+                  _vm.teacherData.area.id > 0 &&
+                  _vm.teacherData.program.id > 0
+                    ? [
+                        _vm.list_cores.length > 0
+                          ? _c("div", { staticClass: "col-4" }, [
+                              _c(
+                                "div",
+                                { staticClass: "form-group" },
+                                [
+                                  _c("label", [_vm._v("Nucleo")]),
+                                  _vm._v(" "),
+                                  _c(
+                                    "v-select",
+                                    {
+                                      staticClass: "text-uppercase bg-white",
+                                      attrs: {
+                                        disabled:
+                                          _vm.teacherData.extension.id > 0 ||
+                                          _vm.teacherData.territorial_classroom
+                                            .id > 0,
+                                        label: "name",
+                                        options: _vm.list_cores
+                                      },
+                                      model: {
+                                        value: _vm.teacherData.core,
+                                        callback: function($$v) {
+                                          _vm.$set(_vm.teacherData, "core", $$v)
+                                        },
+                                        expression: "teacherData.core"
+                                      }
+                                    },
+                                    [
+                                      _c(
+                                        "div",
+                                        {
+                                          attrs: { slot: "no-options" },
+                                          slot: "no-options"
+                                        },
+                                        [_vm._v("No hay coincidencias")]
+                                      )
+                                    ]
+                                  )
+                                ],
+                                1
+                              )
+                            ])
+                          : _vm._e(),
+                        _vm._v(" "),
+                        _vm.list_extensions.length > 0
+                          ? _c("div", { staticClass: "col-4" }, [
+                              _c(
+                                "div",
+                                { staticClass: "form-group" },
+                                [
+                                  _c("label", [_vm._v("Extension")]),
+                                  _vm._v(" "),
+                                  _c(
+                                    "v-select",
+                                    {
+                                      staticClass: "text-uppercase bg-white",
+                                      attrs: {
+                                        disabled:
+                                          _vm.teacherData.core.id > 0 ||
+                                          _vm.teacherData.territorial_classroom
+                                            .id > 0,
+                                        label: "name",
+                                        options: _vm.list_extensions
+                                      },
+                                      model: {
+                                        value: _vm.teacherData.extension,
+                                        callback: function($$v) {
+                                          _vm.$set(
+                                            _vm.teacherData,
+                                            "extension",
+                                            $$v
+                                          )
+                                        },
+                                        expression: "teacherData.extension"
+                                      }
+                                    },
+                                    [
+                                      _c(
+                                        "div",
+                                        {
+                                          attrs: { slot: "no-options" },
+                                          slot: "no-options"
+                                        },
+                                        [_vm._v("No hay coincidencias")]
+                                      )
+                                    ]
+                                  )
+                                ],
+                                1
+                              )
+                            ])
+                          : _vm._e(),
+                        _vm._v(" "),
+                        _vm.list_t_classrooms.length > 0
+                          ? _c("div", { staticClass: "col-4" }, [
+                              _c(
+                                "div",
+                                { staticClass: "form-group" },
+                                [
+                                  _c("label", [_vm._v("Aula Territorial")]),
+                                  _vm._v(" "),
+                                  _c(
+                                    "v-select",
+                                    {
+                                      staticClass: "text-uppercase bg-white",
+                                      attrs: {
+                                        disabled:
+                                          _vm.teacherData.extension.id > 0 ||
+                                          _vm.teacherData.core.id > 0,
+                                        label: "name",
+                                        options: _vm.list_t_classrooms
+                                      },
+                                      model: {
+                                        value:
+                                          _vm.teacherData.territorial_classroom,
+                                        callback: function($$v) {
+                                          _vm.$set(
+                                            _vm.teacherData,
+                                            "territorial_classroom",
+                                            $$v
+                                          )
+                                        },
+                                        expression:
+                                          "teacherData.territorial_classroom"
+                                      }
+                                    },
+                                    [
+                                      _c(
+                                        "div",
+                                        {
+                                          attrs: { slot: "no-options" },
+                                          slot: "no-options"
+                                        },
+                                        [_vm._v("No hay coincidencias")]
+                                      )
+                                    ]
+                                  )
+                                ],
+                                1
+                              )
+                            ])
+                          : _vm._e()
+                      ]
+                    : _vm._e()
                 ]
               : _vm._e()
           ],
@@ -81683,7 +82345,200 @@ var render = function() {
     ])
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-3" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Titulo de Trabajo")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-3" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Titulo de Postgrado")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-3" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Publicación")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-3" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Titulo de Trabajo")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-3" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Titulo de Postgrado")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12" }, [
+      _c("h5", { staticClass: "text-center" }, [_vm._v("Jurado Evaluador")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-4" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Cordinador")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-4" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Principal")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-4" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Principal")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-4" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Cordinador (Suplente)")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-4" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Principal (Suplente)")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-4" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Principal (Suplente)")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12" }, [
+      _c("h5", { staticClass: "text-center" }, [_vm._v("Presentacion")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-4" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Fecha")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-4" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Lugar")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-4" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", [_vm._v("Hora")]),
+        _vm._v(" "),
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12" }, [
+      _c("h5", { staticClass: "text-center" }, [_vm._v("Adscrito")])
+    ])
+  }
+]
 render._withStripped = true
 
 

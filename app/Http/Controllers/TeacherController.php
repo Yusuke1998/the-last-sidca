@@ -39,7 +39,7 @@ class TeacherController extends Controller
 
     public function search($dni)
     {
-        $teacher = Teacher::with('person.document','person.user','person.types','titles','undergraduates.university','undergraduates.title','postgraduates.university','postgraduates.title','condition','category','dedication','headquarter','area','program','core','extension','TerritorialClassroom','ascents.current_category','ascents.next_category');
+        $teacher = Teacher::with('person.document','person.user','person.types','titles','undergraduates.university','undergraduates.title','postgraduates.university','postgraduates.title','condition','category','dedication','headquarter.areas.programs','headquarter.areas.cores','headquarter.areas.extensions','headquarter.areas.territorial_classrooms','area.programs','area.cores','area.extensions','area.territorial_classrooms','program','core','extension','TerritorialClassroom','ascents.current_category','ascents.next_category');
         $teacher->whereHas('person',function ($query) use ($dni) {
             $query->where('nro_document','=',$dni);
         });

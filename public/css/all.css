@@ -25167,6 +25167,11 @@ div.dataTables_wrapper div.dataTables_paginate ul.pagination {
 	border-radius: 10px !important;
 }
 .table-responsive > .table > tbody > tr > td > ul > li{
-	/*list-style-type: upper-roman !important;*/
 	list-style-type:square !important;
+}
+
+.vs--disabled{
+	/*background: #000000 !important;*/
+	/*color: darkblue !important;*/
+	/*color: red !important;*/
 }
