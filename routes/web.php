@@ -123,9 +123,9 @@ Route::group(['prefix'=>'precarga','middleware'=>'auth'],function(){
 // MOVIMIENTOS
 Route::group(['prefix'=>'movimiento','middleware'=>'auth'],function(){
 
-	// ACENSO
-	Route::get('acenso/{dni?}','MovementController@ascent_index')->name('ascent.index');
-	// FIN ACENSO
+	// ASCENSO
+	Route::get('ascenso/{dni?}','MovementController@ascent_index')->name('ascent.index');
+	// FIN ASCENSO
 
 });
 // FIN MOVIMIENTOS

@@ -119,6 +119,7 @@ class TeacherController extends Controller
             'teacherData.condition'           => 'required',
             'teacherData.category'            => 'required',
             'teacherData.category.date'       => 'required',
+            'teacherData.category.modality'   => 'required',
         ]);
 
         if ($request->teacherData['id_teacher'] == 0 && $request->teacherData['person']['id'] == 0) {
@@ -142,7 +143,6 @@ class TeacherController extends Controller
                 'person_id'         => $persona->id, 
                 'contract'          => $request->type['type'],
                 'condition_id'      => $request->teacherData['condition']['id'],
-                'category_id'       => $request->teacherData['category']['id'],
                 'dedication_id'     => $request->teacherData['dedication']['id'],
                 'headquarter_id'    => $request->teacherData['headquarter']['id'],
                 'area_id'           => $request->teacherData['area']['id'],
@@ -213,12 +213,15 @@ class TeacherController extends Controller
             $dn = '';
             $nc_id = '';
         }
-
+        $profesor->update([
+            'category_id' => $request->teacherData['category']['id']
+        ]);
         $ascent = new Ascent;
         $ascent->date                   = $dc->toDateString();
         $ascent->date_next              = $dn->toDateString();
         $ascent->current_category_id    = $cc_id;
         $ascent->next_category_id       = $nc_id;
+        $ascent->modality               = $request->teacherData['category']['modality'];
         $ascent->teacher()->associate($profesor);
         $ascent->save();
     }
@@ -254,7 +257,6 @@ class TeacherController extends Controller
 
         $teacher->update([
             'condition_id'   => $request->teacherData['condition']['id'],
-            'category_id'    => $request->teacherData['category']['id'],
             'dedication_id'  => $request->teacherData['dedication']['id'],
             'headquarter_id' => $request->teacherData['headquarter']['id'],
             'area_id'        => $request->teacherData['area']['id'],
@@ -296,16 +298,19 @@ class TeacherController extends Controller
                 $dn = '';
                 $nc_id = '';
             }
-
             if ($teacher->ascents()->count() > 0) {
                 $ascent = $teacher->ascents()->first();
             }else{
                 $ascent = new Ascent;
             }
+            $teacher->update([
+                'category_id' => $request->teacherData['category']['id']
+            ]);
             $ascent->date                   = $dc->toDateString();
             $ascent->date_next              = $dn->toDateString();
             $ascent->current_category_id    = $cc_id;
             $ascent->next_category_id       = $nc_id;
+            $ascent->modality               = $request->teacherData['category']['modality'];
             $ascent->teacher()->associate($teacher);
             $ascent->save();
             return;

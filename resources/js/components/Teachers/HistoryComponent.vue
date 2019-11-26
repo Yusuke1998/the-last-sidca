@@ -189,15 +189,46 @@
                 </div>
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
-                        <h3 class="block-title">Convalidacion de Asensos</h3>
+                        <h3 class="block-title">Convalidacion de Ascensos</h3>
                         <div class="block-options">
                             <div class="timeline-event-time block-options-item font-size-sm font-w600">
                                 actualizado hace 10 min
                             </div>
                         </div>
                     </div>
-                    <div class="block-content">
-
+                    <div v-if="teacherData.ascents.length > 0" class="block-content">
+                        <div class="row">
+                            <div class="block col-12">
+                                <div class="block-content">
+                                    <table class="table table-striped table-sm">
+                                        <thead>
+                                            <tr class="text-center">
+                                                <th>Categoria Actual</th>
+                                                <th>Fecha</th>
+                                                <th>Categoria Ascendida</th>
+                                                <th>Fecha</th>
+                                                <th>Modalidad</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-if="teacherData.ascents.length == 0">
+                                                <td class="text-center text-white bg-primary-dark" colspan="4">No hay registros...</td>
+                                            </tr>
+                                            <tr class="text-center" v-else v-for="ascent in teacherData.ascents">
+                                                <td v-text="ascent.current_category.name"></td>
+                                                <td v-text="ascent.date"></td>
+                                                <td v-text="ascent.next_category.name"></td>
+                                                <td v-text="ascent.date_next"></td>
+                                                <td v-text="ascent.modality"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="block-content">
+                        <h4 class="text-center">Sin Resultados!</h4>
                     </div>
                 </div>
             </li>
@@ -391,6 +422,7 @@ export default {
 	        	},
 	        	postgraduates:[],
                 undergraduates:[],
+                ascents:[],
             }
 		}
 	},
@@ -416,6 +448,9 @@ export default {
 		{
 		    let url = location.origin+"/get-teacher/"+this.dni
 		    axios.get(url).then(response => {
+                
+                console.log(response.data);
+
 		        if (response.data !== 0 && response.data !== null && response.data !== undefined && response.data !== '') {
 		        	if (response.data.id > 0) {
                 		this.$alertify.success('Busqueda exitosa')
@@ -475,6 +510,7 @@ export default {
 	        	},
 	        	postgraduates:[],
                 undergraduates:[],
+                ascents:[],
             }
 		}
 	}

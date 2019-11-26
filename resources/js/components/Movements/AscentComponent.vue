@@ -28,15 +28,23 @@
                             <input disabled type="text" class="form-control" v-model="teacherData.person.lastname">
                         </div>
                     </div>
-                    <div class="col-2">
+                    <div class="col-3">
                         <div class="form-group">
                             <label>Categoria Actual</label>
                             <input disabled type="text" class="form-control" v-model="teacherData.category.name">
                         </div>
                     </div>
-                    <div class="col-2">
+                    <div class="col-3">
                         <div class="form-group">
-                            <label>Modalidad de Acenso</label>
+                            <label>Tiempo en la Categoria</label>
+                            <input disabled type="text" class="form-control" v-model="teacherData.category.name">
+                        </div>
+                    </div>
+                    <!-- col 12 -->
+
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Modalidad de Ascenso</label>
                             <v-select 
                             class="text-uppercase bg-white" 
                             :disabled="teacherData.id == 0" 
@@ -46,7 +54,7 @@
                             :options="modalities"></v-select>
                         </div>
                     </div>
-                    <div class="col-2">
+                    <div class="col-6">
                         <label>Categoria a Acender</label>
                         <v-select 
                         class="text-uppercase" 
@@ -62,23 +70,25 @@
                             <h3 class="text-center" v-text="ascent.modality"></h3>
                         </div>
 
-                    <!-- ACENSO POR ARTICULO 61 -->
+                    <!-- ASCENSO POR ARTICULO 61 -->
 
                         <template v-if="ascent.modality == 'art. 61'">
                             <div class="col-3">
                                 <div class="form-group">
-                                    <label>Titulo de Trabajo</label>
+                                    <label>Titulo del Trabajo</label>
                                     <input type="text" class="form-control">
                                 </div>
                             </div>
-                            <div class="col-3">
+                            <div class="col-6">
                                 <div class="form-group">
-                                    <label>Titulo de Postgrado</label>
-                                    <input type="text" class="form-control">
-                                    <!-- <v-select 
-                                    class="text-uppercase bg-white"
-                                    label="title" 
-                                    :options="teacherData.postgraduates"><div slot="no-options">No hay coincidencias</div></v-select> -->
+                                    <label>Titulo del Postgrado</label>
+                                    <v-select 
+                                    class="bg-white text-uppercase"
+                                    label="title"
+                                    v-model="publication.title"
+                                    :options="teacherData.postgraduates"
+                                    :getOptionLabel="obj=>obj.title.level+' / '+obj.title.title"
+                                    :reduce="title=>title.title"><div slot="no-options">No hay coincidencias</div></v-select>
                                 </div>
                             </div>
                             <div class="col-3">
@@ -89,7 +99,7 @@
                             </div>
                         </template>
                     
-                    <!-- ACENSO POR ARTICULO 64 -->
+                    <!-- ASCENSO POR ARTICULO 64 -->
                     
                         <template v-if="ascent.modality == 'art. 64'">
                             <div class="col-3">
@@ -104,10 +114,16 @@
                                     <v-select class="text-uppercase bg-white" :disabled="dni == null" label="name" :options="list_works"></v-select>
                                 </div>
                             </div>
-                            <div class="col-3">
+                            <div class="col-6">
                                 <div class="form-group">
-                                    <label>Titulo de Postgrado</label>
-                                    <input type="text" class="form-control">
+                                    <label>Titulo del Postgrado</label>
+                                    <v-select 
+                                    class="bg-white text-uppercase"
+                                    label="title"
+                                    v-model="publication.title"
+                                    :options="teacherData.postgraduates"
+                                    :getOptionLabel="obj=>obj.title.level+' / '+obj.title.title"
+                                    :reduce="title=>title.title"><div slot="no-options">No hay coincidencias</div></v-select>
                                 </div>
                             </div>
                             <!-- col-12 -->
@@ -176,12 +192,6 @@
                                 </div>
                             </div>
                             <!-- col-12 -->
-                        </template>
-                    
-                    <!-- ACENSO POR PUBLICACION -->
-
-                        <template v-if="ascent.modality == 'publicación'">
-                            <h4 class="text-center">data incompleta publicacion</h4>
                         </template>
 
                         <!-- col-12 -->
@@ -277,7 +287,7 @@ export default {
 	data(){
 		return {
 			dni:null,
-            modalities:['art. 61','art. 64','publicación'],
+            modalities:['art. 61','art. 64'],
             list_works:['libro','trabajo de investigacion','publicacion'],
             list_headquarters:[],
             list_areas:[],
@@ -290,15 +300,15 @@ export default {
                 id:0,
                 time:null,
                 modality:null,
-                teacher_id:0,
-                next_category_id:0,
-                current_category_id:0
+                teacher:0,
+                next_category:0,
+                current_category:0
             },
             publication:{
                 title:null,
-                ascent_id:0,
-                teacher_id:0,
-                postgraduate_id:0
+                ascent:null,
+                teacher:null,
+                postgraduate:null
             },
 			teacherData:{
                 id:0,
@@ -476,7 +486,7 @@ export default {
         {
             if (this.ascent.modality == 'art. 61') {
                 if (this.teacherData.ascents.length == 0) {
-                    this.$alertify.warning('No tienes acensos registrados!')
+                    this.$alertify.warning('No tienes ascensos registrados!')
                 }else{
                     console.log(this.teacherData.ascents)
 
@@ -504,6 +514,9 @@ export default {
 		        	if (response.data.id > 0) {
                 		this.$alertify.success('Busqueda exitosa')
 		        		this.teacherData = response.data
+
+                        console.log(response.data)
+                        
                         this.getHeadquarters();
                         this.getAreas();
                         this.getPrograms();
@@ -520,19 +533,11 @@ export default {
 		teacherDataBlack(){
 			this.teacherData={
                 id:0,
-                ascent:{
-                    id:0,
-                    time:null,
-                    modality:null,
-                    teacher_id:0,
-                    next_category_id:0,
-                    current_category_id:0
-                },
                 category:{
                     id:0,
                     name:null
                 },
-            	headquarter:{
+                headquarter:{
                     id:0,
                     name:null
                 },
@@ -557,37 +562,37 @@ export default {
                     name:null
                 },
                 person:{
-                	id: 0,
-	                firstname:null,
-	                lastname:null,
-	                nro_document:null,
-	                document:{
+                    id: 0,
+                    firstname:null,
+                    lastname:null,
+                    nro_document:null,
+                    document:{
                         id:0,
-	                    name:null,
-	                },
-	                img_document:null,
-	                birthday:new Date(),
-	                direction:null,
-	                local_phone:null,
-	                movil_phone:null,
-	                mail_contact:null
-	        	},
-	        	postgraduates:[],
+                        name:null,
+                    },
+                    img_document:null,
+                    birthday:new Date(),
+                    direction:null,
+                    local_phone:null,
+                    movil_phone:null,
+                    mail_contact:null
+                },
+                postgraduates:[],
                 undergraduates:[],
             }
             this.ascent={
                 id:0,
                 time:null,
                 modality:null,
-                teacher_id:0,
-                next_category_id:0,
-                current_category_id:0
+                teacher:0,
+                next_category:0,
+                current_category:0
             }
             this.publication={
                 title:null,
-                ascent_id:0,
-                teacher_id:0,
-                postgraduate_id:0
+                ascent:null,
+                teacher:null,
+                postgraduate:null
             }
 		}
 	}

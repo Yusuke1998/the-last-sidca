@@ -5804,6 +5804,16 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.verifyDni();
@@ -5811,7 +5821,7 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       dni: null,
-      modalities: ['art. 61', 'art. 64', 'publicación'],
+      modalities: ['art. 61', 'art. 64'],
       list_works: ['libro', 'trabajo de investigacion', 'publicacion'],
       list_headquarters: [],
       list_areas: [],
@@ -5824,15 +5834,15 @@ __webpack_require__.r(__webpack_exports__);
         id: 0,
         time: null,
         modality: null,
-        teacher_id: 0,
-        next_category_id: 0,
-        current_category_id: 0
+        teacher: 0,
+        next_category: 0,
+        current_category: 0
       },
       publication: {
         title: null,
-        ascent_id: 0,
-        teacher_id: 0,
-        postgraduate_id: 0
+        ascent: null,
+        teacher: null,
+        postgraduate: null
       },
       teacherData: {
         id: 0,
@@ -6017,7 +6027,7 @@ __webpack_require__.r(__webpack_exports__);
     verifyRequeriments: function verifyRequeriments() {
       if (this.ascent.modality == 'art. 61') {
         if (this.teacherData.ascents.length == 0) {
-          this.$alertify.warning('No tienes acensos registrados!');
+          this.$alertify.warning('No tienes ascensos registrados!');
         } else {
           console.log(this.teacherData.ascents); // this.list_conditions = response.data.filter((cond,ind,arr)=>{
           //     if (this.type_contract.type=='contratado') {
@@ -6042,6 +6052,7 @@ __webpack_require__.r(__webpack_exports__);
             _this3.$alertify.success('Busqueda exitosa');
 
             _this3.teacherData = response.data;
+            console.log(response.data);
 
             _this3.getHeadquarters();
 
@@ -6063,14 +6074,6 @@ __webpack_require__.r(__webpack_exports__);
     teacherDataBlack: function teacherDataBlack() {
       this.teacherData = {
         id: 0,
-        ascent: {
-          id: 0,
-          time: null,
-          modality: null,
-          teacher_id: 0,
-          next_category_id: 0,
-          current_category_id: 0
-        },
         category: {
           id: 0,
           name: null
@@ -6122,15 +6125,15 @@ __webpack_require__.r(__webpack_exports__);
         id: 0,
         time: null,
         modality: null,
-        teacher_id: 0,
-        next_category_id: 0,
-        current_category_id: 0
+        teacher: 0,
+        next_category: 0,
+        current_category: 0
       };
       this.publication = {
         title: null,
-        ascent_id: 0,
-        teacher_id: 0,
-        postgraduate_id: 0
+        ascent: null,
+        teacher: null,
+        postgraduate: null
       };
     }
   }
@@ -10140,6 +10143,37 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.verifyDni();
@@ -10191,7 +10225,8 @@ __webpack_require__.r(__webpack_exports__);
           mail_contact: null
         },
         postgraduates: [],
-        undergraduates: []
+        undergraduates: [],
+        ascents: []
       }
     };
   },
@@ -10219,6 +10254,8 @@ __webpack_require__.r(__webpack_exports__);
 
       var url = location.origin + "/get-teacher/" + this.dni;
       axios.get(url).then(function (response) {
+        console.log(response.data);
+
         if (response.data !== 0 && response.data !== null && response.data !== undefined && response.data !== '') {
           if (response.data.id > 0) {
             _this.$alertify.success('Busqueda exitosa');
@@ -10280,7 +10317,8 @@ __webpack_require__.r(__webpack_exports__);
           mail_contact: null
         },
         postgraduates: [],
-        undergraduates: []
+        undergraduates: [],
+        ascents: []
       };
     }
   }
@@ -10855,6 +10893,15 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
@@ -10871,6 +10918,7 @@ __webpack_require__.r(__webpack_exports__);
       en: vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__["en"],
       es: vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__["es"],
       // AUXILIARES
+      list_modalities: ['art. 61', 'art. 64'],
       type_contract: {
         type: null,
         condition: null
@@ -10937,7 +10985,8 @@ __webpack_require__.r(__webpack_exports__);
         category: {
           id: 0,
           name: null,
-          date: null
+          date: null,
+          modality: null
         },
         condition: {
           id: 0,
@@ -11017,7 +11066,8 @@ __webpack_require__.r(__webpack_exports__);
         category: {
           id: 0,
           name: null,
-          date: null
+          date: null,
+          modality: null
         },
         condition: {
           id: 0,
@@ -81889,7 +81939,7 @@ var render = function() {
               ])
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "col-2" }, [
+            _c("div", { staticClass: "col-3" }, [
               _c("div", { staticClass: "form-group" }, [
                 _c("label", [_vm._v("Categoria Actual")]),
                 _vm._v(" "),
@@ -81921,12 +81971,44 @@ var render = function() {
               ])
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "col-2" }, [
+            _c("div", { staticClass: "col-3" }, [
+              _c("div", { staticClass: "form-group" }, [
+                _c("label", [_vm._v("Tiempo en la Categoria")]),
+                _vm._v(" "),
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.teacherData.category.name,
+                      expression: "teacherData.category.name"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: { disabled: "", type: "text" },
+                  domProps: { value: _vm.teacherData.category.name },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(
+                        _vm.teacherData.category,
+                        "name",
+                        $event.target.value
+                      )
+                    }
+                  }
+                })
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-6" }, [
               _c(
                 "div",
                 { staticClass: "form-group" },
                 [
-                  _c("label", [_vm._v("Modalidad de Acenso")]),
+                  _c("label", [_vm._v("Modalidad de Ascenso")]),
                   _vm._v(" "),
                   _c("v-select", {
                     staticClass: "text-uppercase bg-white",
@@ -81951,7 +82033,7 @@ var render = function() {
             _vm._v(" "),
             _c(
               "div",
-              { staticClass: "col-2" },
+              { staticClass: "col-6" },
               [
                 _c("label", [_vm._v("Categoria a Acender")]),
                 _vm._v(" "),
@@ -81998,15 +82080,62 @@ var render = function() {
                     ? [
                         _vm._m(0),
                         _vm._v(" "),
-                        _vm._m(1),
+                        _c("div", { staticClass: "col-6" }, [
+                          _c(
+                            "div",
+                            { staticClass: "form-group" },
+                            [
+                              _c("label", [_vm._v("Titulo del Postgrado")]),
+                              _vm._v(" "),
+                              _c(
+                                "v-select",
+                                {
+                                  staticClass: "bg-white text-uppercase",
+                                  attrs: {
+                                    label: "title",
+                                    options: _vm.teacherData.postgraduates,
+                                    getOptionLabel: function(obj) {
+                                      return (
+                                        obj.title.level +
+                                        " / " +
+                                        obj.title.title
+                                      )
+                                    },
+                                    reduce: function(title) {
+                                      return title.title
+                                    }
+                                  },
+                                  model: {
+                                    value: _vm.publication.title,
+                                    callback: function($$v) {
+                                      _vm.$set(_vm.publication, "title", $$v)
+                                    },
+                                    expression: "publication.title"
+                                  }
+                                },
+                                [
+                                  _c(
+                                    "div",
+                                    {
+                                      attrs: { slot: "no-options" },
+                                      slot: "no-options"
+                                    },
+                                    [_vm._v("No hay coincidencias")]
+                                  )
+                                ]
+                              )
+                            ],
+                            1
+                          )
+                        ]),
                         _vm._v(" "),
-                        _vm._m(2)
+                        _vm._m(1)
                       ]
                     : _vm._e(),
                   _vm._v(" "),
                   _vm.ascent.modality == "art. 64"
                     ? [
-                        _vm._m(3),
+                        _vm._m(2),
                         _vm._v(" "),
                         _c("div", { staticClass: "col-3" }, [
                           _c(
@@ -82028,6 +82157,57 @@ var render = function() {
                           )
                         ]),
                         _vm._v(" "),
+                        _c("div", { staticClass: "col-6" }, [
+                          _c(
+                            "div",
+                            { staticClass: "form-group" },
+                            [
+                              _c("label", [_vm._v("Titulo del Postgrado")]),
+                              _vm._v(" "),
+                              _c(
+                                "v-select",
+                                {
+                                  staticClass: "bg-white text-uppercase",
+                                  attrs: {
+                                    label: "title",
+                                    options: _vm.teacherData.postgraduates,
+                                    getOptionLabel: function(obj) {
+                                      return (
+                                        obj.title.level +
+                                        " / " +
+                                        obj.title.title
+                                      )
+                                    },
+                                    reduce: function(title) {
+                                      return title.title
+                                    }
+                                  },
+                                  model: {
+                                    value: _vm.publication.title,
+                                    callback: function($$v) {
+                                      _vm.$set(_vm.publication, "title", $$v)
+                                    },
+                                    expression: "publication.title"
+                                  }
+                                },
+                                [
+                                  _c(
+                                    "div",
+                                    {
+                                      attrs: { slot: "no-options" },
+                                      slot: "no-options"
+                                    },
+                                    [_vm._v("No hay coincidencias")]
+                                  )
+                                ]
+                              )
+                            ],
+                            1
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _vm._m(3),
+                        _vm._v(" "),
                         _vm._m(4),
                         _vm._v(" "),
                         _vm._m(5),
@@ -82046,23 +82226,11 @@ var render = function() {
                         _vm._v(" "),
                         _vm._m(12),
                         _vm._v(" "),
-                        _vm._m(13),
-                        _vm._v(" "),
-                        _vm._m(14),
-                        _vm._v(" "),
-                        _vm._m(15)
+                        _vm._m(13)
                       ]
                     : _vm._e(),
                   _vm._v(" "),
-                  _vm.ascent.modality == "publicación"
-                    ? [
-                        _c("h4", { staticClass: "text-center" }, [
-                          _vm._v("data incompleta publicacion")
-                        ])
-                      ]
-                    : _vm._e(),
-                  _vm._v(" "),
-                  _vm._m(16),
+                  _vm._m(14),
                   _vm._v(" "),
                   _c("div", { staticClass: "col-4" }, [
                     _c(
@@ -82352,19 +82520,7 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-3" }, [
       _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Titulo de Trabajo")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-3" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Titulo de Postgrado")]),
+        _c("label", [_vm._v("Titulo del Trabajo")]),
         _vm._v(" "),
         _c("input", { staticClass: "form-control", attrs: { type: "text" } })
       ])
@@ -82389,18 +82545,6 @@ var staticRenderFns = [
     return _c("div", { staticClass: "col-3" }, [
       _c("div", { staticClass: "form-group" }, [
         _c("label", [_vm._v("Titulo de Trabajo")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-3" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Titulo de Postgrado")]),
         _vm._v(" "),
         _c("input", { staticClass: "form-control", attrs: { type: "text" } })
       ])
@@ -89817,11 +89961,108 @@ var render = function() {
         )
       ]),
       _vm._v(" "),
-      _vm._m(5),
-      _vm._v(" "),
-      _vm._m(6),
-      _vm._v(" "),
-      _vm._m(7),
+      _c("li", { staticClass: "timeline-event" }, [
+        _vm._m(5),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            staticClass: "timeline-event-block block invisible",
+            attrs: { "data-toggle": "appear" }
+          },
+          [
+            _vm._m(6),
+            _vm._v(" "),
+            _vm.teacherData.ascents.length > 0
+              ? _c("div", { staticClass: "block-content" }, [
+                  _c("div", { staticClass: "row" }, [
+                    _c("div", { staticClass: "block col-12" }, [
+                      _c("div", { staticClass: "block-content" }, [
+                        _c(
+                          "table",
+                          { staticClass: "table table-striped table-sm" },
+                          [
+                            _vm._m(7),
+                            _vm._v(" "),
+                            _c(
+                              "tbody",
+                              [
+                                _vm.teacherData.ascents.length == 0
+                                  ? _c("tr", [
+                                      _c(
+                                        "td",
+                                        {
+                                          staticClass:
+                                            "text-center text-white bg-primary-dark",
+                                          attrs: { colspan: "4" }
+                                        },
+                                        [_vm._v("No hay registros...")]
+                                      )
+                                    ])
+                                  : _vm._l(_vm.teacherData.ascents, function(
+                                      ascent
+                                    ) {
+                                      return _c(
+                                        "tr",
+                                        { staticClass: "text-center" },
+                                        [
+                                          _c("td", {
+                                            domProps: {
+                                              textContent: _vm._s(
+                                                ascent.current_category.name
+                                              )
+                                            }
+                                          }),
+                                          _vm._v(" "),
+                                          _c("td", {
+                                            domProps: {
+                                              textContent: _vm._s(ascent.date)
+                                            }
+                                          }),
+                                          _vm._v(" "),
+                                          _c("td", {
+                                            domProps: {
+                                              textContent: _vm._s(
+                                                ascent.next_category.name
+                                              )
+                                            }
+                                          }),
+                                          _vm._v(" "),
+                                          _c("td", {
+                                            domProps: {
+                                              textContent: _vm._s(
+                                                ascent.date_next
+                                              )
+                                            }
+                                          }),
+                                          _vm._v(" "),
+                                          _c("td", {
+                                            domProps: {
+                                              textContent: _vm._s(
+                                                ascent.modality
+                                              )
+                                            }
+                                          })
+                                        ]
+                                      )
+                                    })
+                              ],
+                              2
+                            )
+                          ]
+                        )
+                      ])
+                    ])
+                  ])
+                ])
+              : _c("div", { staticClass: "block-content" }, [
+                  _c("h4", { staticClass: "text-center" }, [
+                    _vm._v("Sin Resultados!")
+                  ])
+                ])
+          ]
+        )
+      ]),
       _vm._v(" "),
       _vm._m(8),
       _vm._v(" "),
@@ -89831,7 +90072,11 @@ var render = function() {
       _vm._v(" "),
       _vm._m(11),
       _vm._v(" "),
-      _vm._m(12)
+      _vm._m(12),
+      _vm._v(" "),
+      _vm._m(13),
+      _vm._v(" "),
+      _vm._m(14)
     ])
   ])
 }
@@ -89909,42 +90154,51 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "timeline-event" }, [
-      _c("div", { staticClass: "timeline-event-icon bg-warning" }, [
-        _c("i", { staticClass: "far fa-thumbs-up" })
+    return _c("div", { staticClass: "timeline-event-icon bg-warning" }, [
+      _c("i", { staticClass: "far fa-thumbs-up" })
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "block-header block-header-default" }, [
+      _c("h3", { staticClass: "block-title" }, [
+        _vm._v("Convalidacion de Ascensos")
       ]),
       _vm._v(" "),
-      _c(
-        "div",
-        {
-          staticClass: "timeline-event-block block invisible",
-          attrs: { "data-toggle": "appear" }
-        },
-        [
-          _c("div", { staticClass: "block-header block-header-default" }, [
-            _c("h3", { staticClass: "block-title" }, [
-              _vm._v("Convalidacion de Asensos")
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "block-options" }, [
-              _c(
-                "div",
-                {
-                  staticClass:
-                    "timeline-event-time block-options-item font-size-sm font-w600"
-                },
-                [
-                  _vm._v(
-                    "\n                                actualizado hace 10 min\n                            "
-                  )
-                ]
-              )
-            ])
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "block-content" })
-        ]
-      )
+      _c("div", { staticClass: "block-options" }, [
+        _c(
+          "div",
+          {
+            staticClass:
+              "timeline-event-time block-options-item font-size-sm font-w600"
+          },
+          [
+            _vm._v(
+              "\n                                actualizado hace 10 min\n                            "
+            )
+          ]
+        )
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", { staticClass: "text-center" }, [
+        _c("th", [_vm._v("Categoria Actual")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Fecha")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Categoria Ascendida")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Fecha")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Modalidad")])
+      ])
     ])
   },
   function() {
@@ -91261,7 +91515,7 @@ var render = function() {
                             ]
                           : _vm._e(),
                         _vm._v(" "),
-                        _c("div", { staticClass: "col-4" }, [
+                        _c("div", { staticClass: "col-3" }, [
                           _c(
                             "div",
                             { staticClass: "form-group" },
@@ -91303,7 +91557,7 @@ var render = function() {
                           )
                         ]),
                         _vm._v(" "),
-                        _c("div", { staticClass: "col-4" }, [
+                        _c("div", { staticClass: "col-3" }, [
                           _c(
                             "div",
                             { staticClass: "form-group" },
@@ -91345,56 +91599,43 @@ var render = function() {
                           )
                         ]),
                         _vm._v(" "),
-                        _c(
-                          "div",
-                          {
-                            class:
-                              _vm.teacherData.category.id !== 0
-                                ? "col-2"
-                                : "col-4"
-                          },
-                          [
-                            _c(
-                              "div",
-                              { staticClass: "form-group" },
-                              [
-                                _c("label", [_vm._v("Categoria")]),
-                                _vm._v(" "),
-                                _c(
-                                  "v-select",
-                                  {
-                                    attrs: {
-                                      label: "name",
-                                      options: _vm.list_categories
-                                    },
-                                    model: {
-                                      value: _vm.teacherData.category,
-                                      callback: function($$v) {
-                                        _vm.$set(
-                                          _vm.teacherData,
-                                          "category",
-                                          $$v
-                                        )
-                                      },
-                                      expression: "teacherData.category"
-                                    }
+                        _c("div", { staticClass: "col-2" }, [
+                          _c(
+                            "div",
+                            { staticClass: "form-group" },
+                            [
+                              _c("label", [_vm._v("Categoria")]),
+                              _vm._v(" "),
+                              _c(
+                                "v-select",
+                                {
+                                  attrs: {
+                                    label: "name",
+                                    options: _vm.list_categories
                                   },
-                                  [
-                                    _c(
-                                      "div",
-                                      {
-                                        attrs: { slot: "no-options" },
-                                        slot: "no-options"
-                                      },
-                                      [_vm._v("No hay coincidencias")]
-                                    )
-                                  ]
-                                )
-                              ],
-                              1
-                            )
-                          ]
-                        ),
+                                  model: {
+                                    value: _vm.teacherData.category,
+                                    callback: function($$v) {
+                                      _vm.$set(_vm.teacherData, "category", $$v)
+                                    },
+                                    expression: "teacherData.category"
+                                  }
+                                },
+                                [
+                                  _c(
+                                    "div",
+                                    {
+                                      attrs: { slot: "no-options" },
+                                      slot: "no-options"
+                                    },
+                                    [_vm._v("No hay coincidencias")]
+                                  )
+                                ]
+                              )
+                            ],
+                            1
+                          )
+                        ]),
                         _vm._v(" "),
                         _vm.teacherData.category.id !== 0
                           ? _c("div", { staticClass: "col-2" }, [
@@ -91402,7 +91643,7 @@ var render = function() {
                                 "div",
                                 { staticClass: "form-group" },
                                 [
-                                  _c("label", [_vm._v("Fecha")]),
+                                  _c("label", [_vm._v("Fecha de Ascenso")]),
                                   _vm._v(" "),
                                   _c("datepicker", {
                                     attrs: {
@@ -91430,7 +91671,49 @@ var render = function() {
                                 1
                               )
                             ])
-                          : _vm._e()
+                          : _vm._e(),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-2" }, [
+                          _c(
+                            "div",
+                            { staticClass: "form-group" },
+                            [
+                              _c("label", [_vm._v("Modalidad de Ascenso")]),
+                              _vm._v(" "),
+                              _c(
+                                "v-select",
+                                {
+                                  attrs: {
+                                    label: "name",
+                                    options: _vm.list_modalities
+                                  },
+                                  model: {
+                                    value: _vm.teacherData.category.modality,
+                                    callback: function($$v) {
+                                      _vm.$set(
+                                        _vm.teacherData.category,
+                                        "modality",
+                                        $$v
+                                      )
+                                    },
+                                    expression: "teacherData.category.modality"
+                                  }
+                                },
+                                [
+                                  _c(
+                                    "div",
+                                    {
+                                      attrs: { slot: "no-options" },
+                                      slot: "no-options"
+                                    },
+                                    [_vm._v("No hay coincidencias")]
+                                  )
+                                ]
+                              )
+                            ],
+                            1
+                          )
+                        ])
                       ],
                       2
                     )
