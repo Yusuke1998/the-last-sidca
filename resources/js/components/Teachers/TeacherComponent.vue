@@ -580,7 +580,7 @@ export default {
             en: en,
             es: es,
             // AUXILIARES
-            list_modalities:['art. 61','art. 64'],
+            list_modalities:['art. 61','art. 62','art. 64','ubicacion'],
             type_contract:{
                 type:null,
                 condition:null
@@ -1215,6 +1215,18 @@ export default {
             this.table_pagination.current_page = page;
             this.getData(page);
         },
+        updCat(model)
+        {
+            let modality=''
+            let date=''
+            model.ascents.forEach(asc=>{
+                date = asc.date
+                modality = asc.modality
+            })
+            let d = date.split(' ')[0].split('-')
+            this.teacherData.category.date = this.formDate(d[1]+'/'+d[2]+'/'+d[0])
+            this.teacherData.category.modality = modality
+        },
         showModal(modal_id, model,option, type){
         	this.modal_option	= option
         	this.modal_type		= type
@@ -1240,6 +1252,8 @@ export default {
                     category:{
                         id:model.category.id,
                         name:model.category.name,
+                        date:'',
+                        modality:'',
                     },
                     condition:{
                         id:model.condition.id,
@@ -1290,6 +1304,7 @@ export default {
 		                mail_contact:model.person.mail_contact
 		            }
 	            }
+                this.updCat(model)
                 if (model.condition !== undefined && model.condition !== null) {
                     this.type_contract.condition = model.condition.name
                     this.type_contract.type = model.contract

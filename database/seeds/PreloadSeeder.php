@@ -208,5 +208,8 @@ class PreloadSeeder extends Seeder
                 'level'=>$titulo['level'],
             ]);
         }
+
+        $universidad = University::first();
+        $universidad->titles()->attach(['1','2','3']);
     }
 }

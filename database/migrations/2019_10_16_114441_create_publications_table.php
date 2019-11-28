@@ -11,11 +11,17 @@ class CreatePublicationsTable extends Migration
         Schema::create('publications', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title');
+            $table->string('code_issn')->nullable();
+            $table->string('nro_isbn')->nullable();
+            $table->string('nro_edit')->nullable();
+            $table->string('vol')->nullable();
+            $table->string('date')->nullable();
+            $table->string('url')->nullable();
 
-            $table->bigInteger('postgraduate_id')->unsigned(); #postgrado
-            $table->foreign('postgraduate_id')
+            $table->bigInteger('ascent_id')->unsigned(); #acenso
+            $table->foreign('ascent_id')
                 ->references('id')
-                ->on('postgraduates')
+                ->on('ascents')
                 ->ondDelete('cascade')
                 ->onUpdate('cascade');
 
@@ -25,11 +31,11 @@ class CreatePublicationsTable extends Migration
                 ->on('teachers')
                 ->ondDelete('cascade')
                 ->onUpdate('cascade');
-
-            $table->bigInteger('ascent_id')->unsigned(); #acenso
-            $table->foreign('ascent_id')
+                
+            $table->bigInteger('postgraduate_id')->unsigned(); #postgrado
+            $table->foreign('postgraduate_id')
                 ->references('id')
-                ->on('ascents')
+                ->on('postgraduates')
                 ->ondDelete('cascade')
                 ->onUpdate('cascade');
 

@@ -12,7 +12,8 @@ class CreateAscentsTable extends Migration
             $table->bigIncrements('id');
             $table->date('date'); #fecha de acenso
             $table->date('date_next')->nullable(); #fecha siguiente asenso
-            $table->enum('modality',['art. 61','art. 64','tiempo cumplido'])->nullable(); #modalidad
+            $table->enum('status',['espera','aprobado']); #Estatus acenso
+            $table->enum('modality',['art. 61','art. 62','art. 64','ubicacion'])->nullable(); #modalidad
 
             $table->bigInteger('teacher_id')->unsigned(); #docente
             $table->foreign('teacher_id')

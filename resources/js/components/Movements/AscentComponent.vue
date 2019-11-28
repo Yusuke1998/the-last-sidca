@@ -36,65 +36,126 @@
                     </div>
                     <div class="col-3">
                         <div class="form-group">
+                            <label>Fecha de Obtencion</label>
+                            <input disabled type="text" class="form-control" v-model="current_category.date">
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
                             <label>Tiempo en la Categoria</label>
-                            <input disabled type="text" class="form-control" v-model="teacherData.category.name">
+                            <input disabled type="text" class="form-control" v-model="current_category.time">
                         </div>
                     </div>
                     <!-- col 12 -->
-
-                    <div class="col-6">
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label>Categoria a Acender</label>
+                            <v-select 
+                            class="text-uppercase bg-white" 
+                            :disabled="teacherData.id == 0" 
+                            label="name"
+                            @input="validationAsc" 
+                            v-model="ascent.category" 
+                            :options="list_categories"><div slot="no-options">No hay coincidencias</div></v-select>
+                        </div>
+                    </div>
+                    <div class="col-4">
                         <div class="form-group">
                             <label>Modalidad de Ascenso</label>
                             <v-select 
                             class="text-uppercase bg-white" 
-                            :disabled="teacherData.id == 0" 
+                            :disabled="ascent.category == null"
+                            @input="showPublications"
                             label="name" 
-                            v-model="ascent.modality" 
-                            @input="getCategories" 
+                            v-model="ascent.modality"
                             :options="modalities"></v-select>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <label>Categoria a Acender</label>
-                        <v-select 
-                        class="text-uppercase" 
-                        :disabled="ascent.modality == null"
-                        label="name"
-                        @input="verifyRequeriments" 
-                        v-model="ascent.category" 
-                        :options="list_categories"><div slot="no-options">No hay coincidencias</div></v-select>
-                    </div>
                     <!-- col-12 -->
+                    
                     <template v-if="ascent.modality!==null">
-                        <div class="col-12 text-uppercase">
-                            <h3 class="text-center" v-text="ascent.modality"></h3>
-                        </div>
+                    <!-- ASCENSO POR ARTICULO 61 O 62 -->
 
-                    <!-- ASCENSO POR ARTICULO 61 -->
-
-                        <template v-if="ascent.modality == 'art. 61'">
-                            <div class="col-3">
-                                <div class="form-group">
-                                    <label>Titulo del Trabajo</label>
-                                    <input type="text" class="form-control">
-                                </div>
+                        <template v-if="ascent.modality == 'art. 61' || ascent.modality == 'art. 62'">
+                            <!-- col-12 -->
+                            <div class="col-12">
+                                <h4 class="text-center">Publicación</h4>
                             </div>
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label>Titulo del Postgrado</label>
-                                    <v-select 
-                                    class="bg-white text-uppercase"
-                                    label="title"
-                                    v-model="publication.title"
-                                    :options="teacherData.postgraduates"
-                                    :getOptionLabel="obj=>obj.title.level+' / '+obj.title.title"
-                                    :reduce="title=>title.title"><div slot="no-options">No hay coincidencias</div></v-select>
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="form-group">
-                                    <label>Publicación</label>
-                                    <input type="text" class="form-control">
+                            <!-- col-12 -->
+                            <div class="col-12 card mb-3" v-for="(publication, index_publication) in publications" :key="index_publication">
+                                <div class="row card-body">
+                                    <div class="col-1">
+                                        <div class="form-group">
+                                            <h3>#{{index_publication+1}}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label :for="'title'+index_publication">Titulo</label>
+                                            <input :id="'title'+index_publication" v-model="publication.title" type="text" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label :for="'rev'+index_publication">Revista</label>
+                                            <input :id="'rev'+index_publication" v-model="publication.rev" type="text" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-5">
+                                        <div class="form-group">
+                                            <label :for="'post'+index_publication">Postgrado</label>
+                                            <v-select
+                                            :id="'post'+index_publication" 
+                                            class="bg-white text-uppercase"
+                                            label="title"
+                                            v-model="publication.postgraduate"
+                                            :options="teacherData.postgraduates"
+                                            :getOptionLabel="obj=>obj.title.level+' / '+obj.title.title"
+                                            :reduce="title=>title.title"><div slot="no-options">No hay coincidencias</div></v-select>
+                                        </div>
+                                    </div>
+                                    <!-- col 12 -->
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label :for="'issn'+index_publication">Código ISSN</label>
+                                            <input :id="'issn'+index_publication" v-model="publication.code_issn" type="text" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label :for="'isbn'+index_publication">Número ISBN</label>
+                                            <input :id="'isbn'+index_publication" v-model="publication.nro_isbn" type="text" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label :for="'edit'+index_publication">Número de Edición</label>
+                                            <input :id="'edit'+index_publication" v-model="publication.nro_edit" type="text" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label :for="'vol'+index_publication">Vólumen</label>
+                                            <input :id="'vol'+index_publication" v-model="publication.vol" type="text" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label :for="'url'+index_publication">URL</label>
+                                            <input :id="'url'+index_publication" v-model="publication.url" type="text" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label :for="'date'+index_publication">Fecha</label>
+                                            <datepicker
+                                            :id="'date'+index_publication" 
+                                            v-model="publication.date"
+                                            :full-month-name="true"
+                                            :disabled-dates="no_dates" 
+                                            :input-class="'bg-white form-control'"></datepicker>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </template>
@@ -102,75 +163,77 @@
                     <!-- ASCENSO POR ARTICULO 64 -->
                     
                         <template v-if="ascent.modality == 'art. 64'">
+                            <div class="col-12">
+                                <h4 class="text-center">Trabajo de Investigación</h4>
+                            </div>
                             <div class="col-3">
                                 <div class="form-group">
-                                    <label>Titulo de Trabajo</label>
+                                    <label>Titulo</label>
                                     <input type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="form-group">
-                                    <label>Naturaleza del Trabajo</label>
+                                    <label>Naturaleza</label>
                                     <v-select class="text-uppercase bg-white" :disabled="dni == null" label="name" :options="list_works"></v-select>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label>Titulo del Postgrado</label>
+                                    <label>Postgrado</label>
                                     <v-select 
                                     class="bg-white text-uppercase"
                                     label="title"
-                                    v-model="publication.title"
+                                    v-model="teacherData.postgraduate"
                                     :options="teacherData.postgraduates"
-                                    :getOptionLabel="obj=>obj.title.level+' / '+obj.title.title"
-                                    :reduce="title=>title.title"><div slot="no-options">No hay coincidencias</div></v-select>
+                                    :getOptionLabel="obj=>obj.title.level+' / '+obj.title.title"><div slot="no-options">No hay coincidencias</div></v-select>
                                 </div>
                             </div>
                             <!-- col-12 -->
                             <div class="col-12">
-                                <h5 class="text-center">Jurado Evaluador</h5>
+                                <h4 class="text-center">Jurado Evaluador</h4>
                             </div>
                             <!-- col-12 -->
                             <div class="col-4">
                                 <div class="form-group">
-                                    <label>Cordinador</label>
-                                    <input type="text" class="form-control">
+                                    <label>Coordinador</label>
+                                    <input placeholder="Nombres y Apellidos" v-model="jury.coordinator" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-group">
                                     <label>Principal</label>
-                                    <input type="text" class="form-control">
+                                    <input placeholder="Nombres y Apellidos" v-model="jury.principal1" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-group">
                                     <label>Principal</label>
-                                    <input type="text" class="form-control">
+                                    <input placeholder="Nombres y Apellidos" v-model="jury.principal2" type="text" class="form-control">
                                 </div>
                             </div>
                             <!-- col-12 -->
                             <div class="col-4">
                                 <div class="form-group">
-                                    <label>Cordinador (Suplente)</label>
-                                    <input type="text" class="form-control">
+                                    <label>Suplente</label>
+                                    <input placeholder="Nombres y Apellidos" v-model="jury.alternate1" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-group">
-                                    <label>Principal (Suplente)</label>
-                                    <input type="text" class="form-control">
+                                    <label>Suplente</label>
+                                    <input placeholder="Nombres y Apellidos" v-model="jury.alternate2" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-group">
-                                    <label>Principal (Suplente)</label>
-                                    <input type="text" class="form-control">
+                                    <label>Suplente</label>
+                                    <input placeholder="Nombres y Apellidos" v-model="jury.alternate3" type="text" class="form-control">
                                 </div>
                             </div>
                             <!-- col-12 -->
                             <div class="col-12">
-                                <h5 class="text-center">Presentacion</h5>
+                                <h4 class="text-center">Presentacion</h4>
                             </div>
                             <!-- col-12 -->
                             <div class="col-4">
@@ -196,7 +259,7 @@
 
                         <!-- col-12 -->
                         <div class="col-12">
-                            <h5 class="text-center">Adscrito</h5>
+                            <h4 class="text-center">Adscrito</h4>
                         </div>
                         <!-- col-12 -->
                         <div class="col-4">
@@ -272,6 +335,80 @@
                             </div>
                         </template>
                         <!-- col-12 -->
+                        <div class="col-12">
+                            <h4 class="text-center">Memorandos</h4>
+                        </div>
+                        <!-- col-12 -->
+                        <div class="col-12 card mb-3">
+                            <div class="card-body row">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label title="Memorando de Vicerectorado Academico">Vrac</label>
+                                        <input placeholder="Código" type="text" class="form-control" v-model="memo.vrac.code">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label title="Fecha de Emisión">Fecha</label>
+                                        <datepicker
+                                        placeholder="Emisión" 
+                                        v-model="memo.vrac.date"
+                                        :full-month-name="true"
+                                        :disabled-dates="no_dates" 
+                                        :input-class="'bg-white form-control'"></datepicker>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- col-12 -->
+                        <div class="col-12 card mb-3">
+                            <div class="card-body row">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label title="Memorando del Area">Area</label>
+                                        <input placeholder="Código" type="text" class="form-control" v-model="memo.area.code">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label title="Fecha de Emisión">Fecha</label>
+                                        <datepicker
+                                        placeholder="Emisión" 
+                                        v-model="memo.area.date"
+                                        :full-month-name="true"
+                                        :disabled-dates="no_dates" 
+                                        :input-class="'bg-white form-control'"></datepicker>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- col-12 -->
+                        <div class="col-12 card mb-3">
+                            <div class="card-body row">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label title="Memorando del Consejo Universitario">Consejo Universitario</label>
+                                        <input placeholder="Código" type="text" class="form-control" v-model="memo.cu.code">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label title="Fecha de Emisión">Fecha</label>
+                                        <datepicker
+                                        placeholder="Emisión" 
+                                        v-model="memo.cu.date"
+                                        :full-month-name="true"
+                                        :disabled-dates="no_dates" 
+                                        :input-class="'bg-white form-control'"></datepicker>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- col-12 -->
+                        <div class="col-12">
+                            <button @click="saveAscent" class="col-2 offset-10 btn btn-success btn-block">Guardar</button>
+                        </div>
+                        <!-- col-12 -->
                     </template>
                     <!-- col-12 -->
                 </form>
@@ -280,14 +417,20 @@
 	</div>
 </template>
 <script>
+import {en, es} from 'vuejs-datepicker/dist/locale'
 export default {
-	mounted(){
+	mounted()
+    {
 		this.verifyDni();
+        this.getCategories();
 	},
-	data(){
+	data()
+    {
 		return {
+            // data required
 			dni:null,
-            modalities:['art. 61','art. 64'],
+            no_dates:{to: new Date('1919-01-01')},
+            modalities:['art. 61','art. 62','art. 64','ubicacion'],
             list_works:['libro','trabajo de investigacion','publicacion'],
             list_headquarters:[],
             list_areas:[],
@@ -296,27 +439,16 @@ export default {
             list_t_classrooms:[],
             list_extensions:[],
             list_categories:[],
-            ascent:{
+
+            // data new
+            teacherData:{
                 id:0,
-                time:null,
-                modality:null,
-                teacher:0,
-                next_category:0,
-                current_category:0
-            },
-            publication:{
-                title:null,
-                ascent:null,
-                teacher:null,
-                postgraduate:null
-            },
-			teacherData:{
-                id:0,
+                postgraduate:null,
                 category:{
                     id:0,
                     name:null
                 },
-            	headquarter:{
+                headquarter:{
                     id:0,
                     name:null
                 },
@@ -341,27 +473,143 @@ export default {
                     name:null
                 },
                 person:{
-                	id: 0,
-	                firstname:null,
-	                lastname:null,
-	                nro_document:null,
-	                document:{
+                    id: 0,
+                    firstname:null,
+                    lastname:null,
+                    nro_document:null,
+                    document:{
                         id:0,
-	                    name:null,
-	                },
-	                img_document:null,
-	                birthday:new Date(),
-	                direction:null,
-	                local_phone:null,
-	                movil_phone:null,
-	                mail_contact:null
-	        	},
-	        	postgraduates:[],
-                undergraduates:[]
+                        name:null,
+                    },
+                    img_document:null,
+                    birthday:new Date(),
+                    direction:null,
+                    local_phone:null,
+                    movil_phone:null,
+                    mail_contact:null
+                },
+                postgraduates:[],
+                undergraduates:[],
+                ascents:[],
+            },
+            current_category:{
+                time:'',
+                date:'',
+                category:null
+            },
+            ascent:{
+                id:0,
+                date:null,
+                category:null,
+                modality:null,
+                status:'espera'
+            },
+            jury:{
+                coordinator:'',
+                principal1:'',
+                principal2:'',
+                alternate1:'',
+                alternate2:'',
+                alternate3:'',
+            },
+            memo:{
+                area:{
+                    code:'',
+                    date:''
+                },
+                vrac:{
+                    code:'',
+                    date:''
+                },
+                cu:{
+                    code:'',
+                    date:''
+                }
+            },
+            publication:{
+                title:'',
+                rev:'',
+                code_issn:'',
+                nro_isbn:'',
+                nro_edit:'',
+                vol:'',
+                date:'',
+                url:''
+            },
+            publications:[],
+        }
+    },
+    methods:{
+        validationAsc()
+        {
+            this.resetPublications()
+            if (this.ascent.modality!==null) {
+                this.showPublications()
             }
-		}
-	},
-	methods:{
+        },
+        addPublications(n)
+        {
+            if(n>1){
+                for (var i = 1; i <= n; i++) {
+                    this.publications.push(Vue.util.extend({}, this.publication))
+                }
+            }else{
+                this.publications = [Vue.util.extend({}, this.publication)]
+            }
+        },
+        resetPublications()
+        {
+            this.publications.length=0
+        },
+        showPublications()
+        {
+            if (this.ascent.modality == 'art. 61') 
+            {
+                this.resetPublications()
+                this.addPublications(1)
+            }else if(this.ascent.modality == 'art. 62')
+            {
+                this.resetPublications()
+                switch (this.ascent.category.name)
+                {
+                    case "asistente":
+                    {
+                        this.addPublications(1)
+                        break;  
+                    }
+                    case "agregado":
+                    {
+                        this.addPublications(3)
+                        break;  
+                    }
+                    case "asociado":
+                    {
+                        this.addPublications(4)
+                        break;  
+                    }
+                    case "titular":
+                    {
+                        this.addPublications(4)
+                        break;  
+                    }
+                }
+            }
+        },
+        diffYears(data)
+        {
+            let moment = require('moment')
+            let cc = null //fecha de categoria actual
+            let nc = null //fecha para categoria siguiente
+            let dc = new Date() //fecha actual
+            let cd = null //fecha de ascenso
+            moment.locale('es');
+            data.ascents.forEach(asc=>{
+                cc = asc.date
+                nc = asc.date_next
+            })
+            this.current_category.date = cc
+            this.current_category.time = new moment(cc).toNow(true)
+        },
         getHeadquarters()
         {
             let url = location.origin+"/get-headquarters"
@@ -445,7 +693,8 @@ export default {
                 }
             }
         },
-        blankExtras(){
+        blankExtras()
+        {
             this.teacherData.territorial_classroom={
                 id:0,
                 name:null
@@ -459,17 +708,31 @@ export default {
                 name:null
             }
         },
-        getCategories(){
+        getCategories()
+        {
             let url = location.origin+"/get-categories"
             axios.get(url).then(response => {
-                this.list_categories = response.data.filter((cat,ind,arr)=>{
-                    return (cat.name.toLowerCase().indexOf('instructor') == -1)
-                });
+                this.list_categories = response.data
+                this.setCategories()
             }).catch(errors =>{
                 console.log(errors.response)
             })
         },
-		formatDate(date){
+        setCategories()
+        {
+            let categories = this.list_categories
+            let ascents = this.teacherData.ascents
+            for (var i = 0; i < categories.length; i++) {
+                for (var j = 0; j < ascents.length; j++) {
+                    let idx = categories[i].name.indexOf(ascents[j].current_category.name)
+                    if (idx > -1) {
+                        categories.splice(idx,1)
+                    }
+                }
+            }
+            this. list_categories = categories
+        },
+		momentDate(date){
 			let moment = require('moment');
 			moment.locale('es');
 			return 'actualizado '+moment(date).startOf('hour').fromNow();
@@ -482,30 +745,6 @@ export default {
         		this.searchTeacher()
         	}
         },
-        verifyRequeriments()
-        {
-            if (this.ascent.modality == 'art. 61') {
-                if (this.teacherData.ascents.length == 0) {
-                    this.$alertify.warning('No tienes ascensos registrados!')
-                }else{
-                    console.log(this.teacherData.ascents)
-
-                    // this.list_conditions = response.data.filter((cond,ind,arr)=>{
-                    //     if (this.type_contract.type=='contratado') {
-                    //         return (cond.name.toLowerCase().indexOf('fijo') == -1)
-                    //     }else{
-                    //         return (cond.name.toLowerCase().indexOf('fijo') !== -1)
-                    //     }
-                    // });
-
-                    // this.$alertify.warning('Tienes !')
-                }
-            }
-
-            if (this.ascent.modality == 'art. 64') {
-
-            }
-        },
 		searchTeacher()
 		{
 		    let url = location.origin+"/get-teacher/"+this.dni
@@ -513,10 +752,8 @@ export default {
 		        if (response.data !== 0 && response.data !== null && response.data !== undefined && response.data !== '') {
 		        	if (response.data.id > 0) {
                 		this.$alertify.success('Busqueda exitosa')
-		        		this.teacherData = response.data
-
-                        console.log(response.data)
-                        
+                        this.teacherData = response.data
+                        this.diffYears(response.data)
                         this.getHeadquarters();
                         this.getAreas();
                         this.getPrograms();
@@ -530,9 +767,11 @@ export default {
 		        console.log(errors.response)
 		    })
 		},
-		teacherDataBlack(){
+		teacherDataBlack()
+        {
 			this.teacherData={
                 id:0,
+                postgraduate:null,
                 category:{
                     id:0,
                     name:null
@@ -580,21 +819,55 @@ export default {
                 postgraduates:[],
                 undergraduates:[],
             }
+            this.current_category={
+                time:'',
+                date:'',
+                category:null
+            }
             this.ascent={
                 id:0,
-                time:null,
+                date:null,
+                category:null,
                 modality:null,
-                teacher:0,
-                next_category:0,
-                current_category:0
+                status:null            
+            }
+            this.jury={
+                cordinator:'',
+                principal1:'',
+                principal2:'',
+                alternate1:'',
+                alternate2:'',
+                alternate3:'',
+            }
+            this.memo={
+                area:{
+                    cod:'',
+                    date:''
+                },
+                vrac:{
+                    cod:'',
+                    date:''
+                },
+                cu:{
+                    cod:'',
+                    date:''
+                }
             }
             this.publication={
-                title:null,
-                ascent:null,
-                teacher:null,
-                postgraduate:null
+                title:'',
+                rev:'',
+                code_issn:'',
+                nro_isbn:'',
+                nro_edit:'',
+                vol:'',
+                date:'',
+                url:''
             }
-		}
+		},
+        saveAscent()
+        {
+            alert('No falta tanto como hace un mes :v')
+        }
 	}
 }
 </script>

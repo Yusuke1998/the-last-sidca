@@ -5533,6 +5533,8 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vuejs-datepicker/dist/locale */ "./node_modules/vuejs-datepicker/dist/locale/index.js");
+/* harmony import */ var vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__);
 //
 //
 //
@@ -5814,14 +5816,157 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     this.verifyDni();
+    this.getCategories();
   },
   data: function data() {
     return {
+      // data required
       dni: null,
-      modalities: ['art. 61', 'art. 64'],
+      no_dates: {
+        to: new Date('1919-01-01')
+      },
+      modalities: ['art. 61', 'art. 62', 'art. 64', 'ubicacion'],
       list_works: ['libro', 'trabajo de investigacion', 'publicacion'],
       list_headquarters: [],
       list_areas: [],
@@ -5830,22 +5975,10 @@ __webpack_require__.r(__webpack_exports__);
       list_t_classrooms: [],
       list_extensions: [],
       list_categories: [],
-      ascent: {
-        id: 0,
-        time: null,
-        modality: null,
-        teacher: 0,
-        next_category: 0,
-        current_category: 0
-      },
-      publication: {
-        title: null,
-        ascent: null,
-        teacher: null,
-        postgraduate: null
-      },
+      // data new
       teacherData: {
         id: 0,
+        postgraduate: null,
         category: {
           id: 0,
           name: null
@@ -5891,11 +6024,129 @@ __webpack_require__.r(__webpack_exports__);
           mail_contact: null
         },
         postgraduates: [],
-        undergraduates: []
-      }
+        undergraduates: [],
+        ascents: []
+      },
+      current_category: {
+        time: '',
+        date: '',
+        category: null
+      },
+      ascent: {
+        id: 0,
+        date: null,
+        category: null,
+        modality: null,
+        status: 'espera'
+      },
+      jury: {
+        coordinator: '',
+        principal1: '',
+        principal2: '',
+        alternate1: '',
+        alternate2: '',
+        alternate3: ''
+      },
+      memo: {
+        area: {
+          code: '',
+          date: ''
+        },
+        vrac: {
+          code: '',
+          date: ''
+        },
+        cu: {
+          code: '',
+          date: ''
+        }
+      },
+      publication: {
+        title: '',
+        rev: '',
+        code_issn: '',
+        nro_isbn: '',
+        nro_edit: '',
+        vol: '',
+        date: '',
+        url: ''
+      },
+      publications: []
     };
   },
   methods: {
+    validationAsc: function validationAsc() {
+      this.resetPublications();
+
+      if (this.ascent.modality !== null) {
+        this.showPublications();
+      }
+    },
+    addPublications: function addPublications(n) {
+      if (n > 1) {
+        for (var i = 1; i <= n; i++) {
+          this.publications.push(Vue.util.extend({}, this.publication));
+        }
+      } else {
+        this.publications = [Vue.util.extend({}, this.publication)];
+      }
+    },
+    resetPublications: function resetPublications() {
+      this.publications.length = 0;
+    },
+    showPublications: function showPublications() {
+      if (this.ascent.modality == 'art. 61') {
+        this.resetPublications();
+        this.addPublications(1);
+      } else if (this.ascent.modality == 'art. 62') {
+        this.resetPublications();
+
+        switch (this.ascent.category.name) {
+          case "asistente":
+            {
+              this.addPublications(1);
+              break;
+            }
+
+          case "agregado":
+            {
+              this.addPublications(3);
+              break;
+            }
+
+          case "asociado":
+            {
+              this.addPublications(4);
+              break;
+            }
+
+          case "titular":
+            {
+              this.addPublications(4);
+              break;
+            }
+        }
+      }
+    },
+    diffYears: function diffYears(data) {
+      var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+
+      var cc = null; //fecha de categoria actual
+
+      var nc = null; //fecha para categoria siguiente
+
+      var dc = new Date(); //fecha actual
+
+      var cd = null; //fecha de ascenso
+
+      moment.locale('es');
+      data.ascents.forEach(function (asc) {
+        cc = asc.date;
+        nc = asc.date_next;
+      });
+      this.current_category.date = cc;
+      this.current_category.time = new moment(cc).toNow(true);
+    },
     getHeadquarters: function getHeadquarters() {
       var _this = this;
 
@@ -6003,14 +6254,30 @@ __webpack_require__.r(__webpack_exports__);
 
       var url = location.origin + "/get-categories";
       axios.get(url).then(function (response) {
-        _this2.list_categories = response.data.filter(function (cat, ind, arr) {
-          return cat.name.toLowerCase().indexOf('instructor') == -1;
-        });
+        _this2.list_categories = response.data;
+
+        _this2.setCategories();
       })["catch"](function (errors) {
         console.log(errors.response);
       });
     },
-    formatDate: function formatDate(date) {
+    setCategories: function setCategories() {
+      var categories = this.list_categories;
+      var ascents = this.teacherData.ascents;
+
+      for (var i = 0; i < categories.length; i++) {
+        for (var j = 0; j < ascents.length; j++) {
+          var idx = categories[i].name.indexOf(ascents[j].current_category.name);
+
+          if (idx > -1) {
+            categories.splice(idx, 1);
+          }
+        }
+      }
+
+      this.list_categories = categories;
+    },
+    momentDate: function momentDate(date) {
       var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 
       moment.locale('es');
@@ -6024,24 +6291,6 @@ __webpack_require__.r(__webpack_exports__);
         this.searchTeacher();
       }
     },
-    verifyRequeriments: function verifyRequeriments() {
-      if (this.ascent.modality == 'art. 61') {
-        if (this.teacherData.ascents.length == 0) {
-          this.$alertify.warning('No tienes ascensos registrados!');
-        } else {
-          console.log(this.teacherData.ascents); // this.list_conditions = response.data.filter((cond,ind,arr)=>{
-          //     if (this.type_contract.type=='contratado') {
-          //         return (cond.name.toLowerCase().indexOf('fijo') == -1)
-          //     }else{
-          //         return (cond.name.toLowerCase().indexOf('fijo') !== -1)
-          //     }
-          // });
-          // this.$alertify.warning('Tienes !')
-        }
-      }
-
-      if (this.ascent.modality == 'art. 64') {}
-    },
     searchTeacher: function searchTeacher() {
       var _this3 = this;
 
@@ -6052,7 +6301,8 @@ __webpack_require__.r(__webpack_exports__);
             _this3.$alertify.success('Busqueda exitosa');
 
             _this3.teacherData = response.data;
-            console.log(response.data);
+
+            _this3.diffYears(response.data);
 
             _this3.getHeadquarters();
 
@@ -6074,6 +6324,7 @@ __webpack_require__.r(__webpack_exports__);
     teacherDataBlack: function teacherDataBlack() {
       this.teacherData = {
         id: 0,
+        postgraduate: null,
         category: {
           id: 0,
           name: null
@@ -6121,20 +6372,53 @@ __webpack_require__.r(__webpack_exports__);
         postgraduates: [],
         undergraduates: []
       };
+      this.current_category = {
+        time: '',
+        date: '',
+        category: null
+      };
       this.ascent = {
         id: 0,
-        time: null,
+        date: null,
+        category: null,
         modality: null,
-        teacher: 0,
-        next_category: 0,
-        current_category: 0
+        status: null
+      };
+      this.jury = {
+        cordinator: '',
+        principal1: '',
+        principal2: '',
+        alternate1: '',
+        alternate2: '',
+        alternate3: ''
+      };
+      this.memo = {
+        area: {
+          cod: '',
+          date: ''
+        },
+        vrac: {
+          cod: '',
+          date: ''
+        },
+        cu: {
+          cod: '',
+          date: ''
+        }
       };
       this.publication = {
-        title: null,
-        ascent: null,
-        teacher: null,
-        postgraduate: null
+        title: '',
+        rev: '',
+        code_issn: '',
+        nro_isbn: '',
+        nro_edit: '',
+        vol: '',
+        date: '',
+        url: ''
       };
+    },
+    saveAscent: function saveAscent() {
+      alert('No falta tanto como hace un mes :v');
     }
   }
 });
@@ -10235,11 +10519,15 @@ __webpack_require__.r(__webpack_exports__);
       this.img_url = location.origin + '/storage/' + this.teacherData.person.img_document;
       console.log(this.img_url);
     },
-    formatDate: function formatDate(date) {
+    momentDate: function momentDate(date) {
       var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 
       moment.locale('es');
-      return 'actualizado ' + moment(date).startOf('hour').fromNow();
+      return 'actualizado ' + moment(date).toNow();
+    },
+    formD: function formD(date) {
+      var d = date.split(' ')[0].split('-');
+      return d[2] + '/' + d[1] + '/' + d[0];
     },
     verifyDni: function verifyDni() {
       var dni = location.pathname.split('/')[3];
@@ -10918,7 +11206,7 @@ __webpack_require__.r(__webpack_exports__);
       en: vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__["en"],
       es: vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__["es"],
       // AUXILIARES
-      list_modalities: ['art. 61', 'art. 64'],
+      list_modalities: ['art. 61', 'art. 62', 'art. 64', 'ubicacion'],
       type_contract: {
         type: null,
         condition: null
@@ -11603,6 +11891,17 @@ __webpack_require__.r(__webpack_exports__);
       this.table_pagination.current_page = page;
       this.getData(page);
     },
+    updCat: function updCat(model) {
+      var modality = '';
+      var date = '';
+      model.ascents.forEach(function (asc) {
+        date = asc.date;
+        modality = asc.modality;
+      });
+      var d = date.split(' ')[0].split('-');
+      this.teacherData.category.date = this.formDate(d[1] + '/' + d[2] + '/' + d[0]);
+      this.teacherData.category.modality = modality;
+    },
     showModal: function showModal(modal_id, model, option, type) {
       var _this18 = this;
 
@@ -11631,7 +11930,9 @@ __webpack_require__.r(__webpack_exports__);
           id_teacher: model.id,
           category: {
             id: model.category.id,
-            name: model.category.name
+            name: model.category.name,
+            date: '',
+            modality: ''
           },
           condition: {
             id: model.condition.id,
@@ -11682,6 +11983,7 @@ __webpack_require__.r(__webpack_exports__);
             mail_contact: model.person.mail_contact
           }
         };
+        this.updCat(model);
 
         if (model.condition !== undefined && model.condition !== null) {
           this.type_contract.condition = model.condition.name;
@@ -81973,28 +82275,28 @@ var render = function() {
             _vm._v(" "),
             _c("div", { staticClass: "col-3" }, [
               _c("div", { staticClass: "form-group" }, [
-                _c("label", [_vm._v("Tiempo en la Categoria")]),
+                _c("label", [_vm._v("Fecha de Obtencion")]),
                 _vm._v(" "),
                 _c("input", {
                   directives: [
                     {
                       name: "model",
                       rawName: "v-model",
-                      value: _vm.teacherData.category.name,
-                      expression: "teacherData.category.name"
+                      value: _vm.current_category.date,
+                      expression: "current_category.date"
                     }
                   ],
                   staticClass: "form-control",
                   attrs: { disabled: "", type: "text" },
-                  domProps: { value: _vm.teacherData.category.name },
+                  domProps: { value: _vm.current_category.date },
                   on: {
                     input: function($event) {
                       if ($event.target.composing) {
                         return
                       }
                       _vm.$set(
-                        _vm.teacherData.category,
-                        "name",
+                        _vm.current_category,
+                        "date",
                         $event.target.value
                       )
                     }
@@ -82003,7 +82305,77 @@ var render = function() {
               ])
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "col-6" }, [
+            _c("div", { staticClass: "col-4" }, [
+              _c("div", { staticClass: "form-group" }, [
+                _c("label", [_vm._v("Tiempo en la Categoria")]),
+                _vm._v(" "),
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.current_category.time,
+                      expression: "current_category.time"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: { disabled: "", type: "text" },
+                  domProps: { value: _vm.current_category.time },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(
+                        _vm.current_category,
+                        "time",
+                        $event.target.value
+                      )
+                    }
+                  }
+                })
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-4" }, [
+              _c(
+                "div",
+                { staticClass: "form-group" },
+                [
+                  _c("label", [_vm._v("Categoria a Acender")]),
+                  _vm._v(" "),
+                  _c(
+                    "v-select",
+                    {
+                      staticClass: "text-uppercase bg-white",
+                      attrs: {
+                        disabled: _vm.teacherData.id == 0,
+                        label: "name",
+                        options: _vm.list_categories
+                      },
+                      on: { input: _vm.validationAsc },
+                      model: {
+                        value: _vm.ascent.category,
+                        callback: function($$v) {
+                          _vm.$set(_vm.ascent, "category", $$v)
+                        },
+                        expression: "ascent.category"
+                      }
+                    },
+                    [
+                      _c(
+                        "div",
+                        { attrs: { slot: "no-options" }, slot: "no-options" },
+                        [_vm._v("No hay coincidencias")]
+                      )
+                    ]
+                  )
+                ],
+                1
+              )
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-4" }, [
               _c(
                 "div",
                 { staticClass: "form-group" },
@@ -82013,11 +82385,11 @@ var render = function() {
                   _c("v-select", {
                     staticClass: "text-uppercase bg-white",
                     attrs: {
-                      disabled: _vm.teacherData.id == 0,
+                      disabled: _vm.ascent.category == null,
                       label: "name",
                       options: _vm.modalities
                     },
-                    on: { input: _vm.getCategories },
+                    on: { input: _vm.showPublications },
                     model: {
                       value: _vm.ascent.modality,
                       callback: function($$v) {
@@ -82031,110 +82403,448 @@ var render = function() {
               )
             ]),
             _vm._v(" "),
-            _c(
-              "div",
-              { staticClass: "col-6" },
-              [
-                _c("label", [_vm._v("Categoria a Acender")]),
-                _vm._v(" "),
-                _c(
-                  "v-select",
-                  {
-                    staticClass: "text-uppercase",
-                    attrs: {
-                      disabled: _vm.ascent.modality == null,
-                      label: "name",
-                      options: _vm.list_categories
-                    },
-                    on: { input: _vm.verifyRequeriments },
-                    model: {
-                      value: _vm.ascent.category,
-                      callback: function($$v) {
-                        _vm.$set(_vm.ascent, "category", $$v)
-                      },
-                      expression: "ascent.category"
-                    }
-                  },
-                  [
-                    _c(
-                      "div",
-                      { attrs: { slot: "no-options" }, slot: "no-options" },
-                      [_vm._v("No hay coincidencias")]
-                    )
-                  ]
-                )
-              ],
-              1
-            ),
-            _vm._v(" "),
             _vm.ascent.modality !== null
               ? [
-                  _c("div", { staticClass: "col-12 text-uppercase" }, [
-                    _c("h3", {
-                      staticClass: "text-center",
-                      domProps: { textContent: _vm._s(_vm.ascent.modality) }
-                    })
-                  ]),
-                  _vm._v(" "),
-                  _vm.ascent.modality == "art. 61"
+                  _vm.ascent.modality == "art. 61" ||
+                  _vm.ascent.modality == "art. 62"
                     ? [
                         _vm._m(0),
                         _vm._v(" "),
-                        _c("div", { staticClass: "col-6" }, [
-                          _c(
+                        _vm._l(_vm.publications, function(
+                          publication,
+                          index_publication
+                        ) {
+                          return _c(
                             "div",
-                            { staticClass: "form-group" },
+                            {
+                              key: index_publication,
+                              staticClass: "col-12 card mb-3"
+                            },
                             [
-                              _c("label", [_vm._v("Titulo del Postgrado")]),
-                              _vm._v(" "),
-                              _c(
-                                "v-select",
-                                {
-                                  staticClass: "bg-white text-uppercase",
-                                  attrs: {
-                                    label: "title",
-                                    options: _vm.teacherData.postgraduates,
-                                    getOptionLabel: function(obj) {
-                                      return (
-                                        obj.title.level +
-                                        " / " +
-                                        obj.title.title
+                              _c("div", { staticClass: "row card-body" }, [
+                                _c("div", { staticClass: "col-1" }, [
+                                  _c("div", { staticClass: "form-group" }, [
+                                    _c("h3", [
+                                      _vm._v(
+                                        "#" + _vm._s(index_publication + 1)
                                       )
-                                    },
-                                    reduce: function(title) {
-                                      return title.title
-                                    }
-                                  },
-                                  model: {
-                                    value: _vm.publication.title,
-                                    callback: function($$v) {
-                                      _vm.$set(_vm.publication, "title", $$v)
-                                    },
-                                    expression: "publication.title"
-                                  }
-                                },
-                                [
+                                    ])
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-3" }, [
+                                  _c("div", { staticClass: "form-group" }, [
+                                    _c(
+                                      "label",
+                                      {
+                                        attrs: {
+                                          for: "title" + index_publication
+                                        }
+                                      },
+                                      [_vm._v("Titulo")]
+                                    ),
+                                    _vm._v(" "),
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: publication.title,
+                                          expression: "publication.title"
+                                        }
+                                      ],
+                                      staticClass: "form-control",
+                                      attrs: {
+                                        id: "title" + index_publication,
+                                        type: "text"
+                                      },
+                                      domProps: { value: publication.title },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            publication,
+                                            "title",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-3" }, [
+                                  _c("div", { staticClass: "form-group" }, [
+                                    _c(
+                                      "label",
+                                      {
+                                        attrs: {
+                                          for: "rev" + index_publication
+                                        }
+                                      },
+                                      [_vm._v("Revista")]
+                                    ),
+                                    _vm._v(" "),
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: publication.rev,
+                                          expression: "publication.rev"
+                                        }
+                                      ],
+                                      staticClass: "form-control",
+                                      attrs: {
+                                        id: "rev" + index_publication,
+                                        type: "text"
+                                      },
+                                      domProps: { value: publication.rev },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            publication,
+                                            "rev",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-5" }, [
                                   _c(
                                     "div",
-                                    {
-                                      attrs: { slot: "no-options" },
-                                      slot: "no-options"
-                                    },
-                                    [_vm._v("No hay coincidencias")]
+                                    { staticClass: "form-group" },
+                                    [
+                                      _c(
+                                        "label",
+                                        {
+                                          attrs: {
+                                            for: "post" + index_publication
+                                          }
+                                        },
+                                        [_vm._v("Postgrado")]
+                                      ),
+                                      _vm._v(" "),
+                                      _c(
+                                        "v-select",
+                                        {
+                                          staticClass:
+                                            "bg-white text-uppercase",
+                                          attrs: {
+                                            id: "post" + index_publication,
+                                            label: "title",
+                                            options:
+                                              _vm.teacherData.postgraduates,
+                                            getOptionLabel: function(obj) {
+                                              return (
+                                                obj.title.level +
+                                                " / " +
+                                                obj.title.title
+                                              )
+                                            },
+                                            reduce: function(title) {
+                                              return title.title
+                                            }
+                                          },
+                                          model: {
+                                            value: publication.postgraduate,
+                                            callback: function($$v) {
+                                              _vm.$set(
+                                                publication,
+                                                "postgraduate",
+                                                $$v
+                                              )
+                                            },
+                                            expression:
+                                              "publication.postgraduate"
+                                          }
+                                        },
+                                        [
+                                          _c(
+                                            "div",
+                                            {
+                                              attrs: { slot: "no-options" },
+                                              slot: "no-options"
+                                            },
+                                            [_vm._v("No hay coincidencias")]
+                                          )
+                                        ]
+                                      )
+                                    ],
+                                    1
                                   )
-                                ]
-                              )
-                            ],
-                            1
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2" }, [
+                                  _c("div", { staticClass: "form-group" }, [
+                                    _c(
+                                      "label",
+                                      {
+                                        attrs: {
+                                          for: "issn" + index_publication
+                                        }
+                                      },
+                                      [_vm._v("Código ISSN")]
+                                    ),
+                                    _vm._v(" "),
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: publication.code_issn,
+                                          expression: "publication.code_issn"
+                                        }
+                                      ],
+                                      staticClass: "form-control",
+                                      attrs: {
+                                        id: "issn" + index_publication,
+                                        type: "text"
+                                      },
+                                      domProps: {
+                                        value: publication.code_issn
+                                      },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            publication,
+                                            "code_issn",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2" }, [
+                                  _c("div", { staticClass: "form-group" }, [
+                                    _c(
+                                      "label",
+                                      {
+                                        attrs: {
+                                          for: "isbn" + index_publication
+                                        }
+                                      },
+                                      [_vm._v("Número ISBN")]
+                                    ),
+                                    _vm._v(" "),
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: publication.nro_isbn,
+                                          expression: "publication.nro_isbn"
+                                        }
+                                      ],
+                                      staticClass: "form-control",
+                                      attrs: {
+                                        id: "isbn" + index_publication,
+                                        type: "text"
+                                      },
+                                      domProps: { value: publication.nro_isbn },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            publication,
+                                            "nro_isbn",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2" }, [
+                                  _c("div", { staticClass: "form-group" }, [
+                                    _c(
+                                      "label",
+                                      {
+                                        attrs: {
+                                          for: "edit" + index_publication
+                                        }
+                                      },
+                                      [_vm._v("Número de Edición")]
+                                    ),
+                                    _vm._v(" "),
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: publication.nro_edit,
+                                          expression: "publication.nro_edit"
+                                        }
+                                      ],
+                                      staticClass: "form-control",
+                                      attrs: {
+                                        id: "edit" + index_publication,
+                                        type: "text"
+                                      },
+                                      domProps: { value: publication.nro_edit },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            publication,
+                                            "nro_edit",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2" }, [
+                                  _c("div", { staticClass: "form-group" }, [
+                                    _c(
+                                      "label",
+                                      {
+                                        attrs: {
+                                          for: "vol" + index_publication
+                                        }
+                                      },
+                                      [_vm._v("Vólumen")]
+                                    ),
+                                    _vm._v(" "),
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: publication.vol,
+                                          expression: "publication.vol"
+                                        }
+                                      ],
+                                      staticClass: "form-control",
+                                      attrs: {
+                                        id: "vol" + index_publication,
+                                        type: "text"
+                                      },
+                                      domProps: { value: publication.vol },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            publication,
+                                            "vol",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2" }, [
+                                  _c("div", { staticClass: "form-group" }, [
+                                    _c(
+                                      "label",
+                                      {
+                                        attrs: {
+                                          for: "url" + index_publication
+                                        }
+                                      },
+                                      [_vm._v("URL")]
+                                    ),
+                                    _vm._v(" "),
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: publication.url,
+                                          expression: "publication.url"
+                                        }
+                                      ],
+                                      staticClass: "form-control",
+                                      attrs: {
+                                        id: "url" + index_publication,
+                                        type: "text"
+                                      },
+                                      domProps: { value: publication.url },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            publication,
+                                            "url",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2" }, [
+                                  _c(
+                                    "div",
+                                    { staticClass: "form-group" },
+                                    [
+                                      _c(
+                                        "label",
+                                        {
+                                          attrs: {
+                                            for: "date" + index_publication
+                                          }
+                                        },
+                                        [_vm._v("Fecha")]
+                                      ),
+                                      _vm._v(" "),
+                                      _c("datepicker", {
+                                        attrs: {
+                                          id: "date" + index_publication,
+                                          "full-month-name": true,
+                                          "disabled-dates": _vm.no_dates,
+                                          "input-class": "bg-white form-control"
+                                        },
+                                        model: {
+                                          value: publication.date,
+                                          callback: function($$v) {
+                                            _vm.$set(publication, "date", $$v)
+                                          },
+                                          expression: "publication.date"
+                                        }
+                                      })
+                                    ],
+                                    1
+                                  )
+                                ])
+                              ])
+                            ]
                           )
-                        ]),
-                        _vm._v(" "),
-                        _vm._m(1)
+                        })
                       ]
                     : _vm._e(),
                   _vm._v(" "),
                   _vm.ascent.modality == "art. 64"
                     ? [
+                        _vm._m(1),
+                        _vm._v(" "),
                         _vm._m(2),
                         _vm._v(" "),
                         _c("div", { staticClass: "col-3" }, [
@@ -82142,7 +82852,7 @@ var render = function() {
                             "div",
                             { staticClass: "form-group" },
                             [
-                              _c("label", [_vm._v("Naturaleza del Trabajo")]),
+                              _c("label", [_vm._v("Naturaleza")]),
                               _vm._v(" "),
                               _c("v-select", {
                                 staticClass: "text-uppercase bg-white",
@@ -82162,7 +82872,7 @@ var render = function() {
                             "div",
                             { staticClass: "form-group" },
                             [
-                              _c("label", [_vm._v("Titulo del Postgrado")]),
+                              _c("label", [_vm._v("Postgrado")]),
                               _vm._v(" "),
                               _c(
                                 "v-select",
@@ -82177,17 +82887,18 @@ var render = function() {
                                         " / " +
                                         obj.title.title
                                       )
-                                    },
-                                    reduce: function(title) {
-                                      return title.title
                                     }
                                   },
                                   model: {
-                                    value: _vm.publication.title,
+                                    value: _vm.teacherData.postgraduate,
                                     callback: function($$v) {
-                                      _vm.$set(_vm.publication, "title", $$v)
+                                      _vm.$set(
+                                        _vm.teacherData,
+                                        "postgraduate",
+                                        $$v
+                                      )
                                     },
-                                    expression: "publication.title"
+                                    expression: "teacherData.postgraduate"
                                   }
                                 },
                                 [
@@ -82208,29 +82919,227 @@ var render = function() {
                         _vm._v(" "),
                         _vm._m(3),
                         _vm._v(" "),
+                        _c("div", { staticClass: "col-4" }, [
+                          _c("div", { staticClass: "form-group" }, [
+                            _c("label", [_vm._v("Coordinador")]),
+                            _vm._v(" "),
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.jury.coordinator,
+                                  expression: "jury.coordinator"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              attrs: {
+                                placeholder: "Nombres y Apellidos",
+                                type: "text"
+                              },
+                              domProps: { value: _vm.jury.coordinator },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.jury,
+                                    "coordinator",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ])
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-4" }, [
+                          _c("div", { staticClass: "form-group" }, [
+                            _c("label", [_vm._v("Principal")]),
+                            _vm._v(" "),
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.jury.principal1,
+                                  expression: "jury.principal1"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              attrs: {
+                                placeholder: "Nombres y Apellidos",
+                                type: "text"
+                              },
+                              domProps: { value: _vm.jury.principal1 },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.jury,
+                                    "principal1",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ])
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-4" }, [
+                          _c("div", { staticClass: "form-group" }, [
+                            _c("label", [_vm._v("Principal")]),
+                            _vm._v(" "),
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.jury.principal2,
+                                  expression: "jury.principal2"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              attrs: {
+                                placeholder: "Nombres y Apellidos",
+                                type: "text"
+                              },
+                              domProps: { value: _vm.jury.principal2 },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.jury,
+                                    "principal2",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ])
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-4" }, [
+                          _c("div", { staticClass: "form-group" }, [
+                            _c("label", [_vm._v("Suplente")]),
+                            _vm._v(" "),
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.jury.alternate1,
+                                  expression: "jury.alternate1"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              attrs: {
+                                placeholder: "Nombres y Apellidos",
+                                type: "text"
+                              },
+                              domProps: { value: _vm.jury.alternate1 },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.jury,
+                                    "alternate1",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ])
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-4" }, [
+                          _c("div", { staticClass: "form-group" }, [
+                            _c("label", [_vm._v("Suplente")]),
+                            _vm._v(" "),
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.jury.alternate2,
+                                  expression: "jury.alternate2"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              attrs: {
+                                placeholder: "Nombres y Apellidos",
+                                type: "text"
+                              },
+                              domProps: { value: _vm.jury.alternate2 },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.jury,
+                                    "alternate2",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ])
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-4" }, [
+                          _c("div", { staticClass: "form-group" }, [
+                            _c("label", [_vm._v("Suplente")]),
+                            _vm._v(" "),
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.jury.alternate3,
+                                  expression: "jury.alternate3"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              attrs: {
+                                placeholder: "Nombres y Apellidos",
+                                type: "text"
+                              },
+                              domProps: { value: _vm.jury.alternate3 },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.jury,
+                                    "alternate3",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ])
+                        ]),
+                        _vm._v(" "),
                         _vm._m(4),
                         _vm._v(" "),
                         _vm._m(5),
                         _vm._v(" "),
                         _vm._m(6),
                         _vm._v(" "),
-                        _vm._m(7),
-                        _vm._v(" "),
-                        _vm._m(8),
-                        _vm._v(" "),
-                        _vm._m(9),
-                        _vm._v(" "),
-                        _vm._m(10),
-                        _vm._v(" "),
-                        _vm._m(11),
-                        _vm._v(" "),
-                        _vm._m(12),
-                        _vm._v(" "),
-                        _vm._m(13)
+                        _vm._m(7)
                       ]
                     : _vm._e(),
                   _vm._v(" "),
-                  _vm._m(14),
+                  _vm._m(8),
                   _vm._v(" "),
                   _c("div", { staticClass: "col-4" }, [
                     _c(
@@ -82503,7 +83412,242 @@ var render = function() {
                             ])
                           : _vm._e()
                       ]
-                    : _vm._e()
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm._m(9),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-12 card mb-3" }, [
+                    _c("div", { staticClass: "card-body row" }, [
+                      _c("div", { staticClass: "col-6" }, [
+                        _c("div", { staticClass: "form-group" }, [
+                          _c(
+                            "label",
+                            {
+                              attrs: {
+                                title: "Memorando de Vicerectorado Academico"
+                              }
+                            },
+                            [_vm._v("Vrac")]
+                          ),
+                          _vm._v(" "),
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.memo.vrac.code,
+                                expression: "memo.vrac.code"
+                              }
+                            ],
+                            staticClass: "form-control",
+                            attrs: { placeholder: "Código", type: "text" },
+                            domProps: { value: _vm.memo.vrac.code },
+                            on: {
+                              input: function($event) {
+                                if ($event.target.composing) {
+                                  return
+                                }
+                                _vm.$set(
+                                  _vm.memo.vrac,
+                                  "code",
+                                  $event.target.value
+                                )
+                              }
+                            }
+                          })
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-6" }, [
+                        _c(
+                          "div",
+                          { staticClass: "form-group" },
+                          [
+                            _c(
+                              "label",
+                              { attrs: { title: "Fecha de Emisión" } },
+                              [_vm._v("Fecha")]
+                            ),
+                            _vm._v(" "),
+                            _c("datepicker", {
+                              attrs: {
+                                placeholder: "Emisión",
+                                "full-month-name": true,
+                                "disabled-dates": _vm.no_dates,
+                                "input-class": "bg-white form-control"
+                              },
+                              model: {
+                                value: _vm.memo.vrac.date,
+                                callback: function($$v) {
+                                  _vm.$set(_vm.memo.vrac, "date", $$v)
+                                },
+                                expression: "memo.vrac.date"
+                              }
+                            })
+                          ],
+                          1
+                        )
+                      ])
+                    ])
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-12 card mb-3" }, [
+                    _c("div", { staticClass: "card-body row" }, [
+                      _c("div", { staticClass: "col-6" }, [
+                        _c("div", { staticClass: "form-group" }, [
+                          _c(
+                            "label",
+                            { attrs: { title: "Memorando del Area" } },
+                            [_vm._v("Area")]
+                          ),
+                          _vm._v(" "),
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.memo.area.code,
+                                expression: "memo.area.code"
+                              }
+                            ],
+                            staticClass: "form-control",
+                            attrs: { placeholder: "Código", type: "text" },
+                            domProps: { value: _vm.memo.area.code },
+                            on: {
+                              input: function($event) {
+                                if ($event.target.composing) {
+                                  return
+                                }
+                                _vm.$set(
+                                  _vm.memo.area,
+                                  "code",
+                                  $event.target.value
+                                )
+                              }
+                            }
+                          })
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-6" }, [
+                        _c(
+                          "div",
+                          { staticClass: "form-group" },
+                          [
+                            _c(
+                              "label",
+                              { attrs: { title: "Fecha de Emisión" } },
+                              [_vm._v("Fecha")]
+                            ),
+                            _vm._v(" "),
+                            _c("datepicker", {
+                              attrs: {
+                                placeholder: "Emisión",
+                                "full-month-name": true,
+                                "disabled-dates": _vm.no_dates,
+                                "input-class": "bg-white form-control"
+                              },
+                              model: {
+                                value: _vm.memo.area.date,
+                                callback: function($$v) {
+                                  _vm.$set(_vm.memo.area, "date", $$v)
+                                },
+                                expression: "memo.area.date"
+                              }
+                            })
+                          ],
+                          1
+                        )
+                      ])
+                    ])
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-12 card mb-3" }, [
+                    _c("div", { staticClass: "card-body row" }, [
+                      _c("div", { staticClass: "col-6" }, [
+                        _c("div", { staticClass: "form-group" }, [
+                          _c(
+                            "label",
+                            {
+                              attrs: {
+                                title: "Memorando del Consejo Universitario"
+                              }
+                            },
+                            [_vm._v("Consejo Universitario")]
+                          ),
+                          _vm._v(" "),
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.memo.cu.code,
+                                expression: "memo.cu.code"
+                              }
+                            ],
+                            staticClass: "form-control",
+                            attrs: { placeholder: "Código", type: "text" },
+                            domProps: { value: _vm.memo.cu.code },
+                            on: {
+                              input: function($event) {
+                                if ($event.target.composing) {
+                                  return
+                                }
+                                _vm.$set(
+                                  _vm.memo.cu,
+                                  "code",
+                                  $event.target.value
+                                )
+                              }
+                            }
+                          })
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-6" }, [
+                        _c(
+                          "div",
+                          { staticClass: "form-group" },
+                          [
+                            _c(
+                              "label",
+                              { attrs: { title: "Fecha de Emisión" } },
+                              [_vm._v("Fecha")]
+                            ),
+                            _vm._v(" "),
+                            _c("datepicker", {
+                              attrs: {
+                                placeholder: "Emisión",
+                                "full-month-name": true,
+                                "disabled-dates": _vm.no_dates,
+                                "input-class": "bg-white form-control"
+                              },
+                              model: {
+                                value: _vm.memo.cu.date,
+                                callback: function($$v) {
+                                  _vm.$set(_vm.memo.cu, "date", $$v)
+                                },
+                                expression: "memo.cu.date"
+                              }
+                            })
+                          ],
+                          1
+                        )
+                      ])
+                    ])
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-12" }, [
+                    _c(
+                      "button",
+                      {
+                        staticClass:
+                          "col-2 offset-10 btn btn-success btn-block",
+                        on: { click: _vm.saveAscent }
+                      },
+                      [_vm._v("Guardar")]
+                    )
+                  ])
                 ]
               : _vm._e()
           ],
@@ -82518,11 +83662,17 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-3" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Titulo del Trabajo")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
+    return _c("div", { staticClass: "col-12" }, [
+      _c("h4", { staticClass: "text-center" }, [_vm._v("Publicación")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12" }, [
+      _c("h4", { staticClass: "text-center" }, [
+        _vm._v("Trabajo de Investigación")
       ])
     ])
   },
@@ -82532,19 +83682,7 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-3" }, [
       _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Publicación")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-3" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Titulo de Trabajo")]),
+        _c("label", [_vm._v("Titulo")]),
         _vm._v(" "),
         _c("input", { staticClass: "form-control", attrs: { type: "text" } })
       ])
@@ -82555,79 +83693,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-12" }, [
-      _c("h5", { staticClass: "text-center" }, [_vm._v("Jurado Evaluador")])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-4" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Cordinador")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-4" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Principal")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-4" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Principal")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-4" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Cordinador (Suplente)")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-4" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Principal (Suplente)")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-4" }, [
-      _c("div", { staticClass: "form-group" }, [
-        _c("label", [_vm._v("Principal (Suplente)")]),
-        _vm._v(" "),
-        _c("input", { staticClass: "form-control", attrs: { type: "text" } })
-      ])
+      _c("h4", { staticClass: "text-center" }, [_vm._v("Jurado Evaluador")])
     ])
   },
   function() {
@@ -82635,7 +83701,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-12" }, [
-      _c("h5", { staticClass: "text-center" }, [_vm._v("Presentacion")])
+      _c("h4", { staticClass: "text-center" }, [_vm._v("Presentacion")])
     ])
   },
   function() {
@@ -82679,7 +83745,15 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-12" }, [
-      _c("h5", { staticClass: "text-center" }, [_vm._v("Adscrito")])
+      _c("h4", { staticClass: "text-center" }, [_vm._v("Adscrito")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12" }, [
+      _c("h4", { staticClass: "text-center" }, [_vm._v("Memorandos")])
     ])
   }
 ]
@@ -89446,7 +90520,7 @@ var render = function() {
                       ? _c("span", {
                           domProps: {
                             textContent: _vm._s(
-                              _vm.formatDate(_vm.teacherData.person.updated_at)
+                              _vm.momentDate(_vm.teacherData.person.updated_at)
                             )
                           }
                         })
@@ -90016,14 +91090,8 @@ var render = function() {
                                           _vm._v(" "),
                                           _c("td", {
                                             domProps: {
-                                              textContent: _vm._s(ascent.date)
-                                            }
-                                          }),
-                                          _vm._v(" "),
-                                          _c("td", {
-                                            domProps: {
                                               textContent: _vm._s(
-                                                ascent.next_category.name
+                                                _vm.formD(ascent.date)
                                               )
                                             }
                                           }),
@@ -90031,7 +91099,19 @@ var render = function() {
                                           _c("td", {
                                             domProps: {
                                               textContent: _vm._s(
-                                                ascent.date_next
+                                                ascent.next_category == !null
+                                                  ? ascent.next_category.name
+                                                  : "No Aplica"
+                                              )
+                                            }
+                                          }),
+                                          _vm._v(" "),
+                                          _c("td", {
+                                            domProps: {
+                                              textContent: _vm._s(
+                                                ascent.date_next == !null
+                                                  ? _vm.formD(ascent.date_next)
+                                                  : "No Aplica"
                                               )
                                             }
                                           }),
@@ -90189,13 +91269,13 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("thead", [
       _c("tr", { staticClass: "text-center" }, [
-        _c("th", [_vm._v("Categoria Actual")]),
+        _c("th", [_vm._v("Categoria de Ascenso Actual")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Fecha")]),
+        _c("th", [_vm._v("Fecha de Ascenso")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Categoria Ascendida")]),
+        _c("th", [_vm._v("Categoria proxima a Ascender")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Fecha")]),
+        _c("th", [_vm._v("Fecha de Ascenso")]),
         _vm._v(" "),
         _c("th", [_vm._v("Modalidad")])
       ])

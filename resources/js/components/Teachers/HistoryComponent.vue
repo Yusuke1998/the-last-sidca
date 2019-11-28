@@ -25,7 +25,7 @@
                         <h3 class="block-title">Datos Personales</h3>
                         <div class="block-options">
                             <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                <span v-if="teacherData.person.id !== 0" v-text="formatDate(teacherData.person.updated_at)"></span>
+                                <span v-if="teacherData.person.id !== 0" v-text="momentDate(teacherData.person.updated_at)"></span>
                             </div>
                         </div>
                     </div>
@@ -203,10 +203,10 @@
                                     <table class="table table-striped table-sm">
                                         <thead>
                                             <tr class="text-center">
-                                                <th>Categoria Actual</th>
-                                                <th>Fecha</th>
-                                                <th>Categoria Ascendida</th>
-                                                <th>Fecha</th>
+                                                <th>Categoria de Ascenso Actual</th>
+                                                <th>Fecha de Ascenso</th>
+                                                <th>Categoria proxima a Ascender</th>
+                                                <th>Fecha de Ascenso</th>
                                                 <th>Modalidad</th>
                                             </tr>
                                         </thead>
@@ -216,9 +216,9 @@
                                             </tr>
                                             <tr class="text-center" v-else v-for="ascent in teacherData.ascents">
                                                 <td v-text="ascent.current_category.name"></td>
-                                                <td v-text="ascent.date"></td>
-                                                <td v-text="ascent.next_category.name"></td>
-                                                <td v-text="ascent.date_next"></td>
+                                                <td v-text="formD(ascent.date)"></td>
+                                                <td v-text="(ascent.next_category==!null)?ascent.next_category.name:'No Aplica'"></td>
+                                                <td v-text="(ascent.date_next==!null)?formD(ascent.date_next):'No Aplica'"></td>
                                                 <td v-text="ascent.modality"></td>
                                             </tr>
                                         </tbody>
@@ -431,11 +431,16 @@ export default {
             this.img_url = location.origin+'/storage/'+this.teacherData.person.img_document
             console.log(this.img_url);
         },
-		formatDate(date){
+		momentDate(date){
 			let moment = require('moment');
 			moment.locale('es');
-			return 'actualizado '+moment(date).startOf('hour').fromNow();
+			return 'actualizado '+moment(date).toNow();
 		},
+        formD(date)
+        {
+            let d = date.split(' ')[0].split('-')
+            return d[2]+'/'+d[1]+'/'+d[0]
+        },
 		verifyDni()
         {
         	let dni = location.pathname.split('/')[3]

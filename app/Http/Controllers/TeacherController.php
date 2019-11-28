@@ -295,8 +295,8 @@ class TeacherController extends Controller
                 $dn->addYears(5);
             }elseif ($request->teacherData['category']['name'] == 'titular') {
                 $cc_id = $request->teacherData['category']['id'];
-                $dn = '';
-                $nc_id = '';
+                $dn = null;
+                $nc_id = null;
             }
             if ($teacher->ascents()->count() > 0) {
                 $ascent = $teacher->ascents()->first();
@@ -307,7 +307,7 @@ class TeacherController extends Controller
                 'category_id' => $request->teacherData['category']['id']
             ]);
             $ascent->date                   = $dc->toDateString();
-            $ascent->date_next              = $dn->toDateString();
+            $ascent->date_next              = (!is_null($dn))?$dn->toDateString():$dn;
             $ascent->current_category_id    = $cc_id;
             $ascent->next_category_id       = $nc_id;
             $ascent->modality               = $request->teacherData['category']['modality'];
