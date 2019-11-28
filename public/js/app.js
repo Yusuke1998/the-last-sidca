@@ -6264,18 +6264,35 @@ __webpack_require__.r(__webpack_exports__);
     setCategories: function setCategories() {
       var categories = this.list_categories;
       var ascents = this.teacherData.ascents;
+      var category = this.teacherData.category.name;
 
-      for (var i = 0; i < categories.length; i++) {
-        for (var j = 0; j < ascents.length; j++) {
-          var idx = categories[i].name.indexOf(ascents[j].current_category.name);
+      if (ascents.length == 1 && category == 'titular') {
+        this.list_categories = [];
+      } else if (ascents.length == 1 && category == 'asociado') {
+        this.list_categories = categories.filter(function (cat) {
+          return cat.name.toLowerCase().indexOf('asociado') == -1 && cat.name.toLowerCase().indexOf('agregado') == -1 && cat.name.toLowerCase().indexOf('asistente') == -1 && cat.name.toLowerCase().indexOf('instructor') == -1;
+        });
+      } else if (ascents.length == 1 && category == 'agregado') {
+        this.list_categories = categories.filter(function (cat) {
+          return cat.name.toLowerCase().indexOf('agregado') == -1 && cat.name.toLowerCase().indexOf('asistente') == -1 && cat.name.toLowerCase().indexOf('instructor') == -1;
+        });
+      } else if (ascents.length == 1 && category == 'asistente') {
+        this.list_categories = categories.filter(function (cat) {
+          return cat.name.toLowerCase().indexOf('asistente') == -1 && cat.name.toLowerCase().indexOf('instructor') == -1;
+        });
+      } else {
+        for (var i = 0; i < categories.length; i++) {
+          for (var j = 0; j < ascents.length; j++) {
+            var idx = categories[i].name.indexOf(ascents[j].current_category.name);
 
-          if (idx > -1) {
-            categories.splice(idx, 1);
+            if (idx > -1) {
+              categories.splice(idx, 1);
+            }
           }
         }
-      }
 
-      this.list_categories = categories;
+        this.list_categories = categories;
+      }
     },
     momentDate: function momentDate(date) {
       var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");

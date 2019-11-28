@@ -722,15 +722,39 @@ export default {
         {
             let categories = this.list_categories
             let ascents = this.teacherData.ascents
-            for (var i = 0; i < categories.length; i++) {
-                for (var j = 0; j < ascents.length; j++) {
-                    let idx = categories[i].name.indexOf(ascents[j].current_category.name)
-                    if (idx > -1) {
-                        categories.splice(idx,1)
+            let category = this.teacherData.category.name
+
+            if (ascents.length == 1 && category == 'titular') {
+                this.list_categories = [];
+            }else if(ascents.length == 1 && category == 'asociado'){
+                this.list_categories=categories.filter((cat) => {
+                    return cat.name.toLowerCase().indexOf('asociado') == -1 &&
+                        cat.name.toLowerCase().indexOf('agregado') == -1 &&
+                        cat.name.toLowerCase().indexOf('asistente') == -1 &&
+                        cat.name.toLowerCase().indexOf('instructor') == -1
+                });
+            }else if(ascents.length == 1 && category == 'agregado'){
+                this.list_categories=categories.filter((cat) => {
+                    return cat.name.toLowerCase().indexOf('agregado') == -1 &&
+                        cat.name.toLowerCase().indexOf('asistente') == -1 &&
+                        cat.name.toLowerCase().indexOf('instructor') == -1
+                });
+            }else if(ascents.length == 1 && category == 'asistente'){
+                this.list_categories=categories.filter((cat) => {
+                    return cat.name.toLowerCase().indexOf('asistente') == -1 &&
+                        cat.name.toLowerCase().indexOf('instructor') == -1
+                });
+            }else{
+                for (var i = 0; i < categories.length; i++) {
+                    for (var j = 0; j < ascents.length; j++) {
+                        let idx = categories[i].name.indexOf(ascents[j].current_category.name)
+                        if (idx > -1) {
+                            categories.splice(idx,1)
+                        }
                     }
                 }
+                this. list_categories = categories
             }
-            this. list_categories = categories
         },
 		momentDate(date){
 			let moment = require('moment');
