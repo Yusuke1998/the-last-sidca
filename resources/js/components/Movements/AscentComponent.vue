@@ -890,7 +890,28 @@ export default {
 		},
         saveAscent()
         {
-            alert('No falta tanto como hace un mes :v')
+            this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este ascenso')
+            let url = location.origin+'/movimiento/store-ascent'
+            console.log(url)
+            axios.post(url,{
+                teacherData : this.teacherData,
+                publications : this.publications,
+                current_category : this.current_category,
+                jury : this.jury,
+                memo : this.memo,
+                ascent : this.ascent
+            }).then(response => {
+                swal.close()
+                this.$alertify.success('El ascenso se registro con exito')
+            }).catch(errors => {
+                swal.close()
+                if (status = 204)
+                {
+                    Object.values(errors.response.data.errors).forEach((element,indx) => {
+                        this.$alertify.error(element.toString())
+                    });
+                }
+            })
         }
 	}
 }

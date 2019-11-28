@@ -125,6 +125,7 @@ Route::group(['prefix'=>'movimiento','middleware'=>'auth'],function(){
 
 	// ASCENSO
 	Route::get('ascenso/{dni?}','MovementController@ascent_index')->name('ascent.index');
+	Route::post('store-ascent','MovementController@ascent_store');
 	// FIN ASCENSO
 
 });

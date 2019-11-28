@@ -6435,7 +6435,31 @@ __webpack_require__.r(__webpack_exports__);
       };
     },
     saveAscent: function saveAscent() {
-      alert('No falta tanto como hace un mes :v');
+      var _this4 = this;
+
+      this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar este ascenso');
+      var url = location.origin + '/movimiento/store-ascent';
+      console.log(url);
+      axios.post(url, {
+        teacherData: this.teacherData,
+        publications: this.publications,
+        current_category: this.current_category,
+        jury: this.jury,
+        memo: this.memo,
+        ascent: this.ascent
+      }).then(function (response) {
+        swal.close();
+
+        _this4.$alertify.success('El ascenso se registro con exito');
+      })["catch"](function (errors) {
+        swal.close();
+
+        if (status = 204) {
+          Object.values(errors.response.data.errors).forEach(function (element, indx) {
+            _this4.$alertify.error(element.toString());
+          });
+        }
+      });
     }
   }
 });
@@ -10534,7 +10558,6 @@ __webpack_require__.r(__webpack_exports__);
   methods: {
     baseUrl: function baseUrl() {
       this.img_url = location.origin + '/storage/' + this.teacherData.person.img_document;
-      console.log(this.img_url);
     },
     momentDate: function momentDate(date) {
       var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
@@ -10559,8 +10582,6 @@ __webpack_require__.r(__webpack_exports__);
 
       var url = location.origin + "/get-teacher/" + this.dni;
       axios.get(url).then(function (response) {
-        console.log(response.data);
-
         if (response.data !== 0 && response.data !== null && response.data !== undefined && response.data !== '') {
           if (response.data.id > 0) {
             _this.$alertify.success('Busqueda exitosa');
@@ -91085,7 +91106,7 @@ var render = function() {
                                         {
                                           staticClass:
                                             "text-center text-white bg-primary-dark",
-                                          attrs: { colspan: "4" }
+                                          attrs: { colspan: "5" }
                                         },
                                         [_vm._v("No hay registros...")]
                                       )
@@ -91108,6 +91129,14 @@ var render = function() {
                                           _c("td", {
                                             domProps: {
                                               textContent: _vm._s(
+                                                ascent.modality
+                                              )
+                                            }
+                                          }),
+                                          _vm._v(" "),
+                                          _c("td", {
+                                            domProps: {
+                                              textContent: _vm._s(
                                                 _vm.formD(ascent.date)
                                               )
                                             }
@@ -91116,9 +91145,9 @@ var render = function() {
                                           _c("td", {
                                             domProps: {
                                               textContent: _vm._s(
-                                                ascent.next_category == !null
-                                                  ? ascent.next_category.name
-                                                  : "No Aplica"
+                                                ascent.next_category === null
+                                                  ? "No Aplica"
+                                                  : ascent.next_category.name
                                               )
                                             }
                                           }),
@@ -91126,17 +91155,9 @@ var render = function() {
                                           _c("td", {
                                             domProps: {
                                               textContent: _vm._s(
-                                                ascent.date_next == !null
-                                                  ? _vm.formD(ascent.date_next)
-                                                  : "No Aplica"
-                                              )
-                                            }
-                                          }),
-                                          _vm._v(" "),
-                                          _c("td", {
-                                            domProps: {
-                                              textContent: _vm._s(
-                                                ascent.modality
+                                                ascent.date_next === null
+                                                  ? "No Aplica"
+                                                  : _vm.formD(ascent.date_next)
                                               )
                                             }
                                           })
@@ -91286,15 +91307,15 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("thead", [
       _c("tr", { staticClass: "text-center" }, [
-        _c("th", [_vm._v("Categoria de Ascenso Actual")]),
+        _c("th", [_vm._v("Categoria Actual")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Modalidad de Ascenso")]),
         _vm._v(" "),
         _c("th", [_vm._v("Fecha de Ascenso")]),
         _vm._v(" "),
         _c("th", [_vm._v("Categoria proxima a Ascender")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Fecha de Ascenso")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Modalidad")])
+        _c("th", [_vm._v("Fecha de proximo Ascenso")])
       ])
     ])
   },

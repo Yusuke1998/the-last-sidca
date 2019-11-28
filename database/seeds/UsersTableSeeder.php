@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
-
+use Illuminate\Support\Carbon;
 class UsersTableSeeder extends Seeder
 {
     public function run()
@@ -36,6 +36,7 @@ class UsersTableSeeder extends Seeder
 
         $cond = App\Condition::where('name','fijo')->first();
         $cate = App\Category::where('name','instructor')->first();
+        $cateii = App\Category::where('name','asistente')->first();
         $dedi = App\Dedication::where('name','exclusiva')->first();
         // Profesor
         $person = App\Person::create([
@@ -55,6 +56,19 @@ class UsersTableSeeder extends Seeder
             'condition_id'      =>  $cond->id,
             'category_id'       =>  $cate->id,
             'dedication_id'     =>  $dedi->id
+        ]);
+        
+        $date = Carbon::now();
+        $dateii = Carbon::now()->addYear(2);
+
+        $asce = App\Ascent::create([
+            'current_category_id'   =>  $cate->id,
+            'date'                  =>  $date,
+            'next_category_id'      =>  $cateii->id,
+            'date_next'             =>  $dateii,
+            'teacher_id'            =>  $teacher->id,
+            'modality'              =>  'Art. 62',
+            'status'                =>  'aprobado'
         ]);
         $type = App\Type::where('name','teacher')->first();
         $person->types()->attach($type->id);

@@ -203,23 +203,23 @@
                                     <table class="table table-striped table-sm">
                                         <thead>
                                             <tr class="text-center">
-                                                <th>Categoria de Ascenso Actual</th>
+                                                <th>Categoria Actual</th>
+                                                <th>Modalidad de Ascenso</th>
                                                 <th>Fecha de Ascenso</th>
                                                 <th>Categoria proxima a Ascender</th>
-                                                <th>Fecha de Ascenso</th>
-                                                <th>Modalidad</th>
+                                                <th>Fecha de proximo Ascenso</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-if="teacherData.ascents.length == 0">
-                                                <td class="text-center text-white bg-primary-dark" colspan="4">No hay registros...</td>
+                                                <td class="text-center text-white bg-primary-dark" colspan="5">No hay registros...</td>
                                             </tr>
                                             <tr class="text-center" v-else v-for="ascent in teacherData.ascents">
                                                 <td v-text="ascent.current_category.name"></td>
-                                                <td v-text="formD(ascent.date)"></td>
-                                                <td v-text="(ascent.next_category==!null)?ascent.next_category.name:'No Aplica'"></td>
-                                                <td v-text="(ascent.date_next==!null)?formD(ascent.date_next):'No Aplica'"></td>
                                                 <td v-text="ascent.modality"></td>
+                                                <td v-text="formD(ascent.date)"></td>
+                                                <td v-text="(ascent.next_category===null)?'No Aplica':ascent.next_category.name"></td>
+                                                <td v-text="(ascent.date_next===null)?'No Aplica':formD(ascent.date_next)"></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -429,7 +429,6 @@ export default {
 	methods:{
         baseUrl(){
             this.img_url = location.origin+'/storage/'+this.teacherData.person.img_document
-            console.log(this.img_url);
         },
 		momentDate(date){
 			let moment = require('moment');
@@ -453,9 +452,6 @@ export default {
 		{
 		    let url = location.origin+"/get-teacher/"+this.dni
 		    axios.get(url).then(response => {
-                
-                console.log(response.data);
-
 		        if (response.data !== 0 && response.data !== null && response.data !== undefined && response.data !== '') {
 		        	if (response.data.id > 0) {
                 		this.$alertify.success('Busqueda exitosa')
