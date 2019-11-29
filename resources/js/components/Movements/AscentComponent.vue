@@ -169,16 +169,10 @@
                             <div class="col-3">
                                 <div class="form-group">
                                     <label>Titulo</label>
-                                    <input type="text" class="form-control">
+                                    <input v-model="job.title" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="form-group">
-                                    <label>Naturaleza</label>
-                                    <v-select class="text-uppercase bg-white" :disabled="dni == null" label="name" :options="list_works"></v-select>
-                                </div>
-                            </div>
-                            <div class="col-6">
                                 <div class="form-group">
                                     <label>Postgrado</label>
                                     <v-select 
@@ -188,6 +182,18 @@
                                     :options="teacherData.postgraduates"
                                     :getOptionLabel="obj=>obj.title.level+' / '+obj.title.title"><div slot="no-options">No hay coincidencias</div></v-select>
                                 </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label>Trabajo (URL)</label>
+                                    <input v-model="job.url" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <form enctype="multipart/form-data">
+                                    <label title=".pdf/.docx/.doc/.odt">Trabajo</label>
+                                    <input type="file" v-on:change="onFileChange" class="form-control">
+                                </form>
                             </div>
                             <!-- col-12 -->
                             <div class="col-12">
@@ -351,11 +357,12 @@
                                     <div class="form-group">
                                         <label title="Fecha de Emisión">Fecha</label>
                                         <datepicker
+                                        :disabled="memo.vrac.code == ''"
                                         placeholder="Emisión" 
                                         v-model="memo.vrac.date"
                                         :full-month-name="true"
                                         :disabled-dates="no_dates" 
-                                        :input-class="'bg-white form-control'"></datepicker>
+                                        :input-class="memo.vrac.code !== ''?'bg-white form-control':'form-control'"></datepicker>
                                     </div>
                                 </div>
                             </div>
@@ -373,11 +380,12 @@
                                     <div class="form-group">
                                         <label title="Fecha de Emisión">Fecha</label>
                                         <datepicker
+                                        :disabled="memo.area.code == ''"
                                         placeholder="Emisión" 
                                         v-model="memo.area.date"
                                         :full-month-name="true"
                                         :disabled-dates="no_dates" 
-                                        :input-class="'bg-white form-control'"></datepicker>
+                                        :input-class="memo.area.code !== ''?'bg-white form-control':'form-control'"></datepicker>
                                     </div>
                                 </div>
                             </div>
@@ -395,11 +403,12 @@
                                     <div class="form-group">
                                         <label title="Fecha de Emisión">Fecha</label>
                                         <datepicker
+                                        :disabled="memo.cu.code == ''"
                                         placeholder="Emisión" 
                                         v-model="memo.cu.date"
                                         :full-month-name="true"
                                         :disabled-dates="no_dates" 
-                                        :input-class="'bg-white form-control'"></datepicker>
+                                        :input-class="memo.cu.code !== ''?'bg-white form-control':'form-control'"></datepicker>
                                     </div>
                                 </div>
                             </div>
@@ -429,6 +438,7 @@ export default {
 		return {
             // data required
 			dni:null,
+            file:null,
             no_dates:{to: new Date('1919-01-01')},
             modalities:['art. 61','art. 62','art. 64','ubicacion'],
             list_works:['libro','trabajo de investigacion','publicacion'],
@@ -497,6 +507,11 @@ export default {
                 date:'',
                 category:null
             },
+            job:{
+                title:'',
+                url:'',
+                file:null
+            },
             ascent:{
                 id:0,
                 date:null,
@@ -534,12 +549,21 @@ export default {
                 nro_edit:'',
                 vol:'',
                 date:'',
-                url:''
+                url:'',
+                postgraduate:null
             },
             publications:[],
         }
     },
     methods:{
+        onFileChange(e) {
+            let file = event.target.files[0]
+            let fileReader = new FileReader()
+            fileReader.readAsDataURL(file)
+            fileReader.onload = (e) => {
+                this.job.file = e.target.result
+            }
+        },
         validationAsc()
         {
             this.resetPublications()
@@ -853,7 +877,7 @@ export default {
                 date:null,
                 category:null,
                 modality:null,
-                status:null            
+                status:'espera'            
             }
             this.jury={
                 cordinator:'',
@@ -862,6 +886,11 @@ export default {
                 alternate1:'',
                 alternate2:'',
                 alternate3:'',
+            }
+            this.job={
+                title:'',
+                url:'',
+                file:null
             }
             this.memo={
                 area:{
@@ -885,22 +914,34 @@ export default {
                 nro_edit:'',
                 vol:'',
                 date:'',
-                url:''
+                url:'',
+                postgraduate:null
             }
 		},
+        reduceData()
+        {
+            this.teacherData.headquarter.areas = []
+            this.teacherData.area.programs = []
+            this.teacherData.area.cores = []
+            this.teacherData.area.extensions = []
+            this.teacherData.area.territorial_classrooms = []
+        },
         saveAscent()
         {
             this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este ascenso')
+            this.reduceData()
             let url = location.origin+'/movimiento/store-ascent'
-            console.log(url)
             axios.post(url,{
                 teacherData : this.teacherData,
                 publications : this.publications,
                 current_category : this.current_category,
                 jury : this.jury,
                 memo : this.memo,
-                ascent : this.ascent
+                ascent : this.ascent,
+                job : this.job
             }).then(response => {
+                this.teacherDataBlack()
+                this.searchTeacher()
                 swal.close()
                 this.$alertify.success('El ascenso se registro con exito')
             }).catch(errors => {

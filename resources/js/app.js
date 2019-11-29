@@ -38,6 +38,9 @@ import VueAlertify from 'vue-alertify';
         }
     });
 
+import FileUpload from 'v-file-upload'
+    Vue.use(FileUpload)
+    
 import PictureInput from 'vue-picture-input'
     Vue.component('picture-input', PictureInput);
 

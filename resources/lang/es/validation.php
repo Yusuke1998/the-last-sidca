@@ -202,7 +202,26 @@ return [
         'academicTraining.end'            => 'final',
         'academicTraining.hours'          => 'horas',
         'academicTraining.teacher_id'     => 'docente',
-        'teacherData.category.date'       => 'fecha de acenso a categoria'
+        'teacherData.category.date'       => 'fecha de acenso a categoria',
+
+        // Ascensos
+        'ascent.modality'               => 'modalidad de ascenso',
+        'ascent.category'               => 'categoria',
+        'ascent.status'                 => 'estatus de categoria',
+        'ascent.date'                   => 'fecha de categoria',
+        'publications.*.title'          => 'titulo de publicacion',
+        'publications.*.rev'            => 'revista',
+        'publications.*.code_issn'      => 'codigo issn de publicacion',
+        'publications.*.nro_isbn'       => 'número isbn de publicacion',
+        'publications.*.nro_edit'       => 'número de edicion',
+        'publications.*.vol'            => 'volumen',
+        'publications.*.date'           => 'fecha de publicacion',
+        'publications.*.url'            => 'url de publicacion',
+        'publications.*.postgraduate'   => 'postgrado',
+        'teacherData.postgraduate'      => 'postgrado',
+        'job.title'                     => 'titulo del trabajo',
+        'job.url'                       => 'url del trabajo',
+        'job.file'                      => 'archivo del trabajo',
     ],
 
 ];
