@@ -38,15 +38,6 @@ import VueAlertify from 'vue-alertify';
         }
     });
 
-import FileUpload from 'v-file-upload'
-    Vue.use(FileUpload)
-    
-import PictureInput from 'vue-picture-input'
-    Vue.component('picture-input', PictureInput);
-
-import Multiselect from 'vue-multiselect';
-    Vue.component('multiselect', Multiselect)
-
 import vSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
     Vue.component('v-select', vSelect)

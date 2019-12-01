@@ -190,37 +190,14 @@ class TeacherController extends Controller
         }
 
         // Categoria
-        $dc = Carbon::parse($request->teacherData['category']['date']);
-        $dn = Carbon::parse($request->teacherData['category']['date']);
-        if ($request->teacherData['category']['name'] == 'instructor'){
-            $cc_id = $request->teacherData['category']['id'];
-            $nc_id = Category::where('name','asistente')->first()->id;
-            $dn->addYears(2);
-        }elseif ($request->teacherData['category']['name'] == 'asistente') {
-            $cc_id = $request->teacherData['category']['id'];
-            $nc_id = Category::where('name','agregado')->first()->id;
-            $dn->addYears(4);
-        }elseif ($request->teacherData['category']['name'] == 'agregado') {
-            $cc_id = $request->teacherData['category']['id'];
-            $nc_id = Category::where('name','asociado')->first()->id;
-            $dn->addYears(4);
-        }elseif ($request->teacherData['category']['name'] == 'asociado') {
-            $cc_id = $request->teacherData['category']['id'];
-            $nc_id = Category::where('name','titular')->first()->id;
-            $dn->addYears(5);
-        }elseif ($request->teacherData['category']['name'] == 'titular') {
-            $cc_id = $request->teacherData['category']['id'];
-            $dn = '';
-            $nc_id = '';
-        }
         $profesor->update([
-            'category_id' => $request->teacherData['category']['id']
+            'category_id' => $this->categories($request)['catA']
         ]);
         $ascent = new Ascent;
-        $ascent->date                   = $dc->toDateString();
-        $ascent->date_next              = $dn->toDateString();
-        $ascent->current_category_id    = $cc_id;
-        $ascent->next_category_id       = $nc_id;
+        $ascent->date                   = $this->categories($request)['datA'];
+        $ascent->date_next              = $this->categories($request)['datS'];
+        $ascent->current_category_id    = $this->categories($request)['catA'];
+        $ascent->next_category_id       = $this->categories($request)['catS'];
         $ascent->modality               = $request->teacherData['category']['modality'];
         $ascent->teacher()->associate($profesor);
         $ascent->save();
@@ -275,41 +252,18 @@ class TeacherController extends Controller
 
         // Categoria
         if (isset($request->teacherData['category']['date'])) {
-            $dc = Carbon::parse($request->teacherData['category']['date']);
-            $dn = Carbon::parse($request->teacherData['category']['date']);
-            if ($request->teacherData['category']['name'] == 'instructor'){
-                $cc_id = $request->teacherData['category']['id'];
-                $nc_id = Category::where('name','asistente')->first()->id;
-                $dn->addYears(2);
-            }elseif ($request->teacherData['category']['name'] == 'asistente') {
-                $cc_id = $request->teacherData['category']['id'];
-                $nc_id = Category::where('name','agregado')->first()->id;
-                $dn->addYears(4);
-            }elseif ($request->teacherData['category']['name'] == 'agregado') {
-                $cc_id = $request->teacherData['category']['id'];
-                $nc_id = Category::where('name','asociado')->first()->id;
-                $dn->addYears(4);
-            }elseif ($request->teacherData['category']['name'] == 'asociado') {
-                $cc_id = $request->teacherData['category']['id'];
-                $nc_id = Category::where('name','titular')->first()->id;
-                $dn->addYears(5);
-            }elseif ($request->teacherData['category']['name'] == 'titular') {
-                $cc_id = $request->teacherData['category']['id'];
-                $dn = null;
-                $nc_id = null;
-            }
             if ($teacher->ascents()->count() > 0) {
                 $ascent = $teacher->ascents()->first();
             }else{
                 $ascent = new Ascent;
             }
             $teacher->update([
-                'category_id' => $request->teacherData['category']['id']
+                'category_id' => $this->categories($request)['catA']
             ]);
-            $ascent->date                   = $dc->toDateString();
-            $ascent->date_next              = (!is_null($dn))?$dn->toDateString():$dn;
-            $ascent->current_category_id    = $cc_id;
-            $ascent->next_category_id       = $nc_id;
+            $ascent->date                   = $this->categories($request)['datA'];
+            $ascent->date_next              = $this->categories($request)['datS'];
+            $ascent->current_category_id    = $this->categories($request)['catA'];
+            $ascent->next_category_id       = $this->categories($request)['catS'];
             $ascent->modality               = $request->teacherData['category']['modality'];
             $ascent->teacher()->associate($teacher);
             $ascent->save();
@@ -383,5 +337,37 @@ class TeacherController extends Controller
         $teacher = Teacher::findOrFail($request->id);
         $teacher->delete();
         return;
+    }
+
+    private function categories($request)
+    {
+        $dc = Carbon::parse($request->teacherData['category']['date'])->toDateString();
+        $dn = Carbon::parse($request->teacherData['category']['date']);
+        if ($request->teacherData['category']['name'] == 'instructor'){
+            $cc_id = $request->teacherData['category']['id'];
+            $nc_id = Category::where('name','asistente')->first()->id;
+            $dn->addYears(2)->toDateString();
+            return ["catA"=>$cc_id,"datA"=>$dc,"catS"=>$nc_id,"datS"=>$dn];
+        }elseif ($request->teacherData['category']['name'] == 'asistente') {
+            $cc_id = $request->teacherData['category']['id'];
+            $nc_id = Category::where('name','agregado')->first()->id;
+            $dn->addYears(4)->toDateString();
+            return ["catA"=>$cc_id,"datA"=>$dc,"catS"=>$nc_id,"datS"=>$dn];
+        }elseif ($request->teacherData['category']['name'] == 'agregado') {
+            $cc_id = $request->teacherData['category']['id'];
+            $nc_id = Category::where('name','asociado')->first()->id;
+            $dn->addYears(4)->toDateString();
+            return ["catA"=>$cc_id,"datA"=>$dc,"catS"=>$nc_id,"datS"=>$dn];
+        }elseif ($request->teacherData['category']['name'] == 'asociado') {
+            $cc_id = $request->teacherData['category']['id'];
+            $nc_id = Category::where('name','titular')->first()->id;
+            $dn->addYears(5)->toDateString();
+            return ["catA"=>$cc_id,"datA"=>$dc,"catS"=>$nc_id,"datS"=>$dn];
+        }elseif ($request->teacherData['category']['name'] == 'titular') {
+            $cc_id = $request->teacherData['category']['id'];
+            $dn = null;
+            $nc_id = null;
+            return ["catA"=>$cc_id,"datA"=>$dc,"catS"=>$nc_id,"datS"=>$dn];
+        }
     }
 }

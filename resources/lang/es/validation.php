@@ -222,6 +222,15 @@ return [
         'job.title'                     => 'titulo del trabajo',
         'job.url'                       => 'url del trabajo',
         'job.file'                      => 'archivo del trabajo',
+        'job.jury.coordinator'           => 'datos del coordinador',
+        'job.jury.principal1'           => 'datos del principal',
+        'job.jury.principal2'           => 'datos del principal',
+        'job.jury.alternate1'           => 'datos del suplente',
+        'job.jury.alternate2'           => 'datos del suplente',
+        'job.jury.alternate3'           => 'datos del suplente',
+        'job.presentation.date'         => 'fecha de presentación',
+        'job.presentation.location'     => 'lugar de la presentación',
+        'job.presentation.hour'         => 'hora de la presentación',
     ],
 
 ];

@@ -17,6 +17,16 @@ class Teacher extends Model
         return $this->hasMany(Publication::class);
     }
 
+    public function jobs()
+    {
+        return $this->hasMany(Job::class);
+    }
+
+    public function scale()
+    {
+        return $this->hasMany(Scale::class);
+    }
+
     public function ascents()
     {
         return $this->hasMany(Ascent::class);

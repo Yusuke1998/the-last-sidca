@@ -4,14 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Publication extends Model
+class Job extends Model
 {
     protected $fillable = [
-        'title','postgraduate_id',
-        'ascent_id','teacher_id',
-        'code_issn','nro_isbn',
-        'nro_edit','vol',
-        'date','url','rev'];
+        'title','postgraduate_id','ascent_id','teacher_id','coordinator','principal1','principal2',
+        'alternate1','alternate2','alternate3','url','file','location','datep','hourp','date'
+    ];
 
     public function teacher()
     {

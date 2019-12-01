@@ -5,9 +5,6 @@ Route::view('/','welcome');
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/dashboard', 'HomeController@dashboard')->name('dashboard')->middleware('auth');
 
-// Prueba
-Route::post('/dropzone','MovementController@dropzone');
-
 // DATA
 Route::get('/get-pre-teacher/{teacher}', 'UndergraduateController@getAll');
 Route::get('/get-post-teacher/{teacher}', 'PostgraduateController@getAll');

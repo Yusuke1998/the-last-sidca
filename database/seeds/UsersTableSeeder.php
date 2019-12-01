@@ -6,9 +6,8 @@ class UsersTableSeeder extends Seeder
 {
     public function run()
     {
-    	$document = App\Document::first();
-
         // Administrador
+    	$document = App\Document::first();
     	$person = App\Person::create([
             'firstname'		=>	'Jhonny Jose',
             'lastname'		=>	'Pérez Martinez',
@@ -33,11 +32,13 @@ class UsersTableSeeder extends Seeder
         $sede = App\Headquarter::first();
         $area = App\Area::first();
         $prog = App\Program::first();
-
         $cond = App\Condition::where('name','fijo')->first();
         $cate = App\Category::where('name','instructor')->first();
-        $cateii = App\Category::where('name','asistente')->first();
+        $caii = App\Category::where('name','asistente')->first();
         $dedi = App\Dedication::where('name','exclusiva')->first();
+        $univ = App\University::where('id','1')->first();
+        $titl = App\Title::where('id','1')->first();
+        
         // Profesor
         $person = App\Person::create([
             'firstname'     =>  'Edith',
@@ -57,21 +58,29 @@ class UsersTableSeeder extends Seeder
             'category_id'       =>  $cate->id,
             'dedication_id'     =>  $dedi->id
         ]);
-        
         $date = Carbon::now();
-        $dateii = Carbon::now()->addYear(2);
-
+        $daii = Carbon::now()->addYear(2);
+        $teacher->postgraduates()->create([
+            'date'              =>  $date->format('Y'),
+            'university_id'     =>  $univ->id,
+            'title_id'          =>  $titl->id,
+        ]);
+        $teacher->undergraduates()->create([
+            'date'              =>  $date->format('Y'),
+            'university_id'     =>  $univ->id,
+            'title_id'          =>  $titl->id,
+        ]);
         $asce = App\Ascent::create([
             'current_category_id'   =>  $cate->id,
             'date'                  =>  $date,
-            'next_category_id'      =>  $cateii->id,
-            'date_next'             =>  $dateii,
+            'next_category_id'      =>  $caii->id,
+            'date_next'             =>  $daii,
             'teacher_id'            =>  $teacher->id,
-            'modality'              =>  'Art. 62',
+            'modality'              =>  'Art. 61',
             'status'                =>  'aprobado'
         ]);
         $type = App\Type::where('name','teacher')->first();
-        $person->types()->attach($type->id);
+        $person->types()->attach($type->id);    
         // Fin Profesor
     }
 }

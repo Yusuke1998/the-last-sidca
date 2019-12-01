@@ -4,20 +4,17 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePublicationsTable extends Migration
+class CreateScalesTable extends Migration
 {
     public function up()
     {
-        Schema::create('publications', function (Blueprint $table) {
+        Schema::create('scales', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('title');
-            $table->string('rev')->nullable();
-            $table->string('code_issn')->nullable();
-            $table->string('nro_isbn')->nullable();
-            $table->string('nro_edit')->nullable();
-            $table->string('vol')->nullable();
-            $table->string('date')->nullable();
-            $table->string('url')->nullable();
+
+            // baremo
+            $table->string('date');
+            $table->string('file');
+            $table->text('description')->nullable();
 
             $table->bigInteger('ascent_id')->unsigned(); #acenso
             $table->foreign('ascent_id')
@@ -46,6 +43,6 @@ class CreatePublicationsTable extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('publications');
+        Schema::dropIfExists('scales');
     }
 }

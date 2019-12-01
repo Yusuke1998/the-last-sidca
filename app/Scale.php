@@ -4,14 +4,11 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Publication extends Model
+class Scale extends Model
 {
-    protected $fillable = [
-        'title','postgraduate_id',
-        'ascent_id','teacher_id',
-        'code_issn','nro_isbn',
-        'nro_edit','vol',
-        'date','url','rev'];
+    protected $fillable=[
+    	'date','description','file','postgraduate_id','ascent_id','teacher_id'
+    ];
 
     public function teacher()
     {

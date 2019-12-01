@@ -27,4 +27,19 @@ class Ascent extends Model
     {
         return $this->hasMany(Publication::class);
     }
+
+    public function job()
+    {
+        return $this->hasOne(Job::class);
+    }
+
+    public function scale()
+    {
+        return $this->hasOne(Scale::class);
+    }
+
+    public function memo()
+    {
+        return $this->hasOne(Memo::class);
+    }
 }
