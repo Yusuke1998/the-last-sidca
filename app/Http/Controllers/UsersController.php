@@ -164,16 +164,18 @@ class UsersController extends Controller
 
     public function update(Request $request)
     {
-        $b64 = strpos($request->personData['img_document'], 'base64');
-        if ($b64 != false)
-        {
-            $expl1 = explode(',', $request->personData['img_document']);
-            $decoded = base64_decode($expl1[1]);
-            $expl2 = explode('/',$expl1[0]);
-            $expl3 = explode(';',$expl2[1]);
-            $extension = $expl3[0];
-            $filename = 'documents/'.$request->personData['nro_document'].'.'.$extension;
-            $path = Storage::put("public/".$filename, $decoded);
+        if (!empty($request->personData['img_document'])) {
+            $b64 = strpos($request->personData['img_document'], 'base64');
+            if ($b64 != false)
+            {
+                $expl1 = explode(',', $request->personData['img_document']);
+                $decoded = base64_decode($expl1[1]);
+                $expl2 = explode('/',$expl1[0]);
+                $expl3 = explode(';',$expl2[1]);
+                $extension = $expl3[0];
+                $filename = 'documents/'.$request->personData['nro_document'].'.'.$extension;
+                $path = Storage::put("public/".$filename, $decoded);
+            }
         }
         if($request->userData['id']>0)
         {

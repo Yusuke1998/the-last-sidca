@@ -39,8 +39,11 @@ import VueAlertify from 'vue-alertify';
         }
     });
 
-import datetime from 'vuejs-datetimepicker';
-    Vue.component('v-datetime', datetime)
+import Datetimepicker from 'vuejs-datetimepicker';
+    Vue.component('v-datetime', Datetimepicker)
+
+import PictureInput from 'vue-picture-input'
+    Vue.component('picture-input', PictureInput);
 
 import vSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
