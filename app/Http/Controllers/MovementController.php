@@ -121,7 +121,7 @@ class MovementController extends Controller
             'teacherData.postgraduate'		=> 'required',
             'job.presentation.date'			=> 'required|date',
             'job.presentation.location'		=> 'required|min:10|max:300',
-            'job.presentation.hour'			=> 'required|date',
+            'job.presentation.hour'			=> 'required',
             'job.jury.coordinator'			=> 'required|min:10|max:100',
             'job.jury.principal1'			=> 'required|min:10|max:100',
             'job.jury.principal2'			=> 'required|min:10|max:100',
@@ -166,7 +166,7 @@ class MovementController extends Controller
 	        'alternate3'		=>	$request->job['jury']['alternate3'],
 	        'location'			=>	$request->job['presentation']['location'],
 	        'datep'				=>	Carbon::parse($request->job['presentation']['hour'])->toDateString(),
-	        'hourp'				=>	Carbon::parse($request->job['presentation']['hour'])->toDateString(),
+	        'hourp'				=>	Carbon::parse($request->job['presentation']['hour']),
         ]);
 
         $this->memos($request,$ascenso,$profesor);
@@ -260,4 +260,31 @@ class MovementController extends Controller
     	}
     }
 	// Ascenso
+
+	// Concurso de Oposicion
+	public function ocontest_index()
+    {
+        return view('movement.ocontest');
+    }
+
+    public function ocontest_store(Request $request)
+    {
+    	request()->validate([
+            'teacherData.person.firstname'    => 'required',
+            'teacherData.person.lastname'     => 'required', 
+            'teacherData.person.nro_document' => 'required', 
+            'teacherData.person.document.id'  => 'required',
+            'teacherData.person.birthday'     => 'required|date',
+            'teacherData.dedication'          => 'required',
+            'teacherData.condition'           => 'required',
+            'teacherData.category'            => 'required',
+            'ascent.modality'				  => 'required',
+            'ascent.category'				  => 'required',
+            'ascent.status'				  	  => 'required',
+            'teacherData.headquarter.name'    => 'required',
+            'teacherData.area.name'           => 'required',
+            'teacherData.program.name'        => 'required',
+        ]);
+    }
+	// Concurso de Oposicion
 }

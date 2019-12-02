@@ -38,7 +38,12 @@
                     <div class="col-4">
                         <div class="form-group">
                             <label title="Fecha de Obtencion de la categoria actual">Fecha de Obtencion</label>
-                            <input disabled type="text" class="form-control" v-model="current_category.date">
+                            <datepicker
+                            disabled
+                            :value="formDate(current_category.date)"
+                            :full-month-name="true"
+                            :disabled-dates="no_dates" 
+                            :input-class="'form-control'"></datepicker>
                         </div>
                     </div>
                     <div class="col-4">
@@ -241,13 +246,12 @@
                             <div class="col-3">
                                 <div class="form-group">
                                     <label>Hora</label>
-                                    <datepicker
+                                    <v-datetime 
+                                        format="h:i:s"
                                         :disabled="job.presentation.date == ''"
                                         placeholder="Hora" 
-                                        v-model="job.presentation.hour"
-                                        :full-month-name="true"
-                                        :disabled-dates="no_dates" 
-                                        :input-class="job.presentation.date !== ''?'bg-white form-control':'form-control'"></datepicker>
+                                        :input-class="job.presentation.date !== ''?'bg-white form-control':'form-control'"
+                                        v-model="job.presentation.hour"></v-datetime>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -1047,6 +1051,14 @@ export default {
             this.teacherData.area.cores = []
             this.teacherData.area.extensions = []
             this.teacherData.area.territorial_classrooms = []
+        },
+        formDate(date)
+        {
+            let moment = require('moment')
+            moment.locale('es');
+            if (date!==null && date!=='') {
+                return new moment(date)._d
+            }
         },
         saveAscent()
         {

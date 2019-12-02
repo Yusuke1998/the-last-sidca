@@ -401,9 +401,12 @@ export default {
             this.getData(page);
         },
         showModal(modal_id, model,option, type){
+
         	this.modal_option	= option
         	this.modal_type		= type
         	if (type == 'edit' && model !== null) {
+                let moment = require('moment')
+                moment.locale('es');
                 this.exist_document = true
         		this.userData = {
         			id:model.id,
@@ -420,7 +423,7 @@ export default {
                         id:model.person.document.id,
                         name:model.person.document.name,
                     },
-                    birthday:model.person.birthday,
+                    birthday:new moment(model.person.birthday)._d,
                     direction:model.person.direction,
                     local_phone:model.person.local_phone,
                     movil_phone:model.person.movil_phone,

@@ -128,6 +128,9 @@ Route::group(['prefix'=>'movimiento','middleware'=>'auth'],function(){
 	Route::post('store-ascent','MovementController@ascent_store');
 	// FIN ASCENSO
 
+	// CONCURSO DE OPOSICION
+	Route::get('concurso-oposicion/{dni?}','MovementController@ocontest_index')->name('ocontest.index');
+	// FIN CONCURSO DE OPOSICION
 });
 // FIN MOVIMIENTOS
 

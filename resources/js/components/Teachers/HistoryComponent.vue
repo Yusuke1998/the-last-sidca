@@ -4,7 +4,7 @@
 			<div class="col-12">
             	<form class="form-group" @submit.prevent>
                     <div class="input-group">
-                        <input type="number" @keyup.enter="searchTeacher" v-model="dni" class="form-control" placeholder="Numero de Documento">
+                        <input type="number" @keyup.enter="searchTeacher" :value="dni" class="form-control" placeholder="Numero de Documento">
                         <div class="input-group-prepend">
                             <button @click.prevent="searchTeacher" type="button" class="btn btn-primary">
                                 <i class="fa fa-search mr-1"></i> Buscar
@@ -25,7 +25,7 @@
                         <h3 class="block-title">Datos Personales</h3>
                         <div class="block-options">
                             <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                <span v-if="teacherData.person.id !== 0" v-text="momentDate(teacherData.person.updated_at)"></span>
+                                <span v-if="teacherData.person.id !== 0" v-text="momentDate(teacherData.person.updated_at,'actualizado')"></span>
                             </div>
                         </div>
                     </div>
@@ -35,13 +35,13 @@
                             <div class="col-3">
                             	<div class="form-group">
                             		<label>Nro de Documento</label>
-                                    <input disabled type="number" v-model="teacherData.person.nro_document" class="form-control">
+                                    <input disabled type="number" :value="teacherData.person.nro_document" class="form-control">
                                 </div>
                             </div>
                             <div class="col-3">
                             	<div class="form-group">
                             		<label>Tipo de Documento</label>
-                                	<input disabled tipe="text" v-model="teacherData.person.document.name" class="form-control">
+                                	<input disabled tipe="text" :value="teacherData.person.document.name" class="form-control">
                             	</div>
                             </div>
                             <div class="col-6 mb-2">
@@ -53,13 +53,13 @@
                             <div class="col-6">
                             	<div class="form-group">
                             		<label for="">Nombres</label>
-                            		<input disabled type="text" class="form-control" v-model="teacherData.person.firstname">
+                            		<input disabled type="text" class="form-control" :value="teacherData.person.firstname">
                             	</div>
                             </div>
                             <div class="col-6">
                             	<div class="form-group">
                             		<label for="">Apellidos</label>
-                            		<input disabled type="text" class="form-control" v-model="teacherData.person.lastname">
+                            		<input disabled type="text" class="form-control" :value="teacherData.person.lastname">
                             	</div>
                             </div>
                             <!-- col-12 -->
@@ -68,33 +68,33 @@
                                     <label>Fecha de Nacimiento</label>
                                     <datepicker
                                     disabled
-                                    v-model="teacherData.person.birthday"
+                                    :value="momDate(teacherData.person.birthday)"
                                     input-class="form-control"></datepicker>
                                 </div>
                             </div>
                             <div class="col-8">
                                 <div class="form-group">
                                     <label>Direccion</label>
-                                    <textarea disabled v-model="teacherData.person.direction" class="form-control"></textarea>
+                                    <textarea disabled :value="teacherData.person.direction" class="form-control"></textarea>
                                 </div>
                             </div>
                             <!-- col-12 -->
                             <div class="col-4">
                                 <div class="form-group">
                                     <label>Telefono Local</label>
-                                    <input disabled v-model="teacherData.person.local_phone" class="form-control"></input>
+                                    <input disabled :value="teacherData.person.local_phone" class="form-control"></input>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-group">
                                     <label>Telefono Movil</label>
-                                    <input disabled v-model="teacherData.person.movil_phone" class="form-control"></input>
+                                    <input disabled :value="teacherData.person.movil_phone" class="form-control"></input>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-group">
                                     <label>Correo Electronico</label>
-                                    <input disabled v-model="teacherData.person.mail_contact" class="form-control"></input>
+                                    <input disabled :value="teacherData.person.mail_contact" class="form-control"></input>
                                 </div>
                             </div>
                             <!-- col-12 -->
@@ -113,11 +113,6 @@
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Estudios</h3>
-                        <div class="block-options">
-                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
-                            </div>
-                        </div>
                     </div>
                     <div v-if="teacherData.postgraduates.length > 0 || teacherData.undergraduates.length > 0" class="block-content">
 						<div class="row">
@@ -183,6 +178,20 @@
                 </div>
             </li>
 
+            <li class="timeline-event">
+                <div class="timeline-event-icon bg-modern-lighter">
+                    <i class="far fa-handshake"></i>
+                </div>
+                <div class="timeline-event-block block invisible" data-toggle="appear">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Concursos de Oposicion</h3>
+                    </div>
+                    <div class="block-content">
+
+                    </div>
+                </div>
+            </li>
+
 			<li class="timeline-event">
                 <div class="timeline-event-icon bg-warning">
                     <i class="far fa-thumbs-up"></i>
@@ -190,11 +199,6 @@
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Convalidacion de Ascensos</h3>
-                        <div class="block-options">
-                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
-                            </div>
-                        </div>
                     </div>
                     <div v-if="teacherData.ascents.length > 0" class="block-content">
                         <div class="row">
@@ -234,36 +238,12 @@
             </li>
 
             <li class="timeline-event">
-                <div class="timeline-event-icon bg-modern-lighter">
-                    <i class="far fa-handshake"></i>
-                </div>
-                <div class="timeline-event-block block invisible" data-toggle="appear">
-                    <div class="block-header block-header-default">
-                        <h3 class="block-title">Consursos de Oposicion</h3>
-                        <div class="block-options">
-                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
-                            </div>
-                        </div>
-                    </div>
-                    <div class="block-content">
-
-                    </div>
-                </div>
-            </li>
-
-            <li class="timeline-event">
                 <div class="timeline-event-icon bg-amethyst-op">
                     <i class="far fa-paper-plane"></i>
                 </div>
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Comision de Servicios</h3>
-                        <div class="block-options">
-                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
-                            </div>
-                        </div>
                     </div>
                     <div class="block-content">
 
@@ -278,11 +258,6 @@
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Permisos (Remunerados y/o No Remunerados)</h3>
-                        <div class="block-options">
-                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
-                            </div>
-                        </div>
                     </div>
                     <div class="block-content">
 
@@ -297,11 +272,6 @@
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Traslados</h3>
-                        <div class="block-options">
-                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
-                            </div>
-                        </div>
                     </div>
                     <div class="block-content">
 
@@ -316,11 +286,6 @@
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Disfrute de Año Sabatico</h3>
-                        <div class="block-options">
-                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
-                            </div>
-                        </div>
                     </div>
                     <div class="block-content">
 
@@ -335,11 +300,6 @@
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Reincorporaciones</h3>
-                        <div class="block-options">
-                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
-                            </div>
-                        </div>
                     </div>
                     <div class="block-content">
 
@@ -354,11 +314,6 @@
                 <div class="timeline-event-block block invisible" data-toggle="appear">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Jubilaciones</h3>
-                        <div class="block-options">
-                            <div class="timeline-event-time block-options-item font-size-sm font-w600">
-                                actualizado hace 10 min
-                            </div>
-                        </div>
                     </div>
                     <div class="block-content">
 
@@ -430,11 +385,18 @@ export default {
         baseUrl(){
             this.img_url = location.origin+'/storage/'+this.teacherData.person.img_document
         },
-		momentDate(date){
+		momentDate(date,pref='prefijo'){
 			let moment = require('moment');
 			moment.locale('es');
-			return 'actualizado '+moment(date).toNow();
+            let agoDate = new moment(date).fromNow();
+			return pref+' '+agoDate;
 		},
+        momDate(date){
+            let moment = require('moment');
+            moment.locale('es');
+            let newDate = new moment(date);
+            return newDate;
+        },
         formD(date)
         {
             let d = date.split(' ')[0].split('-')

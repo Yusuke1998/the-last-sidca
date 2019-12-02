@@ -67,8 +67,8 @@
                 </a>
                 <ul class="nav-main-submenu">
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="">
-                            <span class="nav-main-link-name">Concurso de Oposicion</span>
+                        <a class="nav-main-link {{ request()->is('movimiento/concurso-oposicion')?'active':'' }}" href="{{ route('ocontest.index') }}">
+                            <span class="nav-main-link-name">Concurso de Oposición</span>
                         </a>
                     </li>
                     <li class="nav-main-item">

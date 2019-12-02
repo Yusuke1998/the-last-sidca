@@ -23,6 +23,7 @@ Vue.component('program-component', require('./components/Preload/ProgramComponen
 Vue.component('subject-component', require('./components/Preload/SubjectComponent.vue').default);
 Vue.component('authority-component', require('./components/Preload/AuthorityComponent.vue').default);
 // MOVIMIENTOS
+Vue.component('ocontest-component', require('./components/Movements/OppositionContest.vue').default);
 Vue.component('ascent-component', require('./components/Movements/AscentComponent.vue').default);
 
 
@@ -38,11 +39,15 @@ import VueAlertify from 'vue-alertify';
         }
     });
 
+import datetime from 'vuejs-datetimepicker';
+    Vue.component('v-datetime', datetime)
+
 import vSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
     Vue.component('v-select', vSelect)
 
 import Datepicker from 'vuejs-datepicker';
+import {en, es} from 'vuejs-datepicker/dist/locale'
     Vue.component('datepicker', Datepicker)
 /* FIN DE PLUGINS */
 

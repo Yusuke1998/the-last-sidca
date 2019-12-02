@@ -28,7 +28,7 @@ class CreateJobsTable extends Migration
             // presentacion
             $table->string('location');
             $table->date('datep');
-            $table->date('hourp');
+            $table->time('hourp');
 
             $table->bigInteger('ascent_id')->unsigned(); #acenso
             $table->foreign('ascent_id')
