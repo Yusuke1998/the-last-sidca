@@ -48,7 +48,7 @@ class UsersTableSeeder extends Seeder
             'birthday'      =>  '1992-01-10',
             'direction'     =>  'San Juan',
         ]);
-        $teacher = App\teacher::create([
+        $teacher = App\Teacher::create([
             'person_id'         =>  $person->id,
             'contract'          =>  'ordinario',
             'headquarter_id'    =>  $sede->id,
