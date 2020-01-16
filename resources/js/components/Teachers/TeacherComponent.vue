@@ -1160,8 +1160,13 @@ export default {
 				}
             })
         },
+        formatD(){
+            let moment = require('moment')
+            this.teacherData.person.birthday = moment(this.teacherData.person.birthday).format()
+        },
         updateData()
         {
+            this.formatD()
         	this.$root.loading('Verificando y actualizando','Espere mientras se verifican los datos para actualizar este docente')
             let url = '/update-teacher'
             axios.post(url,{
@@ -1247,6 +1252,7 @@ export default {
 
         	if (type == 'edit' && model !== null) {
                 this.exist_document = true
+                let moment = require('moment')
         		this.teacherData={
 	            	id_teacher:model.id,
                     category:{
@@ -1297,7 +1303,7 @@ export default {
 		                    name:model.person.document.name,
 		                },
 		                img_document:model.person.img_document,
-		                birthday:model.person.birthday,
+		                birthday:moment(model.person.birthday).format(),
 		                direction:model.person.direction,
 		                local_phone:model.person.local_phone,
 		                movil_phone:model.person.movil_phone,

@@ -121,7 +121,6 @@ class TeacherController extends Controller
             'teacherData.category.date'       => 'required',
             'teacherData.category.modality'   => 'required',
         ]);
-
         if ($request->teacherData['id_teacher'] == 0 && $request->teacherData['person']['id'] == 0) {
             $persona = Person::create([
                 'firstname'     => $request->teacherData['person']['firstname'],
@@ -138,7 +137,6 @@ class TeacherController extends Controller
                 $type = Type::where('name','teacher')->first();
                 $persona->types()->attach($type->id);
             }
-
             $profesor = Teacher::create([
                 'person_id'         => $persona->id, 
                 'contract'          => $request->type['type'],
@@ -148,8 +146,6 @@ class TeacherController extends Controller
                 'area_id'           => $request->teacherData['area']['id'],
                 'program_id'        => $request->teacherData['program']['id'],
             ]);
-
-
             if ($request->teacherData['core']['id'] > 0) {
                 $profesor->update(['core_id' => $request->teacherData['core']['id']]);
             }
@@ -159,14 +155,12 @@ class TeacherController extends Controller
             if ($request->teacherData['t_classroom']['id'] > 0) {
                 $profesor->update(['territorial_classroom_id' => $request->teacherData['t_classroom']['id']]);
             }
-
         }elseif ($request->teacherData['id_teacher'] == 0 && $request->teacherData['person']['id'] > 0) {
             $persona = Person::findOrFail($request->teacherData['person']['id']);
             if (is_null($persona->types()->where('name','teacher')->first())) {
                 $type = Type::where('name','teacher')->first();
                 $persona->types()->attach($type->id);
             }
-
             $profesor = Teacher::create([
                 'person_id'         => $persona->id, 
                 'contract'          => $request->type['type'],
@@ -177,7 +171,6 @@ class TeacherController extends Controller
                 'area_id'           => $request->teacherData['area']['id'],
                 'program_id'        => $request->teacherData['program']['id'],
             ]);
-
             if ($request->teacherData['core']['id'] > 0) {
                 $profesor->update(['core_id' => $request->teacherData['core']['id']]);
             }
@@ -188,7 +181,6 @@ class TeacherController extends Controller
                 $profesor->update(['territorial_classroom_id' => $request->teacherData['t_classroom']['id']]);
             }
         }
-
         // Categoria
         $profesor->update([
             'category_id' => $this->categories($request)['catA']
@@ -218,7 +210,6 @@ class TeacherController extends Controller
             'teacherData.condition'           => 'required',
             'teacherData.category'            => 'required',
         ]);
-
         $teacher = Teacher::findOrFail($request->teacherData['id_teacher']);
         $teacher->person->update([
             'firstname'         => $request->teacherData['person']['firstname'],
@@ -231,7 +222,6 @@ class TeacherController extends Controller
             'mail_contact'      => mb_strtolower($request->teacherData['person']['mail_contact'],'UTF-8'),
             'birthday'          => Carbon::parse($request->teacherData['person']['birthday'])->toDateString(),
         ]);
-
         $teacher->update([
             'condition_id'   => $request->teacherData['condition']['id'],
             'dedication_id'  => $request->teacherData['dedication']['id'],
@@ -239,7 +229,6 @@ class TeacherController extends Controller
             'area_id'        => $request->teacherData['area']['id'],
             'program_id'     => $request->teacherData['program']['id'],
         ]);
-
         if ($request->teacherData['core']['id'] > 0) {
             $teacher->update(['core_id' => $request->teacherData['core']['id']]);
         }
@@ -249,7 +238,6 @@ class TeacherController extends Controller
         if ($request->teacherData['t_classroom']['id'] > 0) {
             $teacher->update(['territorial_classroom_id' => $request->teacherData['t_classroom']['id']]);
         }
-
         // Categoria
         if (isset($request->teacherData['category']['date'])) {
             if ($teacher->ascents()->count() > 0) {
@@ -267,7 +255,6 @@ class TeacherController extends Controller
             $ascent->modality               = $request->teacherData['category']['modality'];
             $ascent->teacher()->associate($teacher);
             $ascent->save();
-            return;
         }
     }
 

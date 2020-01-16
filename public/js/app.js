@@ -12398,9 +12398,15 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
+    formatD: function formatD() {
+      var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+
+      this.teacherData.person.birthday = moment(this.teacherData.person.birthday).format();
+    },
     updateData: function updateData() {
       var _this16 = this;
 
+      this.formatD();
       this.$root.loading('Verificando y actualizando', 'Espere mientras se verifican los datos para actualizar este docente');
       var url = '/update-teacher';
       axios.post(url, {
@@ -12493,6 +12499,9 @@ __webpack_require__.r(__webpack_exports__);
 
       if (type == 'edit' && model !== null) {
         this.exist_document = true;
+
+        var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+
         this.teacherData = {
           id_teacher: model.id,
           category: {
@@ -12543,7 +12552,7 @@ __webpack_require__.r(__webpack_exports__);
               name: model.person.document.name
             },
             img_document: model.person.img_document,
-            birthday: model.person.birthday,
+            birthday: moment(model.person.birthday).format(),
             direction: model.person.direction,
             local_phone: model.person.local_phone,
             movil_phone: model.person.movil_phone,
@@ -12766,7 +12775,8 @@ __webpack_require__.r(__webpack_exports__);
 
       var url = "/profile-user/" + this.username;
       axios.get(url).then(function (response) {
-        console.log(response.data);
+        var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+
         _this2.prefill_img = response.data.person.img_document;
         _this2.userData = {
           id: response.data.id,
@@ -12783,7 +12793,7 @@ __webpack_require__.r(__webpack_exports__);
             name: response.data.person.document.name
           },
           img_document: response.data.person.img_document,
-          birthday: response.data.person.birthday,
+          birthday: moment(response.data.person.birthday).toDate(),
           direction: response.data.person.direction,
           local_phone: response.data.person.local_phone,
           movil_phone: response.data.person.movil_phone,

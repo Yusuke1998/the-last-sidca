@@ -149,7 +149,7 @@ export default {
         {
             let url = "/profile-user/"+this.username
             axios.get(url).then(response => {
-                console.log(response.data)
+                let moment = require('moment')
                 this.prefill_img = response.data.person.img_document
                 this.userData = {
                     id:response.data.id,
@@ -166,7 +166,7 @@ export default {
                         name:response.data.person.document.name,
                     },
                     img_document:response.data.person.img_document,
-                    birthday:response.data.person.birthday,
+                    birthday:moment(response.data.person.birthday).toDate(),
                     direction:response.data.person.direction,
                     local_phone:response.data.person.local_phone,
                     movil_phone:response.data.person.movil_phone,
