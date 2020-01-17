@@ -27,52 +27,52 @@ class CreateTeachersTable extends Migration
             $table->foreign('person_id')
                 ->references('id')
                 ->on('people')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreign('headquarter_id')
                 ->references('id')
                 ->on('headquarters')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreign('area_id')
                 ->references('id')
                 ->on('areas')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreign('program_id')
                 ->references('id')
                 ->on('programs')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreign('core_id')
                 ->references('id')
                 ->on('cores')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreign('extension_id')
                 ->references('id')
                 ->on('extensions')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreign('territorial_classroom_id')
                 ->references('id')
                 ->on('territorial_classrooms')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreign('condition_id')
                 ->references('id')
                 ->on('conditions')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreign('dedication_id')
                 ->references('id')
                 ->on('dedications')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreign('category_id')
                 ->references('id')
                 ->on('categories')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->timestamps();

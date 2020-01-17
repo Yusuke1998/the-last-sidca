@@ -22,7 +22,7 @@ class CreateMemosTable extends Migration
             $table->foreign('ascent_id')
                 ->references('id')
                 ->on('ascents')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->timestamps();

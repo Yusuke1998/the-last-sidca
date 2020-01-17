@@ -12310,6 +12310,9 @@ __webpack_require__.r(__webpack_exports__);
                   return;
                 } else {
                   _this13.exist_document = true;
+
+                  var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+
                   _this13.teacherData = {
                     id_teacher: 0,
                     person: {
@@ -12322,7 +12325,7 @@ __webpack_require__.r(__webpack_exports__);
                         name: response.data.document.name
                       },
                       img_document: response.data.img_document,
-                      birthday: response.data.birthday,
+                      birthday: moment(response.data.birthday).format(),
                       direction: response.data.direction,
                       local_phone: response.data.local_phone,
                       movil_phone: response.data.movil_phone,
@@ -12373,9 +12376,15 @@ __webpack_require__.r(__webpack_exports__);
         console.log(errors);
       });
     },
+    formatD: function formatD() {
+      var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+
+      this.teacherData.person.birthday = moment(this.teacherData.person.birthday).format();
+    },
     storeData: function storeData() {
       var _this15 = this;
 
+      this.formatD();
       this.$root.loading('Verificando y guardando', 'Espere mientras se verifican los datos para registrar este docente');
       var url = '/store-teacher';
       axios.post(url, {
@@ -12397,11 +12406,6 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
       });
-    },
-    formatD: function formatD() {
-      var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
-
-      this.teacherData.person.birthday = moment(this.teacherData.person.birthday).format();
     },
     updateData: function updateData() {
       var _this16 = this;

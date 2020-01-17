@@ -24,7 +24,7 @@ class CreateAuthoritiesTable extends Migration
             $table->foreign('person_id')
                 ->references('id')
                 ->on('people')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->timestamps();

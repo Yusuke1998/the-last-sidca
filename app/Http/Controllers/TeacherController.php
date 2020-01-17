@@ -239,7 +239,7 @@ class TeacherController extends Controller
             $teacher->update(['territorial_classroom_id' => $request->teacherData['t_classroom']['id']]);
         }
         // Categoria
-        if (isset($request->teacherData['category']['date'])) {
+        if (isset($request->teacherData['category']['date'])&&!is_null(isset($request->teacherData['category']['date']))) {
             if ($teacher->ascents()->count() > 0) {
                 $ascent = $teacher->ascents()->first();
             }else{
@@ -256,6 +256,7 @@ class TeacherController extends Controller
             $ascent->teacher()->associate($teacher);
             $ascent->save();
         }
+        return;
     }
 
     public function savePreG(Request $request){
@@ -328,8 +329,13 @@ class TeacherController extends Controller
 
     private function categories($request)
     {
-        $dc = Carbon::parse($request->teacherData['category']['date'])->toDateString();
-        $dn = Carbon::parse($request->teacherData['category']['date']);
+        if (strpos($request->teacherData['category']['date'], 'undefined/')!==false) {
+            $category_date = explode('undefined/', $request->teacherData['category']['date'])[2];
+        }else{
+            $category_date = $request->teacherData['category']['date'];
+        }
+        $dc = Carbon::parse($category_date)->toDateString();
+        $dn = Carbon::parse($category_date);
         if ($request->teacherData['category']['name'] == 'instructor'){
             $cc_id = $request->teacherData['category']['id'];
             $nc_id = Category::where('name','asistente')->first()->id;

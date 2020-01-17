@@ -34,21 +34,21 @@ class CreateJobsTable extends Migration
             $table->foreign('ascent_id')
                 ->references('id')
                 ->on('ascents')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->bigInteger('teacher_id')->unsigned(); #docente
             $table->foreign('teacher_id')
                 ->references('id')
                 ->on('teachers')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
                 
             $table->bigInteger('postgraduate_id')->unsigned(); #postgrado
             $table->foreign('postgraduate_id')
                 ->references('id')
                 ->on('postgraduates')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->timestamps();

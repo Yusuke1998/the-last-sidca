@@ -16,14 +16,14 @@ class CreateProgramsTable extends Migration
             $table->foreign('headquarter_id')
                 ->references('id')
                 ->on('headquarters')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
                 
             $table->bigInteger('area_id')->unsigned(); #area
             $table->foreign('area_id')
                 ->references('id')
                 ->on('areas')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
                 
             $table->timestamps();

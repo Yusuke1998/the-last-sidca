@@ -1078,6 +1078,7 @@ export default {
 	        						return;
 	        					}else{
 					        		this.exist_document = true
+                                    let moment = require('moment')
 					        		this.teacherData={
 					        			id_teacher:0,
 						                person:{
@@ -1090,7 +1091,7 @@ export default {
 							                    name:response.data.document.name,
 							                },
 							                img_document:response.data.img_document,
-							                birthday:response.data.birthday,
+							                birthday:moment(response.data.birthday).format(),
 							                direction:response.data.direction,
 							                local_phone:response.data.local_phone,
 							                movil_phone:response.data.movil_phone,
@@ -1138,8 +1139,13 @@ export default {
                 console.log(errors)
             })
         },
+        formatD(){
+            let moment = require('moment')
+            this.teacherData.person.birthday = moment(this.teacherData.person.birthday).format()
+        },
         storeData()
         {
+            this.formatD()
             this.$root.loading('Verificando y guardando','Espere mientras se verifican los datos para registrar este docente')
             let url = '/store-teacher'
             axios.post(url,{
@@ -1159,10 +1165,6 @@ export default {
                     });
 				}
             })
-        },
-        formatD(){
-            let moment = require('moment')
-            this.teacherData.person.birthday = moment(this.teacherData.person.birthday).format()
         },
         updateData()
         {

@@ -19,21 +19,21 @@ class CreateAscentsTable extends Migration
             $table->foreign('teacher_id')
                 ->references('id')
                 ->on('teachers')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->bigInteger('current_category_id')->unsigned(); #categoria actual
             $table->foreign('current_category_id')
                 ->references('id')
                 ->on('categories')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->bigInteger('next_category_id')->unsigned()->nullable(); #categoria siguiente
             $table->foreign('next_category_id')
                 ->references('id')
                 ->on('categories')
-                ->ondDelete('cascade')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->timestamps();
