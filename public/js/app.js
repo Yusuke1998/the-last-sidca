@@ -6128,6 +6128,15 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
@@ -6152,6 +6161,8 @@ __webpack_require__.r(__webpack_exports__);
       list_extensions: [],
       list_categories: [],
       list_categories_b: [],
+      en: vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__["en"],
+      es: vuejs_datepicker_dist_locale__WEBPACK_IMPORTED_MODULE_0__["es"],
       // data new
       teacherData: {
         id: 0,
@@ -87005,6 +87016,7 @@ var render = function() {
                   _vm._v(" "),
                   _c("datepicker", {
                     attrs: {
+                      language: _vm.es,
                       disabled: "",
                       value: _vm.formDate(_vm.current_category.date),
                       "full-month-name": true,
@@ -87129,6 +87141,7 @@ var render = function() {
                   _vm._v(" "),
                   _c("datepicker", {
                     attrs: {
+                      language: _vm.es,
                       disabled: _vm.ascent.modality == null,
                       "full-month-name": true,
                       "disabled-dates": _vm.no_dates,
@@ -87575,6 +87588,7 @@ var render = function() {
                                       _vm._v(" "),
                                       _c("datepicker", {
                                         attrs: {
+                                          language: _vm.es,
                                           id: "date" + index_publication,
                                           "full-month-name": true,
                                           "disabled-dates": _vm.no_dates,
@@ -87695,6 +87709,7 @@ var render = function() {
                               _vm._v(" "),
                               _c("datepicker", {
                                 attrs: {
+                                  language: _vm.es,
                                   disabled:
                                     _vm.teacherData.postgraduate == null,
                                   placeholder: "Fecha",
@@ -87783,6 +87798,7 @@ var render = function() {
                               _vm._v(" "),
                               _c("datepicker", {
                                 attrs: {
+                                  language: _vm.es,
                                   disabled: _vm.job.title == "",
                                   placeholder: "Fecha",
                                   "full-month-name": true,
@@ -88150,6 +88166,7 @@ var render = function() {
                               _vm._v(" "),
                               _c("datepicker", {
                                 attrs: {
+                                  language: _vm.es,
                                   disabled:
                                     _vm.teacherData.postgraduate == null,
                                   placeholder: "Fecha",
@@ -88564,6 +88581,7 @@ var render = function() {
                             _vm._v(" "),
                             _c("datepicker", {
                               attrs: {
+                                language: _vm.es,
                                 disabled: _vm.memo.vrac.code == "",
                                 placeholder: "Emisión",
                                 "full-month-name": true,
@@ -88639,6 +88657,7 @@ var render = function() {
                             _vm._v(" "),
                             _c("datepicker", {
                               attrs: {
+                                language: _vm.es,
                                 disabled: _vm.memo.area.code == "",
                                 placeholder: "Emisión",
                                 "full-month-name": true,
@@ -88718,6 +88737,7 @@ var render = function() {
                             _vm._v(" "),
                             _c("datepicker", {
                               attrs: {
+                                language: _vm.es,
                                 disabled: _vm.memo.cu.code == "",
                                 placeholder: "Emisión",
                                 "full-month-name": true,

@@ -39,6 +39,7 @@
                         <div class="form-group">
                             <label title="Fecha de Obtencion de la categoria actual">Fecha de Obtencion</label>
                             <datepicker
+                            :language="es"
                             disabled
                             :value="formDate(current_category.date)"
                             :full-month-name="true"
@@ -82,6 +83,7 @@
                         <div class="form-group">
                             <label>Fecha de Ascenso</label>
                             <datepicker
+                            :language="es"
                             v-model="ascent.date"
                             :disabled="ascent.modality==null"
                             :full-month-name="true"
@@ -167,6 +169,7 @@
                                         <div class="form-group">
                                             <label :for="'date'+index_publication">Fecha</label>
                                             <datepicker
+                                            :language="es"
                                             :id="'date'+index_publication" 
                                             v-model="publication.date"
                                             :full-month-name="true"
@@ -206,6 +209,7 @@
                                 <div class="form-group">
                                     <label>Fecha</label>
                                     <datepicker
+                                    :language="es"
                                         :disabled="teacherData.postgraduate == null"
                                         placeholder="Fecha" 
                                         v-model="job.date"
@@ -235,6 +239,7 @@
                                 <div class="form-group">
                                     <label>Fecha</label>
                                     <datepicker
+                                    :language="es"
                                         :disabled="job.title == ''"
                                         placeholder="Fecha" 
                                         v-model="job.presentation.date"
@@ -331,6 +336,7 @@
                                 <div class="form-group">
                                     <label>Fecha</label>
                                     <datepicker
+                                    :language="es"
                                         :disabled="teacherData.postgraduate == null"
                                         placeholder="Fecha" 
                                         v-model="scale.date"
@@ -453,6 +459,7 @@
                                     <div class="form-group">
                                         <label title="Fecha de Emisión">Fecha</label>
                                         <datepicker
+                                        :language="es"
                                         :disabled="memo.vrac.code == ''"
                                         placeholder="Emisión" 
                                         v-model="memo.vrac.date"
@@ -476,6 +483,7 @@
                                     <div class="form-group">
                                         <label title="Fecha de Emisión">Fecha</label>
                                         <datepicker
+                                        :language="es"
                                         :disabled="memo.area.code == ''"
                                         placeholder="Emisión" 
                                         v-model="memo.area.date"
@@ -499,6 +507,7 @@
                                     <div class="form-group">
                                         <label title="Fecha de Emisión">Fecha</label>
                                         <datepicker
+                                        :language="es"
                                         :disabled="memo.cu.code == ''"
                                         placeholder="Emisión" 
                                         v-model="memo.cu.date"
@@ -546,6 +555,8 @@ export default {
             list_extensions:[],
             list_categories:[],
             list_categories_b:[],
+            en: en,
+            es: es,
 
             // data new
             teacherData:{
