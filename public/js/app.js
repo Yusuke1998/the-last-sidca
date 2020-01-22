@@ -6137,6 +6137,94 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
@@ -6252,17 +6340,25 @@ __webpack_require__.r(__webpack_exports__);
         status: 'espera'
       },
       memo: {
+        cd: {
+          code: '',
+          date: '',
+          date_r: ''
+        },
         area: {
           code: '',
-          date: ''
+          date: '',
+          date_r: ''
         },
         vrac: {
           code: '',
-          date: ''
+          date: '',
+          date_r: ''
         },
         cu: {
           code: '',
-          date: ''
+          date: '',
+          date_r: ''
         }
       },
       publication: {
@@ -87163,12 +87259,14 @@ var render = function() {
               )
             ]),
             _vm._v(" "),
+            _vm._m(0),
+            _vm._v(" "),
             _vm.ascent.modality !== null
               ? [
                   _vm.ascent.modality == "art. 61" ||
                   _vm.ascent.modality == "art. 62"
                     ? [
-                        _vm._m(0),
+                        _vm._m(1),
                         _vm._v(" "),
                         _vm._l(_vm.publications, function(
                           publication,
@@ -87615,7 +87713,7 @@ var render = function() {
                   _vm._v(" "),
                   _vm.ascent.modality == "art. 64"
                     ? [
-                        _vm._m(1),
+                        _vm._m(2),
                         _vm._v(" "),
                         _c("div", { staticClass: "col-4" }, [
                           _c("div", { staticClass: "form-group" }, [
@@ -87785,106 +87883,6 @@ var render = function() {
                               })
                             ]
                           )
-                        ]),
-                        _vm._v(" "),
-                        _vm._m(2),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "col-3" }, [
-                          _c(
-                            "div",
-                            { staticClass: "form-group" },
-                            [
-                              _c("label", [_vm._v("Fecha")]),
-                              _vm._v(" "),
-                              _c("datepicker", {
-                                attrs: {
-                                  language: _vm.es,
-                                  disabled: _vm.job.title == "",
-                                  placeholder: "Fecha",
-                                  "full-month-name": true,
-                                  "disabled-dates": _vm.no_dates,
-                                  "input-class":
-                                    _vm.job.title !== ""
-                                      ? "bg-white form-control"
-                                      : "form-control"
-                                },
-                                model: {
-                                  value: _vm.job.presentation.date,
-                                  callback: function($$v) {
-                                    _vm.$set(_vm.job.presentation, "date", $$v)
-                                  },
-                                  expression: "job.presentation.date"
-                                }
-                              })
-                            ],
-                            1
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "col-3" }, [
-                          _c(
-                            "div",
-                            { staticClass: "form-group" },
-                            [
-                              _c("label", [_vm._v("Hora")]),
-                              _vm._v(" "),
-                              _c("v-datetime", {
-                                attrs: {
-                                  format: "h:i:s",
-                                  disabled: _vm.job.presentation.date == "",
-                                  placeholder: "Hora",
-                                  "input-class":
-                                    _vm.job.presentation.date !== ""
-                                      ? "bg-white form-control"
-                                      : "form-control"
-                                },
-                                model: {
-                                  value: _vm.job.presentation.hour,
-                                  callback: function($$v) {
-                                    _vm.$set(_vm.job.presentation, "hour", $$v)
-                                  },
-                                  expression: "job.presentation.hour"
-                                }
-                              })
-                            ],
-                            1
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "col-6" }, [
-                          _c("div", { staticClass: "form-group" }, [
-                            _c("label", [_vm._v("Lugar")]),
-                            _vm._v(" "),
-                            _c("textarea", {
-                              directives: [
-                                {
-                                  name: "model",
-                                  rawName: "v-model",
-                                  value: _vm.job.presentation.location,
-                                  expression: "job.presentation.location"
-                                }
-                              ],
-                              staticClass: "form-control",
-                              attrs: {
-                                disabled: _vm.job.presentation.hour == ""
-                              },
-                              domProps: {
-                                value: _vm.job.presentation.location
-                              },
-                              on: {
-                                input: function($event) {
-                                  if ($event.target.composing) {
-                                    return
-                                  }
-                                  _vm.$set(
-                                    _vm.job.presentation,
-                                    "location",
-                                    $event.target.value
-                                  )
-                                }
-                              }
-                            })
-                          ])
                         ]),
                         _vm._v(" "),
                         _vm._m(3),
@@ -88097,13 +88095,104 @@ var render = function() {
                               }
                             })
                           ])
+                        ]),
+                        _vm._v(" "),
+                        _vm._m(4),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-3" }, [
+                          _c(
+                            "div",
+                            { staticClass: "form-group" },
+                            [
+                              _c("label", [_vm._v("Fecha")]),
+                              _vm._v(" "),
+                              _c("datepicker", {
+                                attrs: {
+                                  language: _vm.es,
+                                  disabled: _vm.job.title == "",
+                                  placeholder: "Fecha",
+                                  "input-class": "form-control",
+                                  "full-month-name": true,
+                                  "disabled-dates": _vm.no_dates
+                                },
+                                model: {
+                                  value: _vm.job.presentation.date,
+                                  callback: function($$v) {
+                                    _vm.$set(_vm.job.presentation, "date", $$v)
+                                  },
+                                  expression: "job.presentation.date"
+                                }
+                              })
+                            ],
+                            1
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-3" }, [
+                          _c(
+                            "div",
+                            { staticClass: "form-group" },
+                            [
+                              _c("label", [_vm._v("Hora")]),
+                              _vm._v(" "),
+                              _c("v-datetime", {
+                                attrs: {
+                                  "input-class": "form-control",
+                                  format: "h:i:s",
+                                  placeholder: "Hora"
+                                },
+                                model: {
+                                  value: _vm.job.presentation.hour,
+                                  callback: function($$v) {
+                                    _vm.$set(_vm.job.presentation, "hour", $$v)
+                                  },
+                                  expression: "job.presentation.hour"
+                                }
+                              })
+                            ],
+                            1
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-6" }, [
+                          _c("div", { staticClass: "form-group" }, [
+                            _c("label", [_vm._v("Lugar")]),
+                            _vm._v(" "),
+                            _c("textarea", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.job.presentation.location,
+                                  expression: "job.presentation.location"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              attrs: { "input-class": "form-control" },
+                              domProps: {
+                                value: _vm.job.presentation.location
+                              },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.job.presentation,
+                                    "location",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ])
                         ])
                       ]
                     : _vm._e(),
                   _vm._v(" "),
                   _vm.ascent.modality == "ubicacion"
                     ? [
-                        _vm._m(4),
+                        _vm._m(5),
                         _vm._v(" "),
                         _c("div", { staticClass: "col-4" }, [
                           _c(
@@ -88249,7 +88338,7 @@ var render = function() {
                       ]
                     : _vm._e(),
                   _vm._v(" "),
-                  _vm._m(5),
+                  _vm._m(6),
                   _vm._v(" "),
                   _c("div", { staticClass: "col-4" }, [
                     _c(
@@ -88524,7 +88613,7 @@ var render = function() {
                       ]
                     : _vm._e(),
                   _vm._v(" "),
-                  _vm._m(6),
+                  _vm._m(7),
                   _vm._v(" "),
                   _c("div", { staticClass: "col-12 card mb-3" }, [
                     _c("div", { staticClass: "card-body row" }, [
@@ -88534,10 +88623,10 @@ var render = function() {
                             "label",
                             {
                               attrs: {
-                                title: "Memorando de Vicerectorado Academico"
+                                title: "Memorando del Consejo Universitario"
                               }
                             },
-                            [_vm._v("Vrac")]
+                            [_vm._v("Comunicacion del Docente")]
                           ),
                           _vm._v(" "),
                           _c("input", {
@@ -88545,20 +88634,20 @@ var render = function() {
                               {
                                 name: "model",
                                 rawName: "v-model",
-                                value: _vm.memo.vrac.code,
-                                expression: "memo.vrac.code"
+                                value: _vm.memo.cd.code,
+                                expression: "memo.cd.code"
                               }
                             ],
                             staticClass: "form-control",
                             attrs: { placeholder: "Código", type: "text" },
-                            domProps: { value: _vm.memo.vrac.code },
+                            domProps: { value: _vm.memo.cd.code },
                             on: {
                               input: function($event) {
                                 if ($event.target.composing) {
                                   return
                                 }
                                 _vm.$set(
-                                  _vm.memo.vrac,
+                                  _vm.memo.cd,
                                   "code",
                                   $event.target.value
                                 )
@@ -88568,35 +88657,73 @@ var render = function() {
                         ])
                       ]),
                       _vm._v(" "),
-                      _c("div", { staticClass: "col-6" }, [
+                      _c("div", { staticClass: "col-3" }, [
                         _c(
                           "div",
                           { staticClass: "form-group" },
                           [
                             _c(
                               "label",
-                              { attrs: { title: "Fecha de Emisión" } },
+                              { attrs: { title: "Fecha de Entrega al Area" } },
                               [_vm._v("Fecha")]
                             ),
                             _vm._v(" "),
                             _c("datepicker", {
                               attrs: {
                                 language: _vm.es,
-                                disabled: _vm.memo.vrac.code == "",
-                                placeholder: "Emisión",
+                                disabled: _vm.memo.cd.code == "",
+                                placeholder: "Fecha de Entrega al Area",
                                 "full-month-name": true,
                                 "disabled-dates": _vm.no_dates,
                                 "input-class":
-                                  _vm.memo.vrac.code !== ""
+                                  _vm.memo.cd.code !== ""
                                     ? "bg-white form-control"
                                     : "form-control"
                               },
                               model: {
-                                value: _vm.memo.vrac.date,
+                                value: _vm.memo.cd.date,
                                 callback: function($$v) {
-                                  _vm.$set(_vm.memo.vrac, "date", $$v)
+                                  _vm.$set(_vm.memo.cd, "date", $$v)
                                 },
-                                expression: "memo.vrac.date"
+                                expression: "memo.cd.date"
+                              }
+                            })
+                          ],
+                          1
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-3" }, [
+                        _c(
+                          "div",
+                          { staticClass: "form-group" },
+                          [
+                            _c(
+                              "label",
+                              {
+                                attrs: { title: "Fecha de Recepción al Area" }
+                              },
+                              [_vm._v("Fecha")]
+                            ),
+                            _vm._v(" "),
+                            _c("datepicker", {
+                              attrs: {
+                                language: _vm.es,
+                                disabled: _vm.memo.cd.code == "",
+                                placeholder: "Fecha de Recepción al Area",
+                                "full-month-name": true,
+                                "disabled-dates": _vm.no_dates,
+                                "input-class":
+                                  _vm.memo.cd.code !== ""
+                                    ? "bg-white form-control"
+                                    : "form-control"
+                              },
+                              model: {
+                                value: _vm.memo.cd.date_r,
+                                callback: function($$v) {
+                                  _vm.$set(_vm.memo.cd, "date_r", $$v)
+                                },
+                                expression: "memo.cd.date_r"
                               }
                             })
                           ],
@@ -88644,7 +88771,7 @@ var render = function() {
                         ])
                       ]),
                       _vm._v(" "),
-                      _c("div", { staticClass: "col-6" }, [
+                      _c("div", { staticClass: "col-3" }, [
                         _c(
                           "div",
                           { staticClass: "form-group" },
@@ -88673,6 +88800,158 @@ var render = function() {
                                   _vm.$set(_vm.memo.area, "date", $$v)
                                 },
                                 expression: "memo.area.date"
+                              }
+                            })
+                          ],
+                          1
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-3" }, [
+                        _c(
+                          "div",
+                          { staticClass: "form-group" },
+                          [
+                            _c(
+                              "label",
+                              { attrs: { title: "Fecha de Recepcion" } },
+                              [_vm._v("Fecha")]
+                            ),
+                            _vm._v(" "),
+                            _c("datepicker", {
+                              attrs: {
+                                language: _vm.es,
+                                disabled: _vm.memo.area.code == "",
+                                placeholder: "Recepcion",
+                                "full-month-name": true,
+                                "disabled-dates": _vm.no_dates,
+                                "input-class":
+                                  _vm.memo.area.code !== ""
+                                    ? "bg-white form-control"
+                                    : "form-control"
+                              },
+                              model: {
+                                value: _vm.memo.area.date_r,
+                                callback: function($$v) {
+                                  _vm.$set(_vm.memo.area, "date_r", $$v)
+                                },
+                                expression: "memo.area.date_r"
+                              }
+                            })
+                          ],
+                          1
+                        )
+                      ])
+                    ])
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-12 card mb-3" }, [
+                    _c("div", { staticClass: "card-body row" }, [
+                      _c("div", { staticClass: "col-6" }, [
+                        _c("div", { staticClass: "form-group" }, [
+                          _c(
+                            "label",
+                            {
+                              attrs: {
+                                title: "Memorando de Vicerectorado Academico"
+                              }
+                            },
+                            [_vm._v("Vrac")]
+                          ),
+                          _vm._v(" "),
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.memo.vrac.code,
+                                expression: "memo.vrac.code"
+                              }
+                            ],
+                            staticClass: "form-control",
+                            attrs: { placeholder: "Código", type: "text" },
+                            domProps: { value: _vm.memo.vrac.code },
+                            on: {
+                              input: function($event) {
+                                if ($event.target.composing) {
+                                  return
+                                }
+                                _vm.$set(
+                                  _vm.memo.vrac,
+                                  "code",
+                                  $event.target.value
+                                )
+                              }
+                            }
+                          })
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-3" }, [
+                        _c(
+                          "div",
+                          { staticClass: "form-group" },
+                          [
+                            _c(
+                              "label",
+                              { attrs: { title: "Fecha de Emisión" } },
+                              [_vm._v("Fecha")]
+                            ),
+                            _vm._v(" "),
+                            _c("datepicker", {
+                              attrs: {
+                                language: _vm.es,
+                                disabled: _vm.memo.vrac.code == "",
+                                placeholder: "Emisión",
+                                "full-month-name": true,
+                                "disabled-dates": _vm.no_dates,
+                                "input-class":
+                                  _vm.memo.vrac.code !== ""
+                                    ? "bg-white form-control"
+                                    : "form-control"
+                              },
+                              model: {
+                                value: _vm.memo.vrac.date,
+                                callback: function($$v) {
+                                  _vm.$set(_vm.memo.vrac, "date", $$v)
+                                },
+                                expression: "memo.vrac.date"
+                              }
+                            })
+                          ],
+                          1
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-3" }, [
+                        _c(
+                          "div",
+                          { staticClass: "form-group" },
+                          [
+                            _c(
+                              "label",
+                              { attrs: { title: "Fecha de Recepcion" } },
+                              [_vm._v("Fecha")]
+                            ),
+                            _vm._v(" "),
+                            _c("datepicker", {
+                              attrs: {
+                                language: _vm.es,
+                                disabled: _vm.memo.vrac.code == "",
+                                placeholder: "Recepcion",
+                                "full-month-name": true,
+                                "disabled-dates": _vm.no_dates,
+                                "input-class":
+                                  _vm.memo.vrac.code !== ""
+                                    ? "bg-white form-control"
+                                    : "form-control"
+                              },
+                              model: {
+                                value: _vm.memo.vrac.date_r,
+                                callback: function($$v) {
+                                  _vm.$set(_vm.memo.vrac, "date_r", $$v)
+                                },
+                                expression: "memo.vrac.date_r"
                               }
                             })
                           ],
@@ -88724,7 +89003,7 @@ var render = function() {
                         ])
                       ]),
                       _vm._v(" "),
-                      _c("div", { staticClass: "col-6" }, [
+                      _c("div", { staticClass: "col-3" }, [
                         _c(
                           "div",
                           { staticClass: "form-group" },
@@ -88753,6 +89032,42 @@ var render = function() {
                                   _vm.$set(_vm.memo.cu, "date", $$v)
                                 },
                                 expression: "memo.cu.date"
+                              }
+                            })
+                          ],
+                          1
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-3" }, [
+                        _c(
+                          "div",
+                          { staticClass: "form-group" },
+                          [
+                            _c(
+                              "label",
+                              { attrs: { title: "Fecha de Recepcion" } },
+                              [_vm._v("Fecha")]
+                            ),
+                            _vm._v(" "),
+                            _c("datepicker", {
+                              attrs: {
+                                language: _vm.es,
+                                disabled: _vm.memo.cu.code == "",
+                                placeholder: "Recepcion",
+                                "full-month-name": true,
+                                "disabled-dates": _vm.no_dates,
+                                "input-class":
+                                  _vm.memo.cu.code !== ""
+                                    ? "bg-white form-control"
+                                    : "form-control"
+                              },
+                              model: {
+                                value: _vm.memo.cu.date_r,
+                                callback: function($$v) {
+                                  _vm.$set(_vm.memo.cu, "date_r", $$v)
+                                },
+                                expression: "memo.cu.date_r"
                               }
                             })
                           ],
@@ -88787,6 +89102,32 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12 bg-white py-3 mb-2" }, [
+      _c("h3", { staticClass: "text-center" }, [
+        _vm._v("Requisitos Consignados para Ascenso")
+      ]),
+      _vm._v(" "),
+      _c("ul", [
+        _c("li", [_vm._v("algo1")]),
+        _vm._v(" "),
+        _c("li", [_vm._v("algo2")]),
+        _vm._v(" "),
+        _c("li", [_vm._v("algo3")]),
+        _vm._v(" "),
+        _c("li", [_vm._v("algo4")]),
+        _vm._v(" "),
+        _c("li", [_vm._v("algo5")]),
+        _vm._v(" "),
+        _c("li", [_vm._v("algo6")]),
+        _vm._v(" "),
+        _c("li", [_vm._v("algo7")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-12" }, [
       _c("h4", { staticClass: "text-center" }, [_vm._v("Publicación")])
     ])
@@ -88806,7 +89147,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-12" }, [
-      _c("h4", { staticClass: "text-center" }, [_vm._v("Presentacion")])
+      _c("h4", { staticClass: "text-center" }, [_vm._v("Jurado Evaluador")])
     ])
   },
   function() {
@@ -88814,7 +89155,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-12" }, [
-      _c("h4", { staticClass: "text-center" }, [_vm._v("Jurado Evaluador")])
+      _c("h4", { staticClass: "text-center" }, [_vm._v("Presentacion")])
     ])
   },
   function() {

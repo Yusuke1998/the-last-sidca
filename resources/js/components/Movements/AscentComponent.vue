@@ -92,6 +92,19 @@
                         </div>
                     </div>
                     <!-- col-12 -->
+                    <div class="col-12 bg-white py-3 mb-2">
+                        <h3 class="text-center">Requisitos Consignados para Ascenso</h3>
+                        <ul>
+                            <li>algo1</li>
+                            <li>algo2</li>
+                            <li>algo3</li>
+                            <li>algo4</li>
+                            <li>algo5</li>
+                            <li>algo6</li>
+                            <li>algo7</li>
+                        </ul>
+                    </div>
+                    <!-- col-12 -->
                     
                     <template v-if="ascent.modality!==null">
                     <!-- ASCENSO POR ARTICULO 61 O 62 -->
@@ -232,44 +245,6 @@
                             </div>
                             <!-- col-12 -->
                             <div class="col-12">
-                                <h4 class="text-center">Presentacion</h4>
-                            </div>
-                            <!-- col-12 -->
-                            <div class="col-3">
-                                <div class="form-group">
-                                    <label>Fecha</label>
-                                    <datepicker
-                                    :language="es"
-                                        :disabled="job.title == ''"
-                                        placeholder="Fecha" 
-                                        v-model="job.presentation.date"
-                                        :full-month-name="true"
-                                        :disabled-dates="no_dates" 
-                                        :input-class="job.title !== ''?'bg-white form-control':'form-control'"></datepicker>
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="form-group">
-                                    <label>Hora</label>
-                                    <v-datetime 
-                                        format="h:i:s"
-                                        :disabled="job.presentation.date == ''"
-                                        placeholder="Hora" 
-                                        :input-class="job.presentation.date !== ''?'bg-white form-control':'form-control'"
-                                        v-model="job.presentation.hour"></v-datetime>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label>Lugar</label>
-                                    <textarea 
-                                    :disabled="job.presentation.hour == ''"
-                                    v-model="job.presentation.location"
-                                    class="form-control"></textarea>
-                                </div>
-                            </div>
-                            <!-- col-12 -->
-                            <div class="col-12">
                                 <h4 class="text-center">Jurado Evaluador</h4>
                             </div>
                             <!-- col-12 -->
@@ -308,6 +283,43 @@
                                 <div class="form-group">
                                     <label>Suplente</label>
                                     <input placeholder="Nombres y Apellidos" v-model="job.jury.alternate3" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <!-- col-12 -->
+                            <div class="col-12">
+                                <h4 class="text-center">Presentacion</h4>
+                            </div>
+                            <!-- col-12 -->
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label>Fecha</label>
+                                    <datepicker
+                                    :language="es"
+                                        :disabled="job.title == ''"
+                                        placeholder="Fecha" 
+                                        v-model="job.presentation.date"
+                                        :input-class="'form-control'"
+                                        :full-month-name="true"
+                                        :disabled-dates="no_dates"></datepicker>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label>Hora</label>
+                                    <v-datetime 
+                                        :input-class="'form-control'"
+                                        format="h:i:s"
+                                        v-model="job.presentation.hour"
+                                        placeholder="Hora"></v-datetime>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>Lugar</label>
+                                    <textarea 
+                                        :input-class="'form-control'"
+                                        v-model="job.presentation.location"
+                                        class="form-control"></textarea>
                                 </div>
                             </div>
                             <!-- col-12 -->
@@ -446,26 +458,39 @@
                         <div class="col-12">
                             <h4 class="text-center">Memorandos</h4>
                         </div>
-                        <!-- col-12 -->
+                         <!-- col-12 -->
                         <div class="col-12 card mb-3">
                             <div class="card-body row">
                                 <div class="col-6">
                                     <div class="form-group">
-                                        <label title="Memorando de Vicerectorado Academico">Vrac</label>
-                                        <input placeholder="Código" type="text" class="form-control" v-model="memo.vrac.code">
+                                        <label title="Memorando del Consejo Universitario">Comunicacion del Docente</label>
+                                        <input placeholder="Código" type="text" class="form-control" v-model="memo.cd.code">
                                     </div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-3">
                                     <div class="form-group">
-                                        <label title="Fecha de Emisión">Fecha</label>
+                                        <label title="Fecha de Entrega al Area">Fecha</label>
                                         <datepicker
                                         :language="es"
-                                        :disabled="memo.vrac.code == ''"
-                                        placeholder="Emisión" 
-                                        v-model="memo.vrac.date"
+                                        :disabled="memo.cd.code == ''"
+                                        placeholder="Fecha de Entrega al Area" 
+                                        v-model="memo.cd.date"
                                         :full-month-name="true"
                                         :disabled-dates="no_dates" 
-                                        :input-class="memo.vrac.code !== ''?'bg-white form-control':'form-control'"></datepicker>
+                                        :input-class="memo.cd.code !== ''?'bg-white form-control':'form-control'"></datepicker>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label title="Fecha de Recepción al Area">Fecha</label>
+                                        <datepicker
+                                        :language="es"
+                                        :disabled="memo.cd.code == ''"
+                                        placeholder="Fecha de Recepción al Area" 
+                                        v-model="memo.cd.date_r"
+                                        :full-month-name="true"
+                                        :disabled-dates="no_dates" 
+                                        :input-class="memo.cd.code !== ''?'bg-white form-control':'form-control'"></datepicker>
                                     </div>
                                 </div>
                             </div>
@@ -479,7 +504,7 @@
                                         <input placeholder="Código" type="text" class="form-control" v-model="memo.area.code">
                                     </div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-3">
                                     <div class="form-group">
                                         <label title="Fecha de Emisión">Fecha</label>
                                         <datepicker
@@ -490,6 +515,56 @@
                                         :full-month-name="true"
                                         :disabled-dates="no_dates" 
                                         :input-class="memo.area.code !== ''?'bg-white form-control':'form-control'"></datepicker>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label title="Fecha de Recepcion">Fecha</label>
+                                        <datepicker
+                                        :language="es"
+                                        :disabled="memo.area.code == ''"
+                                        placeholder="Recepcion" 
+                                        v-model="memo.area.date_r"
+                                        :full-month-name="true"
+                                        :disabled-dates="no_dates" 
+                                        :input-class="memo.area.code !== ''?'bg-white form-control':'form-control'"></datepicker>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- col-12 -->
+                        <div class="col-12 card mb-3">
+                            <div class="card-body row">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label title="Memorando de Vicerectorado Academico">Vrac</label>
+                                        <input placeholder="Código" type="text" class="form-control" v-model="memo.vrac.code">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label title="Fecha de Emisión">Fecha</label>
+                                        <datepicker
+                                        :language="es"
+                                        :disabled="memo.vrac.code == ''"
+                                        placeholder="Emisión" 
+                                        v-model="memo.vrac.date"
+                                        :full-month-name="true"
+                                        :disabled-dates="no_dates" 
+                                        :input-class="memo.vrac.code !== ''?'bg-white form-control':'form-control'"></datepicker>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label title="Fecha de Recepcion">Fecha</label>
+                                        <datepicker
+                                        :language="es"
+                                        :disabled="memo.vrac.code == ''"
+                                        placeholder="Recepcion" 
+                                        v-model="memo.vrac.date_r"
+                                        :full-month-name="true"
+                                        :disabled-dates="no_dates" 
+                                        :input-class="memo.vrac.code !== ''?'bg-white form-control':'form-control'"></datepicker>
                                     </div>
                                 </div>
                             </div>
@@ -503,7 +578,7 @@
                                         <input placeholder="Código" type="text" class="form-control" v-model="memo.cu.code">
                                     </div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-3">
                                     <div class="form-group">
                                         <label title="Fecha de Emisión">Fecha</label>
                                         <datepicker
@@ -511,6 +586,19 @@
                                         :disabled="memo.cu.code == ''"
                                         placeholder="Emisión" 
                                         v-model="memo.cu.date"
+                                        :full-month-name="true"
+                                        :disabled-dates="no_dates" 
+                                        :input-class="memo.cu.code !== ''?'bg-white form-control':'form-control'"></datepicker>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label title="Fecha de Recepcion">Fecha</label>
+                                        <datepicker
+                                        :language="es"
+                                        :disabled="memo.cu.code == ''"
+                                        placeholder="Recepcion" 
+                                        v-model="memo.cu.date_r"
                                         :full-month-name="true"
                                         :disabled-dates="no_dates" 
                                         :input-class="memo.cu.code !== ''?'bg-white form-control':'form-control'"></datepicker>
@@ -647,17 +735,25 @@ export default {
                 status:'espera'
             },
             memo:{
+                cd:{
+                    code:'',
+                    date:'',
+                    date_r:''
+                },
                 area:{
                     code:'',
-                    date:''
+                    date:'',
+                    date_r:''
                 },
                 vrac:{
                     code:'',
-                    date:''
+                    date:'',
+                    date_r:''
                 },
                 cu:{
                     code:'',
-                    date:''
+                    date:'',
+                    date_r:''
                 }
             },
             publication:{
